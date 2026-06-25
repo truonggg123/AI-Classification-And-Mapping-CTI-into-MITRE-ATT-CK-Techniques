@@ -21,3 +21,36 @@ attack-classification/
 ├── models/             # Thư mục lưu trữ các mô hình đã huấn luyện (.pkl)
 ├── requirements.txt    # Danh sách các thư viện môi trường cần thiết
 └── README.md           # Tài liệu hướng dẫn dự án
+
+
+
+
+#### Nhiệm vụ:
+1. Data Engineer (Tiền xử lý & Khám phá dữ liệu) (Trường + Khoa)
+•	Nhiệm vụ:
+o	Đọc dữ liệu CTI, thực hiện EDA (vẽ biểu đồ phân bố nhãn).
+o	Viết hàm clean_text để chuẩn hóa văn bản, đặc biệt lưu ý giữ lại các keyword kỹ thuật.
+o	Chia tập dữ liệu thành Train/Test split.
+•	File phụ trách: notebooks/01_eda.ipynb, src/data_loader.py, src/preprocess.py.
+2. Feature Engineer (Trích xuất đặc trưng) (Quy)
+•	Nhiệm vụ:
+o	Tokenize
+o	Cài đặt và tinh chỉnh các bộ vectorizer: CountVectorizer và TfidfVectorizer (thử nghiệm với các n-gram khác nhau).
+o	Nghiên cứu tích hợp Word2Vec hoặc FastText (nếu có thời gian) để nắm bắt ngữ nghĩa của các từ vựng OOV (Out-Of-Vocabulary) trong mảng an toàn thông tin.
+•	File phụ trách: Hỗ trợ hoàn thiện phần biểu diễn dữ liệu trong src/preprocess.py hoặc tạo một file riêng biệt để định nghĩa các bộ vectorizer.
+3. ML Pipeline & Core Modeling (Xây dựng luồng huấn luyện) (Hiếu)
+Trường sẽ đóng vai trò thiết lập bộ khung tự động hóa việc huấn luyện mô hình.
+•	Nhiệm vụ:
+o	Thiết lập Pipeline của scikit-learn để nối trực tiếp các Vectorizer với các mô hình phân loại.
+o	Cài đặt GridSearchCV để tự động chạy và tìm siêu tham số tốt nhất.
+o	Triển khai tích hợp trước 3 mô hình cơ bản và chạy nhanh nhất: Logistic Regression, LinearSVC, và Multinomial Naive Bayes.
+•	File phụ trách: notebooks/02_baseline_tfidf_svm.ipynb, src/train_baseline.py (phần luồng chính).
+4. Advanced Baselines & Evaluation (Mô hình nâng cao & Đánh giá) (P.Anh)
+Hiếu sẽ bổ sung các mô hình phức tạp hơn vào Pipeline của Trường và chịu trách nhiệm "chấm điểm" hệ thống một cách khắt khe nhất.
+•	Nhiệm vụ:
+o	Bổ sung Random Forest và LightGBM vào hệ thống Pipeline để so sánh.
+o	Viết các hàm tính toán độ đo thực tế: Macro-F1, Precision, Recall.
+o	Trích xuất ma trận nhầm lẫn (Confusion Matrix) và phân tích lỗi (Error Analysis) xem mô hình đang nhầm lẫn ở những technique nào.
+•	File phụ trách: Hỗ trợ ở src/train_baseline.py, phụ trách chính src/evaluate.py và notebooks/04_error_analysis.ipynb.
+
+
