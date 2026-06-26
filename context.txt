@@ -1,0 +1,92 @@
+# TỔNG HỢP NGỮ CẢNH CÁC BƯỚC XỬ LÝ TRONG HAI FILE NOTEBOOK
+
+Tài liệu này tổng hợp ngữ cảnh và toàn bộ quy trình xử lý dữ liệu từ hai file Jupyter Notebook:
+1. `01_explore_dataset.ipynb` (Khám phá và làm sạch dữ liệu ban đầu)
+2. `02_preprocessing.ipynb` (Tiền xử lý nâng cao và trích xuất đặc trưng)
+
+---
+
+## 1. File 01_explore_dataset.ipynb: Khám phá & Làm sạch dữ liệu ban đầu (EDA)
+
+Notebook này tập trung vào việc tải dữ liệu thô, phân tích cấu trúc, phát hiện và sửa chữa các lỗi phân tách cột, loại bỏ trùng lặp, chuẩn hóa nhãn kỹ thuật MITRE ATT&CK và thực hiện phân tích thống kê ngôn ngữ.
+
+### Các bước xử lý chính:
+1. **Đọc dữ liệu thô:**
+   - Dữ liệu được nạp từ file `../Dataset/raw/Attack_Dataset.csv`.
+   - Kiểm tra thông tin các cột, kiểu dữ liệu và xác định tỷ lệ dữ liệu khuyết thiếu (Null/NaN).
+
+2. **Hiệu chỉnh lệch cột (Column Realignment):**
+   Phát hiện và tự động sửa các lỗi dịch lệch dữ liệu sang các cột bên phải do lỗi phân tích dấu phẩy `,` hoặc dấu nháy kép `"` trong CSV:
+   - *Kiểu 1 (Dữ liệu SCADA):* 45 dòng dữ liệu hệ thống SCADA bị dịch lệch cột do giá trị cột `Tools Used` tràn sang cột `Target Type`, đẩy các cột kế tiếp sang phải và cột phụ `Unnamed: 15` chứa giá trị `'Educational Simulation'`.
+   - *Kiểu 2 & 3 (Lỗi dấu nháy kép/dấy phẩy thừa):* Các mã kỹ thuật MITRE ID bị đẩy sang các cột bên phải như `Impact`, `Detection Method`, `Solution`, `Tags`, `Source`, `Unnamed: 15`. Thuật toán dùng Regex để tìm mã MITRE ID (`T\d{4}`) ở các cột bị dịch chuyển và dịch ngược các trường về đúng cột ban đầu, đồng thời gộp các phần text bị cắt rời ở cột `Attack Steps `.
+   - *Kiểu 4 (Rò rỉ văn bản):* Phần mô tả bước tấn công (`Attack Steps` hoặc các thẻ HTML `<br>`) bị đẩy sang các cột `Target Type` hoặc `Vulnerability`.
+   - Tiến hành xóa bỏ cột rác `Unnamed: 15`, loại bỏ các dòng bị thiếu nhãn `MITRE Technique`, và điền giá trị rỗng cho các trường bị khuyết.
+
+3. **Loại bỏ dữ liệu trùng lặp (Deduplication):**
+   - Loại bỏ các dòng trùng lặp hoàn toàn về nội dung (không xét cột `ID`), giúp làm giảm số lượng bản ghi dư thừa.
+
+4. **Ghép văn bản và tạo nhãn:**
+   - Các cột văn bản được kết hợp lại để tạo thành cột `text` duy nhất bao gồm: `Title` + `Scenario Description` + `Attack Steps` + `"Tools: " + Tools Used`.
+   - Cột mục tiêu `MITRE Technique` được đổi tên thành `label`.
+
+5. **Chuẩn hóa nhãn MITRE ATT&CK bằng Regex:**
+   - Sử dụng Regex tìm mẫu `T\d{4}(?:\.\d{3})?` để trích xuất mã kỹ thuật chính (ví dụ: chuẩn hóa `T1552.001` hoặc các định dạng lỗi về đúng chuẩn của MITRE). Loại bỏ các dòng không chứa mã kỹ thuật hợp lệ.
+
+6. **Gộp nhãn phân cấp & Lọc nhãn thiểu số (Thresholding):**
+   - **Gộp nhãn:** Thu nhỏ không gian nhãn bằng cách chuyển đổi toàn bộ kỹ thuật con (Sub-techniques) về kỹ thuật cha (Parent Techniques) bằng cách cắt bỏ phần sau dấu chấm (ví dụ: `T1552.001` -> `T1552`).
+   - **Lọc nhãn thiểu số (Thresholding):** Thiết lập ngưỡng `MIN_SAMPLES = 10` để chỉ giữ lại các mã kỹ thuật cha xuất hiện ít nhất 10 lần trong tập dữ liệu. Điều này đảm bảo mô hình học máy có đủ dữ liệu để học tốt các lớp tương ứng.
+
+7. **Phân tích đặc trưng ngôn ngữ & Trực quan hóa (EDA):**
+   - **Phân tích Bigram (Cụm 2 từ):** Sử dụng `CountVectorizer` để tìm và vẽ biểu đồ 10 bigram xuất hiện phổ biến nhất đối với Top 3 kỹ thuật hàng đầu.
+   - **Thống kê thực thể CTI:** Đếm số lần xuất hiện của các thực thể quan trọng trong văn bản CTI (Địa chỉ IP, Mã lỗ hổng CVE, Đường dẫn file Windows, Mã băm mã độc MD5/SHA1/SHA256).
+   - **Phân tích không gian ngữ nghĩa:** Sử dụng TF-IDF Vectorizer và thuật toán PCA giảm chiều dữ liệu về 2D để vẽ biểu đồ phân cụm từ vựng của Top 5 kỹ thuật phổ biến nhất.
+   - **Độ dài văn bản:** Vẽ biểu đồ Boxplot phân phối độ dài văn bản (Word Count) của Top 5 kỹ thuật.
+   - **Từ khóa đặc trưng (Chi-Square Test):** Áp dụng thuật toán kiểm định Chi-Square trên đặc trưng TF-IDF để xếp hạng và trực quan hóa 20 từ/cụm từ có tính "quyết định" nhất để phân biệt giữa các kỹ thuật tấn công.
+
+8. **Lưu dữ liệu:**
+   - Lưu tập dữ liệu đã làm sạch cơ bản vào `../Dataset/processed/cti_dataset_cleaned.csv`.
+
+---
+
+## 2. File 02_preprocessing.ipynb: Tiền xử lý nâng cao & Trích xuất đặc trưng (Feature Engineering)
+
+Notebook này thực hiện các bước xử lý sâu hơn trên văn bản để chuẩn bị dữ liệu đầu vào chuẩn hóa tối ưu cho mô hình học máy, đồng thời thử nghiệm và huấn luyện các bộ trích xuất đặc trưng (Vectorizers).
+
+### Các bước xử lý chính:
+1. **Đọc dữ liệu sạch:**
+   - Tải dữ liệu từ `../Dataset/processed/cti_dataset_cleaned.csv` và kiểm tra tính toàn vẹn.
+
+2. **Ẩn/Chuẩn hóa thực thể CTI (IOC Masking / Entity Standardization):**
+   Để ngăn mô hình học máy bị quá khớp (overfitting) vào các thông tin định danh cụ thể (như địa chỉ IP, tên file cụ thể hay mã lỗ hổng ngẫu nhiên), toàn bộ thực thể nhạy cảm (IOCs) được thay thế bằng các token chung:
+   - Các URL tương ứng -> `[URL]`
+   - Các địa chỉ IPv4 -> `[IP_ADDRESS]`
+   - Các mã CVE -> `[CVE_ID]`
+   - Các mã băm Cryptographic Hash (MD5/SHA) -> `[HASH]`
+   - Các đường dẫn tệp tin (Windows và Linux) -> `[FILE_PATH]`
+   - Các khóa Registry Windows -> `[REGISTRY_KEY]`
+   - Loại bỏ các thẻ HTML dư thừa (như `<br>`) và chuẩn hóa khoảng trắng thừa.
+   - Lưu kết quả đã ẩn thực thể vào cột mới là `text_clean`.
+
+3. **Tiền xử lý ngôn ngữ tự nhiên chuyên sâu (NLP Pipeline):**
+   - **Tải tài nguyên NLTK:** Tải các thư viện bổ trợ phân câu, từ điển stopwords và bộ lemmatizer từ thư viện NLTK.
+   - **Quản lý Stopwords đặc thù cho An ninh mạng:**
+     - *Giữ lại từ quan trọng:* Loại bỏ một số từ ngữ an ninh mạng cốt lõi ra khỏi danh sách stopwords mặc định của NLTK để mô hình không xóa chúng (ví dụ: các từ phủ nhận `not`, `no`, `against`; các vector tấn công `into`, `through`, `over`; các từ chỉ tác động `off`, `down`; các từ cấu hình `between`, `own`).
+     - *Thêm Stopwords chung:* Thêm các từ xuất hiện quá nhiều nhưng không mang giá trị phân biệt kỹ thuật tấn công (ví dụ: `attacker`, `attack`, `threat`, `actor`, `campaign`, `malicious`, `compromise`, `system`, `mitre`, `technique`, v.v.).
+     - *Thêm danh sách Blacklist:* Loại bỏ các từ rác hoặc metadata (ví dụ: `step`, `steps`, `example`, `http`, `https`, `nan`, `unnamed`, `version`, v.v.).
+   - **Quy trình NLP:**
+     - Thiết lập cơ chế bảo vệ tạm thời các mã thực thể ẩn (ví dụ: tạm dịch `[ip_address]` thành `placeholderipaddress`) để tránh việc trình phân tách từ của NLTK làm vỡ dấu ngoặc vuông `[]`.
+     - Thực hiện tách từ (Tokenize), đưa về chữ thường (Lowercasing), loại bỏ các từ trong danh sách stopwords và blacklist, và thực hiện chuẩn hóa từ gốc (Lemmatize) bằng `WordNetLemmatizer`.
+     - Ghép lại văn bản và khôi phục các nhãn ẩn thực thể ban đầu.
+     - Lưu kết quả vào cột mới: `text_nlp`.
+
+4. **Trích xuất đặc trưng (Feature Engineering):**
+   - **So sánh các bộ Vectorizer truyền thống:** Thử nghiệm hai phương pháp `CountVectorizer` và `TfidfVectorizer` trên cột `text_nlp` với các cấu hình n-gram khác nhau: Unigram `(1, 1)`, Bigram `(1, 2)` và Trigram `(1, 3)`. Ghi nhận kích thước từ điển và hình dạng ma trận đặc trưng cho từng cấu hình.
+   - **Huấn luyện Word2Vec tùy chỉnh:**
+     - Huấn luyện một mô hình `Word2Vec` (thuật toán CBOW) trực tiếp từ tập dữ liệu các văn bản CTI (`text_nlp`) với tham số: `vector_size=100`, `window=5`, `min_count=2`, `epochs=10`.
+     - Kiểm tra chất lượng mô hình bằng cách hiển thị các từ có độ tương đồng ngữ nghĩa cao nhất với các từ khóa bảo mật (`wmi`, `powershell`, `registry`, `bypass`, `c2`).
+     - Xây dựng hàm trích xuất vector tài liệu theo phương pháp trung bình cộng vector từ (**Average Word Vector**) đại diện cho mỗi đoạn văn bản. Ma trận đặc trưng thu được có kích thước `(N_samples, 100)`.
+
+5. **Lưu trữ các mô hình & Cập nhật dữ liệu:**
+   - Lưu trữ bộ vectorizer TF-IDF tốt nhất (được huấn luyện với cấu hình trigram `(1, 3)` và `min_df=2`) vào file `../models/tfidf_vectorizer.pkl`.
+   - Lưu trữ mô hình `Word2Vec` đã huấn luyện vào file `../models/word2vec_model.bin`.
+   - Cập nhật và lưu lại tệp dữ liệu CSV cuối cùng chứa đầy đủ các cột mới (`text_clean`, `text_nlp`) tại `../Dataset/processed/cti_dataset_cleaned.csv` phục vụ trực tiếp cho việc huấn luyện mô hình phân loại (Training) sau này.
