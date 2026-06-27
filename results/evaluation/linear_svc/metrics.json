@@ -1,0 +1,12 @@
+{
+  "accuracy": 0.49639194834789213,
+  "macro_f1": 0.36402749360568165,
+  "macro_precision": 0.36506454859739673,
+  "macro_recall": 0.3933925292773148,
+  "weighted_f1": 0.4856011774222353,
+  "weighted_precision": 0.49778803991836806,
+  "weighted_recall": 0.49639194834789213,
+  "model": "linear_svc",
+  "test_samples": 2633,
+  "num_labels": 154
+}

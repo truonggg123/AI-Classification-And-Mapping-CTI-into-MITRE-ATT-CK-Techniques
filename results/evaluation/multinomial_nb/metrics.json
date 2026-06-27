@@ -1,0 +1,12 @@
+{
+  "accuracy": 0.2457273072540828,
+  "macro_f1": 0.03141589962773962,
+  "macro_precision": 0.06975846149187835,
+  "macro_recall": 0.039316407865087034,
+  "weighted_f1": 0.15710580618970854,
+  "weighted_precision": 0.23954669154806757,
+  "weighted_recall": 0.2457273072540828,
+  "model": "multinomial_nb",
+  "test_samples": 2633,
+  "num_labels": 154
+}

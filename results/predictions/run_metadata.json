@@ -1,0 +1,16 @@
+{
+  "data_path": "../Dataset/processed/cti_dataset_cleaned.csv",
+  "text_column": "text_clean",
+  "label_column": "label",
+  "test_size": 0.2,
+  "random_state": 42,
+  "max_features": 50000,
+  "n_estimators": 300,
+  "models": [
+    "logistic_regression",
+    "linear_svc",
+    "multinomial_nb",
+    "random_forest",
+    "lightgbm"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "accuracy": 0.4249905051272313,
+  "macro_f1": 0.26377097499045343,
+  "macro_precision": 0.343012289932363,
+  "macro_recall": 0.26117010371923766,
+  "weighted_f1": 0.38157774893997304,
+  "weighted_precision": 0.4252659983536528,
+  "weighted_recall": 0.4249905051272313,
+  "model": "random_forest",
+  "test_samples": 2633,
+  "num_labels": 154
+}

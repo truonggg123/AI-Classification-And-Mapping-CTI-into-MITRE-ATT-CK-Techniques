@@ -1,0 +1,12 @@
+{
+  "accuracy": 0.03380174705658944,
+  "macro_f1": 0.01779368598203532,
+  "macro_precision": 0.01937326954586931,
+  "macro_recall": 0.024591146368753643,
+  "weighted_f1": 0.038133572091861,
+  "weighted_precision": 0.05663581106258641,
+  "weighted_recall": 0.03380174705658944,
+  "model": "lightgbm",
+  "test_samples": 2633,
+  "num_labels": 154
+}
