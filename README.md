@@ -13,7 +13,7 @@ Trong hoạt động an toàn thông tin hiện đại, việc phân tích lư�
 
 ```text
 attack-classification/
-├── data/               # Chứa dữ liệu gốc (raw) và dữ liệu sau khi làm sạch (processed)
+├── dataset/               # Chứa dữ liệu gốc (raw) và dữ liệu sau khi làm sạch (processed)
 ├── notebooks/          # Không gian nghiên cứu (EDA, thử nghiệm Baseline & Error Analysis)
 ├── src/                # Chứa mã nguồn chính (xử lý dữ liệu, huấn luyện, đánh giá)
 ├── app/                # Chứa mã nguồn giao diện web (Streamlit)
@@ -39,14 +39,12 @@ o	Cài đặt và tinh chỉnh các bộ vectorizer: CountVectorizer và TfidfVe
 o	Nghiên cứu tích hợp Word2Vec hoặc FastText (nếu có thời gian) để nắm bắt ngữ nghĩa của các từ vựng OOV (Out-Of-Vocabulary) trong mảng an toàn thông tin.
 •	File phụ trách: Hỗ trợ hoàn thiện phần biểu diễn dữ liệu trong src/preprocess.py hoặc tạo một file riêng biệt để định nghĩa các bộ vectorizer.
 3. ML Pipeline & Core Modeling (Xây dựng luồng huấn luyện) (Hiếu)
-Trường sẽ đóng vai trò thiết lập bộ khung tự động hóa việc huấn luyện mô hình.
 •	Nhiệm vụ:
 o	Thiết lập Pipeline của scikit-learn để nối trực tiếp các Vectorizer với các mô hình phân loại.
 o	Cài đặt GridSearchCV để tự động chạy và tìm siêu tham số tốt nhất.
 o	Triển khai tích hợp trước 3 mô hình cơ bản và chạy nhanh nhất: Logistic Regression, LinearSVC, và Multinomial Naive Bayes.
 •	File phụ trách: notebooks/02_baseline_tfidf_svm.ipynb, src/train_baseline.py (phần luồng chính).
 4. Advanced Baselines & Evaluation (Mô hình nâng cao & Đánh giá) (P.Anh)
-Hiếu sẽ bổ sung các mô hình phức tạp hơn vào Pipeline của Trường và chịu trách nhiệm "chấm điểm" hệ thống một cách khắt khe nhất.
 •	Nhiệm vụ:
 o	Bổ sung Random Forest và LightGBM vào hệ thống Pipeline để so sánh.
 o	Viết các hàm tính toán độ đo thực tế: Macro-F1, Precision, Recall.
