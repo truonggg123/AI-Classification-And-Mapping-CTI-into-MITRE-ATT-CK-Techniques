@@ -14,7 +14,7 @@ This repository contains the **Single-label Classification** implementation for 
   - *Cyber EDA:* Replacing cybersecurity synonyms using a predefined `CYBER_SYNONYMS` dictionary.
 
 ## ⚙️ Preprocessing & Tokenization
-- **11-Step Pipeline:** Includes basic cleaning, normalizing Sub-techniques to Parent-techniques, rare label reduction, and preventing data leakage (anonymizing URLs and MITRE technique IDs).
+- **9-Step Pipeline:** Includes basic cleaning, normalizing Sub-techniques to Parent-techniques, rare label reduction, and preventing data leakage (anonymizing URLs and MITRE technique IDs).
 - **Entity Normalization:** Identifies and tokenizes sensitive or specific entities like SQLi payloads, CVEs, IPs, URLs, Hashes, Registry Keys, and File Paths.
 - **Custom Tokenization:** Uses a custom regular expression (`r"[a-z0-9_]+(?:[./:-][a-z0-9_]+)*"`) to **preserve special characters like `.` `/` `:` `-` `_`**. This ensures critical technical terms like file names (e.g., `cmd.exe`), paths (e.g., `/var/log`), and arguments (e.g., `-noprofile`) remain intact.
 
