@@ -1,0 +1,230 @@
+{
+  "total_samples": 22384,
+  "total_unique_active_labels": 378,
+  "total_target_labels": 378,
+  "label_cardinality": 1.106,
+  "labels_per_sample_distribution": {
+    "1_label(s)": 20422,
+    "2_label(s)": 1649,
+    "3_label(s)": 258,
+    "4_label(s)": 35,
+    "5_label(s)": 10,
+    "6_label(s)": 7,
+    "8_label(s)": 2,
+    "15_label(s)": 1
+  },
+  "word_count_percentiles": {
+    "p50": 111,
+    "p75": 165,
+    "p90": 257,
+    "p95": 311,
+    "p99": 509
+  },
+  "token_coverage": {
+    "seq_128": 59.94,
+    "seq_256": 89.95,
+    "seq_512": 99.07
+  },
+  "group_breakdown": {
+    "Rare (<30)": 270,
+    "Frequent (>=100)": 60,
+    "Medium (30-99)": 48,
+    "Zero-sample (0)": 0
+  },
+  "top_co_occurring_pairs": [
+    {
+      "pair": "T1027-T1140",
+      "count": 108
+    },
+    {
+      "pair": "T1059-T1204",
+      "count": 40
+    },
+    {
+      "pair": "T1059-T1105",
+      "count": 37
+    },
+    {
+      "pair": "T1204-T1566",
+      "count": 33
+    },
+    {
+      "pair": "T1027-T1059",
+      "count": 30
+    },
+    {
+      "pair": "T1027-T1106",
+      "count": 29
+    },
+    {
+      "pair": "T1040-T1557",
+      "count": 27
+    },
+    {
+      "pair": "T1033-T1082",
+      "count": 25
+    },
+    {
+      "pair": "T1055-T1140",
+      "count": 24
+    },
+    {
+      "pair": "T1016-T1082",
+      "count": 23
+    }
+  ],
+  "top_unigrams": [
+    {
+      "term": "step",
+      "doc_count": 8915,
+      "doc_freq_pct": 39.83
+    },
+    {
+      "term": "use",
+      "doc_count": 8858,
+      "doc_freq_pct": 39.57
+    },
+    {
+      "term": "attacker",
+      "doc_count": 8390,
+      "doc_freq_pct": 37.48
+    },
+    {
+      "term": "using",
+      "doc_count": 7768,
+      "doc_freq_pct": 34.7
+    },
+    {
+      "term": "access",
+      "doc_count": 6046,
+      "doc_freq_pct": 27.01
+    },
+    {
+      "term": "monitor",
+      "doc_count": 5850,
+      "doc_freq_pct": 26.13
+    },
+    {
+      "term": "data",
+      "doc_count": 5750,
+      "doc_freq_pct": 25.69
+    },
+    {
+      "term": "logs",
+      "doc_count": 5496,
+      "doc_freq_pct": 24.55
+    },
+    {
+      "term": "security",
+      "doc_count": 5271,
+      "doc_freq_pct": 23.55
+    },
+    {
+      "term": "like",
+      "doc_count": 5066,
+      "doc_freq_pct": 22.63
+    },
+    {
+      "term": "user",
+      "doc_count": 4648,
+      "doc_freq_pct": 20.76
+    },
+    {
+      "term": "malicious",
+      "doc_count": 4299,
+      "doc_freq_pct": 19.21
+    },
+    {
+      "term": "file",
+      "doc_count": 4191,
+      "doc_freq_pct": 18.72
+    },
+    {
+      "term": "app",
+      "doc_count": 2054,
+      "doc_freq_pct": 9.18
+    },
+    {
+      "term": "memory",
+      "doc_count": 1847,
+      "doc_freq_pct": 8.25
+    }
+  ],
+  "top_bigrams": [
+    {
+      "term": "step attacker",
+      "doc_count": 3200,
+      "doc_freq_pct": 14.3
+    },
+    {
+      "term": "step use",
+      "doc_count": 2777,
+      "doc_freq_pct": 12.41
+    },
+    {
+      "term": "step 10",
+      "doc_count": 1637,
+      "doc_freq_pct": 7.31
+    },
+    {
+      "term": "burp suite",
+      "doc_count": 1279,
+      "doc_freq_pct": 5.71
+    },
+    {
+      "term": "step identify",
+      "doc_count": 1155,
+      "doc_freq_pct": 5.16
+    },
+    {
+      "term": "step detection",
+      "doc_count": 987,
+      "doc_freq_pct": 4.41
+    },
+    {
+      "term": "tools like",
+      "doc_count": 893,
+      "doc_freq_pct": 3.99
+    },
+    {
+      "term": "privilege escalation",
+      "doc_count": 843,
+      "doc_freq_pct": 3.77
+    },
+    {
+      "term": "step victim",
+      "doc_count": 837,
+      "doc_freq_pct": 3.74
+    },
+    {
+      "term": "supply chain",
+      "doc_count": 755,
+      "doc_freq_pct": 3.37
+    },
+    {
+      "term": "ci cd",
+      "doc_count": 752,
+      "doc_freq_pct": 3.36
+    },
+    {
+      "term": "code execution",
+      "doc_count": 749,
+      "doc_freq_pct": 3.35
+    },
+    {
+      "term": "wi fi",
+      "doc_count": 638,
+      "doc_freq_pct": 2.85
+    },
+    {
+      "term": "reverse shell",
+      "doc_count": 575,
+      "doc_freq_pct": 2.57
+    },
+    {
+      "term": "brute force",
+      "doc_count": 456,
+      "doc_freq_pct": 2.04
+    }
+  ]
+}
