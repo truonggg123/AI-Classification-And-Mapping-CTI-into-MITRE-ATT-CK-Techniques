@@ -347,9 +347,11 @@ class OfflineBackTranslator:
 
 # --- Main Pipeline ---
 
-def run_augmentation(mode='eda', train_file='dataset/processed/train.csv', target_count=300, save_csv=False):
+def run_augmentation(mode='eda', train_file='dataset/processed/train_original_fixed.csv', target_count=300, save_csv=False):
     train_path = Path(train_file)
     df_train = pd.read_csv(train_path)
+    if 'is_augmented' not in df_train.columns:
+        df_train['is_augmented'] = 0
     print(f"[INFO] Loaded training dataset with {len(df_train):,} samples.")
     
     # Khởi tạo và tải Cyber Knowledge Base từ STIX
@@ -479,7 +481,9 @@ def run_augmentation(mode='eda', train_file='dataset/processed/train.csv', targe
             'Cleaned_Text': augmented_text,
             'Labels': original_row['Labels'],
             'Label_Count': original_row['Label_Count'],
-            'Tokenized_Text': tokenized_text
+            'Tokenized_Text': tokenized_text,
+            'source_sample_id': original_row['source_sample_id'],
+            'is_augmented': 1
         }
         augmented_records.append(record)
         
@@ -508,7 +512,7 @@ def run_augmentation(mode='eda', train_file='dataset/processed/train.csv', targe
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="CTI Data Augmentation Pipeline")
     parser.add_argument('--mode', type=str, default='eda', choices=['eda', 'bt', 'hybrid'], help='Augmentation mode')
-    parser.add_argument('--train_file', type=str, default='dataset/processed/train.csv', help='Path to input train.csv')
+    parser.add_argument('--train_file', type=str, default='dataset/processed/train_original_fixed.csv', help='Path to input train.csv')
     parser.add_argument('--target_count', type=int, default=300, help='Minimum sample count target per class')
     parser.add_argument('--save_csv', action='store_true', help='Save augmented dataset to CSV file')
     args = parser.parse_args()

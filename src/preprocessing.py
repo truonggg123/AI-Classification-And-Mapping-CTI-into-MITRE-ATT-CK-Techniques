@@ -112,6 +112,7 @@ def run_preprocessing_pipeline(input_file='dataset/processed/01_merged_cti_datas
     df_filtered['Cleaned_Text'] = df_filtered['Cleaned_Text'].apply(anonymize_cti_text)
     df_filtered['Tokenized_Text'] = df_filtered['Cleaned_Text'].apply(tokenize_cti_text)
     df_processed = df_filtered[df_filtered['Cleaned_Text'].str.len() > 0].reset_index(drop=True)
+    df_processed['source_sample_id'] = df_processed.index + 1
     
     processed_output_path = processed_path / '02_processed_cti_dataset.csv'
     df_processed.to_csv(processed_output_path, index=False, encoding='utf-8')
