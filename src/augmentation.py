@@ -24,20 +24,49 @@ from tqdm import tqdm
 
 def build_cyber_knowledge_base(cache_dir="dataset/processed", force_download=False):
     """
-    Thu thập và xây dựng:
-    1. Protected List: Danh sách các thuật ngữ bảo vệ (Tools, Malware, Techniques & IDs).
-    2. Synonym Dictionary: Từ điển đồng nghĩa/biệt danh (Aliases) cho APT Groups, Malware & Tools.
-    
-    Tối ưu hóa:
-    - Loại bỏ thư viện pyattck, trích xuất toàn bộ từ MITRE STIX JSON gốc.
-    - Hỗ trợ lưu cache offline tự động để tăng tốc độ chạy và hoạt động không cần mạng.
-    - Giải quyết xung đột/ghi đè alias bằng Set Merging.
-    - Hỗ trợ tự động thêm mã kỹ thuật cha khi gặp sub-technique.
+    Extracts and builds:
+    1. Protected List: Protected domain terms (Tools, Malware, Techniques & IDs).
+    2. Synonym Dictionary: Domain aliases/synonyms for APT Groups, Malware & Tools.
+
+    Optimizations:
+    - Extracts directly from raw MITRE STIX JSON without pyattck dependency.
+    - Supports automatic offline caching to accelerate execution and enable offline runs.
+    - Resolves alias conflicts/overwrites via Set Merging.
+    - Automatically appends parent technique codes when sub-techniques are encountered.
     """
     cache_path = Path(cache_dir) / "enterprise-attack.json"
     url = "https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/enterprise-attack/enterprise-attack.json"
 
+    # Search for existing enterprise-attack.json in cache_dir, parent dirs, or kaggle input
+    if not cache_path.exists() and not force_download:
+        search_dirs = [Path(cache_dir), Path('.'), Path('..'), Path('/kaggle/input')]
+        for d in search_dirs:
+            if d.exists():
+                matches = list(d.rglob('enterprise-attack.json'))
+                if matches:
+                    cache_path = matches[0]
+                    print(f"[INFO] Found existing enterprise-attack.json at: {cache_path}")
+                    break
+
     if not cache_path.exists() or force_download:
+        # Determine writable cache directory (e.g. /kaggle/working if cache_dir is read-only)
+        target_dir = Path(cache_dir)
+        is_writable = False
+        try:
+            target_dir.mkdir(parents=True, exist_ok=True)
+            test_file = target_dir / ".write_test"
+            test_file.touch()
+            test_file.unlink()
+            is_writable = True
+        except (OSError, PermissionError):
+            is_writable = False
+
+        if not is_writable:
+            target_dir = Path("/kaggle/working") if Path("/kaggle/working").exists() else Path(".")
+            target_dir.mkdir(parents=True, exist_ok=True)
+            cache_path = target_dir / "enterprise-attack.json"
+            print(f"[INFO] Primary cache directory is read-only. Redirecting cache download to writable path: {cache_path}")
+
         print(f"[INFO] Downloading MITRE STIX JSON from GitHub ({url})...")
         try:
             req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
@@ -48,7 +77,7 @@ def build_cyber_knowledge_base(cache_dir="dataset/processed", force_download=Fal
             print(f"[INFO] Download and cache saved to {cache_path}")
         except Exception as e:
             if cache_path.exists():
-                print(f"[WARNING] Failed to download new data ({e}). Using existing cache.")
+                print(f"[WARNING] Failed to download new data ({e}). Using existing cache at {cache_path}.")
             else:
                 raise RuntimeError(f"Cannot download STIX JSON and no local cache found: {e}")
     else:
@@ -125,7 +154,7 @@ def synonym_replacement(words, n, synonym_dict):
     new_words = words.copy()
     sentence_words = set([w.lower().strip(".,;:!?()\"'") for w in new_words])
     
-    # Lọc trước các key có khả năng khớp (tiết kiệm thời gian chạy)
+    # Pre-filter candidate keys to reduce runtime overhead
     candidate_keys = []
     for key in synonym_dict:
         key_words = key.split()
@@ -212,7 +241,7 @@ def add_word(new_words, synonym_dict):
         return
     sentence_words = set([w.lower().strip(".,;:!?()\"'") for w in new_words])
     
-    # Lọc trước các key có khả năng khớp
+    # Pre-filter candidate keys to reduce runtime overhead
     candidate_keys = []
     for key in synonym_dict:
         key_words = key.split()
@@ -347,15 +376,22 @@ class OfflineBackTranslator:
 
 # --- Main Pipeline ---
 
-def run_augmentation(mode='eda', train_file='dataset/processed/train_original_fixed.csv', target_count=300, save_csv=False):
-    train_path = Path(train_file)
-    df_train = pd.read_csv(train_path)
+def run_augmentation(mode='eda', train_file='dataset/processed/train.csv', df_train=None, target_count=120, save_csv=False, cache_dir='dataset/processed'):
+    if df_train is None:
+        train_path = Path(train_file)
+        df_train = pd.read_csv(train_path)
+        cache_path_dir = train_path.parent
+    else:
+        df_train = df_train.copy()
+        cache_path_dir = Path(cache_dir)
+        train_path = cache_path_dir / "train.csv"
+
     if 'is_augmented' not in df_train.columns:
         df_train['is_augmented'] = 0
     print(f"[INFO] Loaded training dataset with {len(df_train):,} samples.")
     
-    # Khởi tạo và tải Cyber Knowledge Base từ STIX
-    protected_set, synonym_dict = build_cyber_knowledge_base(cache_dir=train_path.parent)
+    # Initialize and build Cyber Knowledge Base from STIX JSON
+    protected_set, synonym_dict = build_cyber_knowledge_base(cache_dir=cache_path_dir)
     
     if mode == 'hybrid':
         bt_path = train_path.parent / "train_augmented_bt.csv"
@@ -512,8 +548,8 @@ def run_augmentation(mode='eda', train_file='dataset/processed/train_original_fi
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="CTI Data Augmentation Pipeline")
     parser.add_argument('--mode', type=str, default='eda', choices=['eda', 'bt', 'hybrid'], help='Augmentation mode')
-    parser.add_argument('--train_file', type=str, default='dataset/processed/train_original_fixed.csv', help='Path to input train.csv')
-    parser.add_argument('--target_count', type=int, default=300, help='Minimum sample count target per class')
+    parser.add_argument('--train_file', type=str, default='dataset/processed/train.csv', help='Path to input train.csv')
+    parser.add_argument('--target_count', type=int, default=120, help='Minimum sample count target per class')
     parser.add_argument('--save_csv', action='store_true', help='Save augmented dataset to CSV file')
     args = parser.parse_args()
     

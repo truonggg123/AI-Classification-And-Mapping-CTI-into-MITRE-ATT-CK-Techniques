@@ -51,7 +51,7 @@ def clean_cti_text_preliminary(text):
 def merge_raw_datasets(raw_dir='dataset/raw', output_file='dataset/processed/01_merged_cti_dataset.csv'):
     """
     Loads, cleans, and deduplicates raw CTI datasets:
-    - Attack_Dataset.csv
+    - dataset.csv
     - single_label.json
     - multi_label.json
     Saves and returns merged DataFrame with Cleaned_Text and Labels columns.
@@ -60,37 +60,36 @@ def merge_raw_datasets(raw_dir='dataset/raw', output_file='dataset/processed/01_
     output_path = Path(output_file)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    attack_csv = raw_path / 'Attack_Dataset.csv'
+    dataset_csv = raw_path / 'dataset.csv'
     single_json = raw_path / 'single_label.json'
     multi_json = raw_path / 'multi_label.json'
 
     text_to_labels = {}
     order = []
 
-    # 1. Process Attack_Dataset.csv
-    if attack_csv.exists():
-        print(f"[INFO] Parsing {attack_csv}...")
-        df_attack = pd.read_csv(attack_csv)
-        attack_count = 0
-        for _, row in df_attack.iterrows():
-            row_content = row.drop(labels=['ID', 'Source'], errors='ignore').fillna('')
-            row_text_raw = ' '.join(str(val) for val in row_content.values)
-            raw_mitres = MITRE_PATTERN.findall(row_text_raw)
-            if not raw_mitres:
+    # 1. Process dataset.csv
+    if dataset_csv.exists():
+        print(f"[INFO] Parsing {dataset_csv}...")
+        df_ds = pd.read_csv(dataset_csv)
+        ds_count = 0
+        for _, row in df_ds.iterrows():
+            raw_t = str(row.get('sentence', '')).strip()
+            raw_l = str(row.get('label_tec', '')).strip()
+            if not raw_t or not raw_l:
                 continue
-            parent_labels = set(get_parent_label(l) for l in raw_mitres if get_parent_label(l))
-            if not parent_labels:
+            parent_l = get_parent_label(raw_l)
+            if not parent_l:
                 continue
-            cleaned_t = clean_cti_text_preliminary(row_text_raw)
+            cleaned_t = clean_cti_text_preliminary(raw_t)
             if not cleaned_t:
                 continue
-            attack_count += 1
+            ds_count += 1
             if cleaned_t not in text_to_labels:
-                text_to_labels[cleaned_t] = parent_labels
+                text_to_labels[cleaned_t] = {parent_l}
                 order.append(cleaned_t)
             else:
-                text_to_labels[cleaned_t].update(parent_labels)
-        print(f"   [RESULT] Processed {attack_count:,} valid entries from Attack_Dataset.csv")
+                text_to_labels[cleaned_t].add(parent_l)
+        print(f"   [RESULT] Processed {ds_count:,} valid entries from dataset.csv")
 
     # 2. Process single_label.json
     if single_json.exists():
