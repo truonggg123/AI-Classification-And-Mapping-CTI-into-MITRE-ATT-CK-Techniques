@@ -37,8 +37,6 @@ REG_HTML = re.compile(r'<[^>]+>')
 REG_MARKDOWN = re.compile(r'[\*\_`#]')
 CTI_TOKEN_PATTERN = r"[a-z0-9_\[\]]+(?:[./:-][a-z0-9_\[\]]+)*"
 
-TOTAL_MITRE_PARENT_TECHNIQUES = 378
-
 
 def anonymize_cti_text(text):
     """
@@ -82,13 +80,39 @@ def tokenize_cti_text(text):
     return " ".join(tokens)
 
 
-def run_preprocessing_pipeline(input_file='dataset/processed/01_merged_cti_dataset.csv', processed_dir='dataset/processed', results_dir='results', max_labels=3, test_size=0.20, random_state=42):
+def run_preprocessing_pipeline(input_file=None, processed_dir=None, results_dir='results', target_dataset='joint', max_labels=3, test_size=0.20, random_state=42):
     """
     Loads merged CTI dataset, filters outliers (<= max_labels), anonymizes entities,
     tokenizes text, binarizes targets, performs stratified split, and exports artifacts.
     """
-    input_path = Path(input_file)
-    processed_path = Path(processed_dir)
+    # Resolve input_file and processed_dir if not explicitly set
+    if processed_dir is None:
+        processed_path = Path('dataset/processed') / target_dataset
+    else:
+        processed_path = Path(processed_dir)
+
+    if input_file is None or not Path(input_file).exists():
+        possible_inputs = [
+            processed_path / 'raw_merged.csv',
+            Path('dataset/processed') / target_dataset / 'raw_merged.csv',
+            Path('dataset/processed/joint/raw_merged.csv'),
+            Path('dataset/processed/cti_to_mitre/raw_merged.csv'),
+            Path('dataset/processed/tram/raw_merged.csv'),
+            Path('dataset/processed/01_merged_cti_dataset.csv')
+        ]
+        found_input = None
+        for p in possible_inputs:
+            if p.exists():
+                found_input = p
+                break
+        if found_input is None:
+            raise FileNotFoundError(
+                f"Cannot find merged dataset file. Please run `python src/merge_datasets.py --target_dataset {target_dataset}` first."
+            )
+        input_path = found_input
+    else:
+        input_path = Path(input_file)
+        
     results_path = Path(results_dir)
     
     processed_path.mkdir(parents=True, exist_ok=True)
@@ -118,7 +142,7 @@ def run_preprocessing_pipeline(input_file='dataset/processed/01_merged_cti_datas
     df_processed.to_csv(processed_output_path, index=False, encoding='utf-8')
     print(f"[INFO] Saved preprocessed dataset to: {processed_output_path}")
     
-    print("\n=== STEP 4: LABEL BINARIZATION (378 TARGET SPACE) ===")
+    print("\n=== STEP 4: LABEL BINARIZATION (DYNAMIC TARGET SPACE) ===")
     label_lists = [str(l).split(',') for l in df_processed['Labels']]
     mlb = MultiLabelBinarizer()
     Y = mlb.fit_transform(label_lists)
@@ -148,6 +172,7 @@ def run_preprocessing_pipeline(input_file='dataset/processed/01_merged_cti_datas
     
     print("\n=== STEP 6: EXPORT PREPROCESSING REPORT ===")
     report_data = {
+        "target_dataset": target_dataset,
         "initial_samples": initial_sample_count,
         "removed_outliers_count": removed_outlier_count,
         "outlier_filter_rule": f"Label_Count <= {max_labels}",
@@ -163,14 +188,14 @@ def run_preprocessing_pipeline(input_file='dataset/processed/01_merged_cti_datas
         "split_method": "MultilabelStratifiedShuffleSplit",
         "anonymized_entities": ["CVE", "IPV4", "URL", "FILE_PATH", "HASH"],
         "output_files": {
-            "processed_dataset": "dataset/processed/02_processed_cti_dataset.csv",
-            "train_set": "dataset/processed/train.csv",
-            "test_set": "dataset/processed/test.csv",
-            "multilabel_binarizer": "dataset/processed/multilabel_binarizer.pkl"
+            "processed_dataset": str(processed_output_path),
+            "train_set": str(train_csv_path),
+            "test_set": str(test_csv_path),
+            "multilabel_binarizer": str(binarizer_path)
         }
     }
     
-    report_json_path = results_path / '02_preprocessing_report.json'
+    report_json_path = results_path / f'02_preprocessing_report_{target_dataset}.json'
     with open(report_json_path, 'w', encoding='utf-8') as f:
         json.dump(report_data, f, ensure_ascii=False, indent=2)
         
@@ -179,8 +204,9 @@ def run_preprocessing_pipeline(input_file='dataset/processed/01_merged_cti_datas
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="CTI ATT&CK Preprocessing, Anonymization & Stratification Script")
-    parser.add_argument('--input_file', type=str, default='dataset/processed/01_merged_cti_dataset.csv', help='Path to merged input CSV file')
-    parser.add_argument('--processed_dir', type=str, default='dataset/processed', help='Path to processed output directory')
+    parser.add_argument('--input_file', type=str, default=None, help='Path to merged input CSV file')
+    parser.add_argument('--target_dataset', type=str, default='joint', choices=['cti_to_mitre', 'tram', 'joint'], help='Target dataset to preprocess')
+    parser.add_argument('--processed_dir', type=str, default=None, help='Path to processed output directory')
     parser.add_argument('--results_dir', type=str, default='results', help='Path to results directory')
     parser.add_argument('--max_labels', type=int, default=3, help='Maximum label count threshold per sample')
     parser.add_argument('--test_size', type=float, default=0.20, help='Test set split ratio')
@@ -189,6 +215,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     run_preprocessing_pipeline(
         input_file=args.input_file,
+        target_dataset=args.target_dataset,
         processed_dir=args.processed_dir,
         results_dir=args.results_dir,
         max_labels=args.max_labels,

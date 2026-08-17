@@ -1,10 +1,1 @@
-models/
-*.joblib
-
-.idea/
-
-__pycache__/
-.ipynb_checkpoints/
-
-dataset/processed/
-results/
+/dataset/processed/

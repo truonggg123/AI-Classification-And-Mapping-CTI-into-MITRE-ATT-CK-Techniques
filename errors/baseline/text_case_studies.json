@@ -1,0 +1,96 @@
+{
+  "Exact Match Cases": [
+    {
+      "Sample Index": 1,
+      "Text Snippet": "Adversaries may poison Address Resolution Protocol caches to position themselves between the communication of two or more networked devices....",
+      "Ground Truth Labels": [
+        "T1557"
+      ],
+      "Predicted Labels": [
+        "T1557"
+      ]
+    },
+    {
+      "Sample Index": 3,
+      "Text Snippet": "An adversary may passively wait for an ARP request to poison the ARP cache of the requesting device....",
+      "Ground Truth Labels": [
+        "T1557"
+      ],
+      "Predicted Labels": [
+        "T1557"
+      ]
+    },
+    {
+      "Sample Index": 5,
+      "Text Snippet": "For each account found without preauthentication, an adversary may send an AS-REQ message without the encrypted timestamp and receive an AS-REP message with TGT data which may be encrypted with an ins...",
+      "Ground Truth Labels": [
+        "T1558"
+      ],
+      "Predicted Labels": [
+        "T1558"
+      ]
+    }
+  ],
+  "Under-Prediction Cases (False Negative)": [
+    {
+      "Sample Index": 0,
+      "Text Snippet": "Most modern Linux operating systems use a combination of [FILE_PATH] and [FILE_PATH] to store user account information including password hashes in [FILE_PATH]...",
+      "Ground Truth Labels": [
+        "T1003"
+      ],
+      "Predicted Labels": []
+    },
+    {
+      "Sample Index": 4,
+      "Text Snippet": "The adversary may reply with their MAC address, thus deceiving the victim by making them believe that they are communicating with the intended networked device....",
+      "Ground Truth Labels": [
+        "T1557"
+      ],
+      "Predicted Labels": []
+    },
+    {
+      "Sample Index": 17,
+      "Text Snippet": "These scans can also be performed in various ways, including using native features of network protocols such as ICMP....",
+      "Ground Truth Labels": [
+        "T1595"
+      ],
+      "Predicted Labels": []
+    }
+  ],
+  "Over-Prediction Cases (False Positive)": [
+    {
+      "Sample Index": 6,
+      "Text Snippet": "The recovered encrypted data may be vulnerable to offline Password Cracking attacks similarly to Kerberoasting and expose plaintext credentials....",
+      "Ground Truth Labels": [
+        "T1558"
+      ],
+      "Predicted Labels": [
+        "T1558",
+        "T1110"
+      ]
+    },
+    {
+      "Sample Index": 8,
+      "Text Snippet": "AppleSeed can gain system level privilege by passing SeDebugPrivilege to the AdjustTokenPrivilege API....",
+      "Ground Truth Labels": [
+        "T1134"
+      ],
+      "Predicted Labels": [
+        "T1106",
+        "T1134"
+      ]
+    },
+    {
+      "Sample Index": 9,
+      "Text Snippet": "Cuba has used SeDebugPrivilege and AdjustTokenPrivileges to elevate privileges....",
+      "Ground Truth Labels": [
+        "T1134"
+      ],
+      "Predicted Labels": [
+        "T1134",
+        "T1068",
+        "T1548"
+      ]
+    }
+  ]
+}

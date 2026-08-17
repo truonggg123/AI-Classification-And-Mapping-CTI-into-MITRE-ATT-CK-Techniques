@@ -1,0 +1,428 @@
+{
+  "Zero F1 Label Count": 9,
+  "4-Tier Frequency Breakdown": [
+    {
+      "Frequency Tier": "Head (>500)",
+      "Label Count": 6,
+      "Zero F1 Labels": 0,
+      "Zero F1 Ratio (%)": 0.0,
+      "Mean Precision (%)": 81.22,
+      "Mean Recall (%)": 85.72,
+      "Mean F1-Score (%)": 83.21
+    },
+    {
+      "Frequency Tier": "Major (100-499)",
+      "Label Count": 41,
+      "Zero F1 Labels": 0,
+      "Zero F1 Ratio (%)": 0.0,
+      "Mean Precision (%)": 76.48,
+      "Mean Recall (%)": 76.58,
+      "Mean F1-Score (%)": 76.13
+    },
+    {
+      "Frequency Tier": "Medium (30-99)",
+      "Label Count": 46,
+      "Zero F1 Labels": 0,
+      "Zero F1 Ratio (%)": 0.0,
+      "Mean Precision (%)": 68.55,
+      "Mean Recall (%)": 63.65,
+      "Mean F1-Score (%)": 63.94
+    },
+    {
+      "Frequency Tier": "Tail (<30)",
+      "Label Count": 95,
+      "Zero F1 Labels": 9,
+      "Zero F1 Ratio (%)": 9.47,
+      "Mean Precision (%)": 63.63,
+      "Mean Recall (%)": 64.94,
+      "Mean F1-Score (%)": 60.32
+    }
+  ],
+  "Worst 10 F1 Labels": [
+    {
+      "Technique ID": "T1006",
+      "Test Support": 1,
+      "Train Support": 4,
+      "Precision (%)": 0.0,
+      "Recall (%)": 0.0,
+      "F1-Score (%)": 0.0,
+      "Optimal Threshold": 0.05,
+      "Group": "Tail (<30)"
+    },
+    {
+      "Technique ID": "T1538",
+      "Test Support": 1,
+      "Train Support": 3,
+      "Precision (%)": 0.0,
+      "Recall (%)": 0.0,
+      "F1-Score (%)": 0.0,
+      "Optimal Threshold": 0.05,
+      "Group": "Tail (<30)"
+    },
+    {
+      "Technique ID": "T1531",
+      "Test Support": 1,
+      "Train Support": 4,
+      "Precision (%)": 0.0,
+      "Recall (%)": 0.0,
+      "F1-Score (%)": 0.0,
+      "Optimal Threshold": 0.05,
+      "Group": "Tail (<30)"
+    },
+    {
+      "Technique ID": "T1526",
+      "Test Support": 1,
+      "Train Support": 5,
+      "Precision (%)": 0.0,
+      "Recall (%)": 0.0,
+      "F1-Score (%)": 0.0,
+      "Optimal Threshold": 0.05,
+      "Group": "Tail (<30)"
+    },
+    {
+      "Technique ID": "T1495",
+      "Test Support": 1,
+      "Train Support": 4,
+      "Precision (%)": 0.0,
+      "Recall (%)": 0.0,
+      "F1-Score (%)": 0.0,
+      "Optimal Threshold": 0.05,
+      "Group": "Tail (<30)"
+    },
+    {
+      "Technique ID": "T1200",
+      "Test Support": 1,
+      "Train Support": 3,
+      "Precision (%)": 0.0,
+      "Recall (%)": 0.0,
+      "F1-Score (%)": 0.0,
+      "Optimal Threshold": 0.05,
+      "Group": "Tail (<30)"
+    },
+    {
+      "Technique ID": "T1212",
+      "Test Support": 1,
+      "Train Support": 4,
+      "Precision (%)": 0.0,
+      "Recall (%)": 0.0,
+      "F1-Score (%)": 0.0,
+      "Optimal Threshold": 0.05,
+      "Group": "Tail (<30)"
+    },
+    {
+      "Technique ID": "T1202",
+      "Test Support": 1,
+      "Train Support": 4,
+      "Precision (%)": 0.0,
+      "Recall (%)": 0.0,
+      "F1-Score (%)": 0.0,
+      "Optimal Threshold": 0.05,
+      "Group": "Tail (<30)"
+    },
+    {
+      "Technique ID": "T1613",
+      "Test Support": 1,
+      "Train Support": 6,
+      "Precision (%)": 0.0,
+      "Recall (%)": 0.0,
+      "F1-Score (%)": 0.0,
+      "Optimal Threshold": 0.05,
+      "Group": "Tail (<30)"
+    },
+    {
+      "Technique ID": "T1104",
+      "Test Support": 3,
+      "Train Support": 14,
+      "Precision (%)": 6.25,
+      "Recall (%)": 33.33,
+      "F1-Score (%)": 10.53,
+      "Optimal Threshold": 0.2,
+      "Group": "Tail (<30)"
+    }
+  ],
+  "Top 10 Most Missed Labels": [
+    {
+      "Technique ID": "T1027",
+      "Test Support": 358,
+      "Train Support": 1432,
+      "Precision (%)": 83.63,
+      "Recall (%)": 78.49,
+      "F1-Score (%)": 80.98,
+      "Optimal Threshold": 0.75,
+      "Group": "Head (>500)",
+      "False Negatives": 77
+    },
+    {
+      "Technique ID": "T1059",
+      "Test Support": 257,
+      "Train Support": 1028,
+      "Precision (%)": 78.68,
+      "Recall (%)": 78.99,
+      "F1-Score (%)": 78.83,
+      "Optimal Threshold": 0.8,
+      "Group": "Head (>500)",
+      "False Negatives": 53
+    },
+    {
+      "Technique ID": "T1105",
+      "Test Support": 168,
+      "Train Support": 670,
+      "Precision (%)": 74.05,
+      "Recall (%)": 81.55,
+      "F1-Score (%)": 77.62,
+      "Optimal Threshold": 0.7,
+      "Group": "Head (>500)",
+      "False Negatives": 30
+    },
+    {
+      "Technique ID": "T1078",
+      "Test Support": 77,
+      "Train Support": 310,
+      "Precision (%)": 79.66,
+      "Recall (%)": 61.04,
+      "F1-Score (%)": 69.12,
+      "Optimal Threshold": 0.9,
+      "Group": "Major (100-499)",
+      "False Negatives": 29
+    },
+    {
+      "Technique ID": "T1082",
+      "Test Support": 105,
+      "Train Support": 419,
+      "Precision (%)": 78.79,
+      "Recall (%)": 74.29,
+      "F1-Score (%)": 76.47,
+      "Optimal Threshold": 0.7,
+      "Group": "Major (100-499)",
+      "False Negatives": 26
+    },
+    {
+      "Technique ID": "T1083",
+      "Test Support": 88,
+      "Train Support": 351,
+      "Precision (%)": 64.29,
+      "Recall (%)": 71.59,
+      "F1-Score (%)": 67.74,
+      "Optimal Threshold": 0.7,
+      "Group": "Major (100-499)",
+      "False Negatives": 25
+    },
+    {
+      "Technique ID": "T1106",
+      "Test Support": 102,
+      "Train Support": 406,
+      "Precision (%)": 70.91,
+      "Recall (%)": 76.47,
+      "F1-Score (%)": 73.58,
+      "Optimal Threshold": 0.7,
+      "Group": "Major (100-499)",
+      "False Negatives": 24
+    },
+    {
+      "Technique ID": "T1218",
+      "Test Support": 69,
+      "Train Support": 274,
+      "Precision (%)": 88.68,
+      "Recall (%)": 68.12,
+      "F1-Score (%)": 77.05,
+      "Optimal Threshold": 0.9,
+      "Group": "Major (100-499)",
+      "False Negatives": 21
+    },
+    {
+      "Technique ID": "T1041",
+      "Test Support": 48,
+      "Train Support": 194,
+      "Precision (%)": 66.67,
+      "Recall (%)": 62.5,
+      "F1-Score (%)": 64.52,
+      "Optimal Threshold": 0.85,
+      "Group": "Major (100-499)",
+      "False Negatives": 18
+    },
+    {
+      "Technique ID": "T1021",
+      "Test Support": 67,
+      "Train Support": 267,
+      "Precision (%)": 77.78,
+      "Recall (%)": 73.13,
+      "F1-Score (%)": 75.38,
+      "Optimal Threshold": 0.9,
+      "Group": "Major (100-499)",
+      "False Negatives": 18
+    }
+  ],
+  "Top Confused Label Pairs": [
+    {
+      "True Technique": "T1027",
+      "Predicted Technique": "T1070",
+      "Confusion Count": 7
+    },
+    {
+      "True Technique": "T1059",
+      "Predicted Technique": "T1105",
+      "Confusion Count": 7
+    },
+    {
+      "True Technique": "T1027",
+      "Predicted Technique": "T1105",
+      "Confusion Count": 6
+    },
+    {
+      "True Technique": "T1027",
+      "Predicted Technique": "T1059",
+      "Confusion Count": 6
+    },
+    {
+      "True Technique": "T1027",
+      "Predicted Technique": "T1140",
+      "Confusion Count": 5
+    },
+    {
+      "True Technique": "T1005",
+      "Predicted Technique": "T1039",
+      "Confusion Count": 3
+    },
+    {
+      "True Technique": "T1204",
+      "Predicted Technique": "T1566",
+      "Confusion Count": 3
+    },
+    {
+      "True Technique": "T1005",
+      "Predicted Technique": "T1083",
+      "Confusion Count": 3
+    },
+    {
+      "True Technique": "T1566",
+      "Predicted Technique": "T1598",
+      "Confusion Count": 3
+    },
+    {
+      "True Technique": "T1012",
+      "Predicted Technique": "T1112",
+      "Confusion Count": 2
+    },
+    {
+      "True Technique": "T1007",
+      "Predicted Technique": "T1543",
+      "Confusion Count": 2
+    },
+    {
+      "True Technique": "T1005",
+      "Predicted Technique": "T1041",
+      "Confusion Count": 2
+    },
+    {
+      "True Technique": "T1027",
+      "Predicted Technique": "T1106",
+      "Confusion Count": 2
+    },
+    {
+      "True Technique": "T1027",
+      "Predicted Technique": "T1055",
+      "Confusion Count": 2
+    },
+    {
+      "True Technique": "T1021",
+      "Predicted Technique": "T1559",
+      "Confusion Count": 2
+    }
+  ],
+  "Case Studies": {
+    "Exact Match Cases": [
+      {
+        "Sample Index": 1,
+        "Text Snippet": "Adversaries may poison Address Resolution Protocol caches to position themselves between the communication of two or more networked devices....",
+        "Ground Truth Labels": [
+          "T1557"
+        ],
+        "Predicted Labels": [
+          "T1557"
+        ]
+      },
+      {
+        "Sample Index": 3,
+        "Text Snippet": "An adversary may passively wait for an ARP request to poison the ARP cache of the requesting device....",
+        "Ground Truth Labels": [
+          "T1557"
+        ],
+        "Predicted Labels": [
+          "T1557"
+        ]
+      },
+      {
+        "Sample Index": 5,
+        "Text Snippet": "For each account found without preauthentication, an adversary may send an AS-REQ message without the encrypted timestamp and receive an AS-REP message with TGT data which may be encrypted with an ins...",
+        "Ground Truth Labels": [
+          "T1558"
+        ],
+        "Predicted Labels": [
+          "T1558"
+        ]
+      }
+    ],
+    "Under-Prediction Cases (False Negative)": [
+      {
+        "Sample Index": 0,
+        "Text Snippet": "Most modern Linux operating systems use a combination of [FILE_PATH] and [FILE_PATH] to store user account information including password hashes in [FILE_PATH]...",
+        "Ground Truth Labels": [
+          "T1003"
+        ],
+        "Predicted Labels": []
+      },
+      {
+        "Sample Index": 4,
+        "Text Snippet": "The adversary may reply with their MAC address, thus deceiving the victim by making them believe that they are communicating with the intended networked device....",
+        "Ground Truth Labels": [
+          "T1557"
+        ],
+        "Predicted Labels": []
+      },
+      {
+        "Sample Index": 17,
+        "Text Snippet": "These scans can also be performed in various ways, including using native features of network protocols such as ICMP....",
+        "Ground Truth Labels": [
+          "T1595"
+        ],
+        "Predicted Labels": []
+      }
+    ],
+    "Over-Prediction Cases (False Positive)": [
+      {
+        "Sample Index": 6,
+        "Text Snippet": "The recovered encrypted data may be vulnerable to offline Password Cracking attacks similarly to Kerberoasting and expose plaintext credentials....",
+        "Ground Truth Labels": [
+          "T1558"
+        ],
+        "Predicted Labels": [
+          "T1558",
+          "T1110"
+        ]
+      },
+      {
+        "Sample Index": 8,
+        "Text Snippet": "AppleSeed can gain system level privilege by passing SeDebugPrivilege to the AdjustTokenPrivilege API....",
+        "Ground Truth Labels": [
+          "T1134"
+        ],
+        "Predicted Labels": [
+          "T1106",
+          "T1134"
+        ]
+      },
+      {
+        "Sample Index": 9,
+        "Text Snippet": "Cuba has used SeDebugPrivilege and AdjustTokenPrivileges to elevate privileges....",
+        "Ground Truth Labels": [
+          "T1134"
+        ],
+        "Predicted Labels": [
+          "T1134",
+          "T1068",
+          "T1548"
+        ]
+      }
+    ]
+  }
+}

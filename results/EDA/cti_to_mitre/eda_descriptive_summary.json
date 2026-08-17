@@ -1,0 +1,20 @@
+{
+  "dataset_name": "CTI-to-MITRE",
+  "dataset_key": "cti_to_mitre",
+  "total_train_samples": 10345,
+  "total_test_samples": 2599,
+  "unique_active_labels": 188,
+  "sample_count_descriptive_stats": {
+    "mean": 55.03191489361702,
+    "std": 74.11769108028751,
+    "min": 3.0,
+    "25_percentile": 13.75,
+    "median_50_percentile": 26.5,
+    "75_percentile": 66.25,
+    "max": 558.0
+  },
+  "recommended_target_count": {
+    "by_mean": 55,
+    "by_median": 26
+  }
+}

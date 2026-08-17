@@ -1,0 +1,151 @@
+================================================================================
+BAO CAO TONG HOP TOAN BO KET QUA THUC HIEN DU AN CTI-TO-MITRE & TRAM
+================================================================================
+Ngay cap nhat: 2026-08-17
+Du an: AI-Classification-And-Mapping-CTI-into-MITRE-ATT-CK-Techniques
+Moi truong khoi chay: Conda environment (aic211)
+
+================================================================================
+1. DANH SACH CAC FILE MA NGUON NANG CAP & TAP DU LIEU DA TAO
+================================================================================
+
+[1] src/augmentation.py (Nang cap Cyber EDA & Benchmark Operations)
+    - Xoa bo 100% doan code bi lap phuc tap trong buoc khoi tao STIX Knowledge Base.
+    - Sua loi hoan doi tu (swap_word) de boc tach va bao ve dau cau goc cuoi cau.
+    - Xoa bo che do hybrid, tach rieng Back-Translation (--mode bt) thanh phuong phap doi chung doc lap.
+    - Bo sung cac che do bien doi don le: sr (Synonym Replacement), ri (Random Insertion), 
+      rs (Random Swap), rd (Random Deletion), eda (Cyber EDA), bt (Back-Translation).
+    - Tich hop co che TU DONG CHON MOC TARGET_COUNT THEO MEAN CUA TUNG TAP DU LIEU:
+      * CTI-to-MITRE : target_count = 55 mau/nhan
+      * TRAM         : target_count = 151 mau/nhan
+      * JOINT        : target_count = 95 mau/nhan
+    - Ket qua chay thuc te tren tập CTI-to-MITRE:
+      * Mẫu train goc: 10,345 mau -> Sau Augmentation: 14,927 mau (Sinh moi 4,582 mau trong 6 giay).
+      * So nhan hiem (<55 mau) con lai: 0 nhan (Dat 100% muc tieu can bang).
+
+[2] src/merge_datasets.py (Nang cap Module Gop & Chuan hoa Du lieu Tho)
+    - Bo sung tham so --target_dataset ho tro 3 che do: cti_to_mitre, tram, joint.
+    - Tu dong tim kiem de quy file single_label.json va multi_label.json trong dataset/raw/TRAM dataset/.
+    - Chuan hoa va trung hoa ma Txxxx chong ro ri nhan (label leakage).
+    - Xuat ra du lieu chuan 2 cot (Cleaned_Text, Labels) cho ca 3 thu muc:
+      * dataset/processed/cti_to_mitre/raw_merged.csv (12,944 mau, 188 nhãn)
+      * dataset/processed/tram/raw_merged.csv (8,546 mau, 50 nhãn)
+      * dataset/processed/joint/raw_merged.csv (21,490 mau, 188 nhãn)
+
+[3] src/preprocessing.py (Nang cap Module Tien xu ly & Stratified Split 80/20)
+    - Xoa bo bien hardcode TOTAL_MITRE_PARENT_TECHNIQUES = 378.
+    - Chuyen MultiLabelBinarizer sang dang DONG (Dynamic Target Space) tu dong thich ung voi tap nhan cua tung dataset.
+    - Tu dong nhan dien duong dan dau vao qua tham so --target_dataset, chong loi FileNotFoundError.
+    - Thuc hien phan tach Multilabel Stratified Shuffle Split 80% Train / 20% Test cho ca 3 tap:
+      * cti_to_mitre: Train = 10,345 mau (80%), Test = 2,599 mau (20%) | 188 Active Classes
+      * tram        : Train = 6,803 mau (80%), Test = 1,705 mau (20%)  | 50 Active Classes
+      * joint       : Train = 17,161 mau (80%), Test = 4,291 mau (20%) | 188 Active Classes
+
+================================================================================
+2. CO CHE HOAT DONG CHI TIET CUA CYBER EDA (DOMAIN-AWARE CYBER EDA ARCHITECTURE)
+================================================================================
+
+Quy trinh gia tang du lieu Cyber EDA bao gom 4 giai doan chinh:
+
+--- Giai doan 1: Xay dung Tri thuc An ninh mang & Tap Bao ve Tu vung (Domain Protection) ---
+1. STIX v2.1 Knowledge Base: Tu dong tai va phan tich MITRE ATT&CK Enterprise Matrix 
+   de trich xuat danh sach ten Ky thuat, Ma doc (Software/Malware), Nhom tan cong (APT Groups),
+   va Tu dong nghia chinh thuc cua MITRE (974 tu dong nghia).
+2. TF-IDF Filtering: Tinh toan diem IDF (Inverse Document Frequency) tren toan bo 
+   van ban CTI: IDF(w) = log(N / df(w)). Trich xuat cac tu co IDF >= 5.19 (tu chuyen nganh 
+   mat do cao, it xuat hien ngoai doi thuong).
+3. Protected Terms Set (3,636 tu): Gop tu vung TF-IDF cao + thuc the STIX + token dac biet 
+   ([CVE], [IPV4], [URL], [FILE_PATH], [HASH]). Tat ca cac tu thuoc Tap Bao ve nay 
+   SE KHONG BAO GIO BI THAY THE, CHEN, HOAN DOI HOAC XOA de bao ve tinh nguyen ven cua 
+   ngu canh an ninh mang (Domain Distortion Protection).
+
+--- Giai doan 2: Lay mau Tham lam Da nhan (Multi-Label Aware Greedy Sampling) ---
+1. Tinh toan tan suat hien tai cua tung nhan tren tap Train.
+2. Xac dinh cac nhan hiem (Minority Classes) co so mau < target_count (giai tri MEAN).
+3. Uu tien chon cac mau chua nhan hiem nhat va sinh mau gia tang theo thu tu tham lam 
+   cho toi khi tat ca cac nhan hiem deu dat du moc target_count.
+
+--- Giai doan 3: 4 Phep Bien doi Cyber EDA (Atomic Data Augmentation Operators) ---
+Voi moi mau duoc chon, thuc hien ngau nhien 1 trong 4 phep bien doi voi ty le alpha = 0.1:
+1. Synonym Replacement (SR): Chon n = ceil(alpha * L) tu KHONG thuoc Protected Set va 
+   thay thế bang tu dong nghia trong Cyber Synonym Dictionary.
+2. Random Insertion (RI): Tim tu dong nghia cua tu hop le trong cau va chen vào vi tri 
+   ngau nhien trong cau.
+3. Random Swap (RS & Punctuation Protection): Hoan doi vi tri 2 tu ngau nhien trong cau. 
+   Dac biet, boc tach va giu nguyen dau cau goc cuoi cau (.,;:!?) tai vi tri goc.
+4. Random Deletion (RD): Xoa ngau nhien cac tu voi xac suat p = alpha, ngoai tru cac tu 
+   thuoc Protected Set.
+
+--- Giai doan 4: Offline Back-Translation (BT - Mo rong) ---
+- Su dung cap mo hinh MarianMT (Helsinki-NLP/opus-mt-en-fr va opus-mt-fr-en) de dich chuyen 
+  tiep (English -> French -> English) voi Sampling (temperature=0.7, top_p=0.92, top_k=50).
+- An toan thuc the bang Masking/Unmasking truoc va sau khi dich.
+
+================================================================================
+3. THONG KE MO TA (DESCRIPTIVE STATISTICS) & MOC AUGMENTATION (MEAN)
+================================================================================
+
+--------------------------------------------------------------------------------
+Chi so Thong ke          CTI-to-MITRE (Train 80%)    TRAM (Train 80%)    JOINT (Train 80%)
+--------------------------------------------------------------------------------
+Tong so nhan (Count)     188 nhan                    50 nhan             188 nhan
+Trung binh (MEAN)        55.03 mau                   151.20 mau          95.25 mau
+Do lech chuan (Std)      74.12                       181.61              176.01
+Nho nhat (Min)           3 mau                       9 mau               3 mau
+Phan vi 25% (25%)        13.75 mau                   65.50 mau           14.00 mau
+Trung vi (MEDIAN - 50%)  26.50 mau                   94.50 mau           28.50 mau
+Phan vi 75% (75%)        66.25 mau                   156.75 mau          98.75 mau
+Lon nhat (Max)           558 mau                     1,034 mau           1,432 mau
+--------------------------------------------------------------------------------
+Moc Target Count (MEAN)  55 mau/nhan                 151 mau/nhan        95 mau/nhan
+--------------------------------------------------------------------------------
+
+================================================================================
+4. DANH SACH NOTEBOOKS & RESULT EXPORTS DA TAO
+================================================================================
+
+[1] Jupyter Notebooks (All English Academic Standard):
+    - notebooks/01a_explore_cti_to_mitre.ipynb (Kham pha doc lap tap CTI-to-MITRE)
+    - notebooks/01b_explore_tram.ipynb (Kham pha doc lap tap TRAM)
+    - notebooks/01c_explore_joint.ipynb (Kham pha tap JOINT)
+    - notebooks/01_merge_and_explore_dataset.ipynb (Kham pha tong hop JOINT)
+    * Tat ca notebook deu tich hop ham resolve_path tu dong tim kiem duong dan 
+      khi chay tu thu muc goc hoac tu trong thu muc notebooks/.
+
+[2] Results Export Directory (results/EDA/):
+    - results/EDA/cti_to_mitre/
+    - results/EDA/tram/
+    - results/EDA/joint/
+    * Moi thu muc deu da duoc xuat day du:
+      + word_count_distribution.png
+      + label_cardinality.png
+      + per_label_sample_counts.csv
+      + eda_descriptive_summary.json
+      + 4_tier_frequency_breakdown.png
+      + top_cooccurrence_pairs.png
+
+================================================================================
+5. HUONG DAN CHAY DATA PIPELINE CHO CAC THANH VIEN NHOM
+================================================================================
+
+Step 1: Merge & Standardize Raw Datasets
+    python src/merge_datasets.py --target_dataset cti_to_mitre
+    python src/merge_datasets.py --target_dataset tram
+    python src/merge_datasets.py --target_dataset joint
+
+Step 2: Preprocess & 80/20 Stratified Split
+    python src/preprocessing.py --target_dataset cti_to_mitre
+    python src/preprocessing.py --target_dataset tram
+    python src/preprocessing.py --target_dataset joint
+
+Step 3: Data Augmentation for Minority Classes (Auto-resolves target_count to MEAN)
+    python src/augmentation.py --train_file dataset/processed/cti_to_mitre/train.csv --mode eda --save_csv
+    python src/augmentation.py --train_file dataset/processed/tram/train.csv --mode eda --save_csv
+    python src/augmentation.py --train_file dataset/processed/joint/train.csv --mode eda --save_csv
+
+================================================================================
+6. CAPITAL ARTIFACTS persisted:
+   - implementation_plan.md (Da cap nhat Scenario 80/20 & Augmentation Benchmark)
+   - DATASET_GUIDE.txt (Huong dan su dung ngam gon)
+   - PROJECT_EXECUTION_SUMMARY.txt (File Bao cao Tong hop nay)
+================================================================================

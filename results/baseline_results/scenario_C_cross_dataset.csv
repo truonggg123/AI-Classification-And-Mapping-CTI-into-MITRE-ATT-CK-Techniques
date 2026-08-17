@@ -1,0 +1,5 @@
+Scenario,Model,Strategy,Macro_F1,Micro_F1,Precision_Macro,Recall_Macro,Hamming_Loss,Exact_Match_Acc
+C1: Train CTI -> Test TRAM,Logistic Regression,NO_AUG,0.54,0.6014,0.6569,0.519,0.0159,0.407
+C2: Train TRAM -> Test CTI,Logistic Regression,NO_AUG,0.4778,0.5281,0.4899,0.5904,0.0145,0.469
+C1: Train CTI -> Test TRAM,Logistic Regression,EDA,0.5213,0.5936,0.6433,0.5071,0.0163,0.3947
+C2: Train TRAM -> Test CTI,Logistic Regression,EDA,0.4807,0.5365,0.4872,0.5798,0.0139,0.4844

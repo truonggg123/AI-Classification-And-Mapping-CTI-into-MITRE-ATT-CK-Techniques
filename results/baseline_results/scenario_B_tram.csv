@@ -1,0 +1,13 @@
+Scenario,Model,Strategy,Macro_F1,Micro_F1,Precision_Macro,Recall_Macro,Hamming_Loss,Exact_Match_Acc
+Scenario B (TRAM),Logistic Regression,NO_AUG,0.7825,0.8036,0.7512,0.8335,0.0093,0.6381
+Scenario B (TRAM),Linear SVC,NO_AUG,0.8163,0.8471,0.8582,0.7886,0.0067,0.7349
+Scenario B (TRAM),Logistic Regression,SR,0.7852,0.8054,0.7628,0.8261,0.0092,0.637
+Scenario B (TRAM),Linear SVC,SR,0.8189,0.8471,0.8652,0.7901,0.0067,0.7355
+Scenario B (TRAM),Logistic Regression,RI,0.7856,0.804,0.7619,0.8267,0.0093,0.6346
+Scenario B (TRAM),Linear SVC,RI,0.8204,0.8482,0.8681,0.7895,0.0066,0.7361
+Scenario B (TRAM),Logistic Regression,RS,0.7828,0.8044,0.7476,0.8379,0.0093,0.6381
+Scenario B (TRAM),Linear SVC,RS,0.8248,0.8471,0.8657,0.8003,0.0067,0.7331
+Scenario B (TRAM),Logistic Regression,RD,0.788,0.8068,0.7691,0.8239,0.0092,0.6393
+Scenario B (TRAM),Linear SVC,RD,0.8195,0.8454,0.8724,0.7891,0.0067,0.7296
+Scenario B (TRAM),Logistic Regression,EDA,0.7793,0.8021,0.7427,0.8346,0.0094,0.6276
+Scenario B (TRAM),Linear SVC,EDA,0.8199,0.846,0.8637,0.7914,0.0067,0.729

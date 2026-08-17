@@ -1,76 +1,182 @@
-# Kế hoạch Nghiên cứu Chi tiết: Ánh xạ CTI sang MITRE ATT&CK (Multi-Label Classification trên 188 Nhãn Active)
+# Kế hoạch Nghiên cứu & Thực nghiệm Deep Learning: Ánh xạ CTI sang MITRE ATT&CK (CTI-to-MITRE & TRAM)
 
-Kế hoạch này đã được tinh chỉnh theo định hướng dữ liệu mới hợp nhất từ 3 tập CTI dạng câu: `dataset.csv`, `single_label.json`, và `multi_label.json` (tổng số **21,490 mẫu độc nhất**):
+Tài liệu này xác định kế hoạch thực nghiệm chuyên sâu giai đoạn 2 (Deep Learning) cho hệ thống tự động ánh xạ CTI Narrative sang **188 Nhãn Active MITRE ATT&CK Parent Techniques**. 
 
-1. **Phạm vi Không gian Nhãn Target**: **188 Nhãn Parent Techniques (`Txxxx`)** có mẫu thực tế trong dữ liệu CTI. Loại bỏ phần phân tích đệm 378 nhãn và các nhãn 0-sample không có dữ liệu thực tế.
-2. **Kiến trúc Mô hình Chủ đạo**: **SecureBERT 2.0 / ModernBERT + Asymmetric Loss (ASL)** kết hợp **Bi-Encoder Dense Retrieval**.
-
----
-
-## 📐 PHẦN 1: 3 CÂU HỎI NGHIÊN CỨU (RESEARCH QUESTIONS - RQs)
-
-- **RQ1 (Domain Contextual Representation)**: Contextual Embeddings từ Transformer chuyên biệt an ninh mạng (SecureBERT 2.0 / RoBERTa-cyber) bắt đặc trưng ngữ cảnh CTI vượt trội ra sao so với Transformer tổng quát (BERT-base, DistilBERT) và n-gram cổ điển?
-- **RQ2 (Long-Tail Multi-Label Learning on 188 Active Classes)**: Trong không gian 188 nhãn (gồm 52 Head, 54 Medium, 82 Rare), việc áp dụng hàm mất mát bất đối xứng (Asymmetric Loss - ASL) giúp cải thiện F1-score cho các nhãn hiếm (<30 mẫu) như thế nào mà không làm sụt giảm độ chính xác trên các nhãn phổ biến?
-- **RQ3 (Zero-Shot / Few-Shot Semantic Alignment via Dense Retrieval)**: Kiến trúc Bi-Encoder (Dense Retrieval) so sánh độ tương đồng giữa CTI Narrative và phần Mô tả chuẩn của MITRE ATT&CK đạt hiệu năng nhận diện các nhãn cực hiếm (1-5 mẫu) ra sao?
+Kế hoạch thiết lập khung đánh giá 4 kịch bản (**Scenario A, B, C, D**) độc lập và toàn diện trên 2 tập dữ liệu benchmark chính (**CTI-to-MITRE** và **TRAM**), đồng thời tích hợp 4 kiến trúc mô hình Deep Learning tiên tiến: **TextCNN**, **ModernBERT**, **SecureBERT 2.0 + Asymmetric Loss (ASL)**, và **Bi-Encoder Dense Retrieval**.
 
 ---
 
-## 🗂️ PHẦN 2: QUY TRÌNH TIỀN XỬ LÝ VÀ MÔ HÌNH HÓA (188 ACTIVE LABELS)
+## 🎯 Khung 4 Kịch Bản Thực Nghiệm (4-Scenario Evaluation Protocol)
 
-```text
-[MERGED DATASET: dataset.csv + single_label.json + multi_label.json (21,490 Mẫu)]
-                               │
-                               ▼
-        [PREPROCESSING & LEAKAGE-AWARE ANONYMIZATION PROTOCOL]
-        - Anonymize [CVE], [URL], [IPV4], [FILE_PATH], [HASH]
-        - Neutralize direct [Txxxx] MITRE technique codes to prevent leakage
-        - Preserve natural sentence grammar & casing for Transformers
-                               │
-                               ▼
-         [188 ACTIVE PARENT TECHNIQUE TARGET MATRIX (MultiLabelBinarizer)]
-                               │
-             ┌─────────────────┴─────────────────┐
-             ▼                                   ▼
-  [BRANCH 1: DEEP LEARNING + ASL]      [BRANCH 2: BI-ENCODER RETRIEVAL]
-   - SecureBERT 2.0 / ModernBERT        - Dual-Tower (CTI Text ↔ MITRE Desc)
-   - Asymmetric Loss (ASL)              - Supervised Contrastive / Cosine Sim
-             │                                   │
-             └─────────────────┬─────────────────┘
-                               ▼
-      [COMPREHENSIVE MULTI-LABEL EVALUATION (5 Random Seeds)]
-   - Metrics: Micro/Macro/Weighted F1, Subset Acc, Hamming Loss, Precision@k, Recall@k
-   - Long-Tail Breakdown (Frequent >=100: 52, Medium 30-99: 54, Rare <30: 82)
-   - Error Analysis (Co-occurrence Heatmap, UMAP Feature Space, Case Studies)
-```
+Mọi mô hình (từ Baseline đến Deep Learning) và mọi phương pháp Augmentation đều được đánh giá qua 4 kịch bản độc lập:
 
-### 🧠 Phương án Mô hình hóa:
-- **SecureBERT 2.0 + ASL Loss**:
+1. **Scenario A (In-Domain CTI-to-MITRE Benchmark):**
+   - **Train Set:** `dataset/processed/cti_to_mitre/train.csv` (10,345 mẫu - 80%)
+   - **Test Set:** `dataset/processed/cti_to_mitre/test.csv` (2,599 mẫu - 20%)
+   - **Không gian nhãn:** 188 Active Parent Techniques.
+   - **Mốc Augmentation (MEAN):** `--target_count 55` mẫu/nhãn.
+
+2. **Scenario B (In-Domain TRAM Benchmark):**
+   - **Train Set:** `dataset/processed/tram/train.csv` (6,803 mẫu - 80%)
+   - **Test Set:** `dataset/processed/tram/test.csv` (1,705 mẫu - 20%)
+   - **Không gian nhãn:** 50 Active Parent Techniques.
+   - **Mốc Augmentation (MEAN):** `--target_count 151` mẫu/nhãn.
+
+3. **Scenario C (Cross-Dataset Generalization - Domain Shift Evaluation):**
+   - **Kịch bản C1:** Train trên `CTI-to-MITRE Train` $\rightarrow$ Test trên `TRAM Test`.
+   - **Kịch bản C2:** Train trên `TRAM Train` $\rightarrow$ Test trên `CTI-to-MITRE Test`.
+   - **Không gian nhãn:** Đánh giá trên tập nhãn giao (Intersecting Active Labels).
+   - **Mục tiêu:** Kiểm chứng tính bền vững của mô hình và phương pháp Augmentation trước sự thay đổi phân phối văn bản báo cáo CTI.
+
+4. **Scenario D (Joint Dataset Benchmark):**
+   - **Train Set:** `dataset/processed/joint/train.csv` (17,161 mẫu - 80%)
+   - **Test Set:** Đánh giá độc lập trên `cti_to_mitre/test.csv`, `tram/test.csv`, và `joint/test.csv` (4,291 mẫu - 20%).
+   - **Không gian nhãn:** Không gian nhãn hợp (Union Label Space - 188 Active Techniques).
+   - **Mốc Augmentation (MEAN):** `--target_count 95` mẫu/nhãn.
+
+---
+
+## 🔄 Ma Trận So Sánh Các Phương Pháp Augmentation (Data Augmentation Benchmark Matrix)
+
+Trên từng Kịch bản (Scenario A, B, C, D), thực hiện so sánh đối chứng 6 phương pháp Augmentation:
+
+| STT | Phương Pháp Augmentation | Mã Chạy CLI (`--mode`) | Mô Tả Kỹ Thuật |
+| :---: | :--- | :---: | :--- |
+| 1 | **No Augmentation** | `no_aug` | Dữ liệu gốc sau tiền xử lý (Baseline đối chứng). |
+| 2 | **Synonym Replacement (SR)** | `sr` | Thay thế $n = \lceil \alpha \times L \rceil$ từ bằng từ đồng nghĩa An ninh mạng. |
+| 3 | **Random Insertion (RI)** | `ri` | Chèn ngẫu nhiên từ đồng nghĩa của một từ hợp lệ vào vị trí bất kỳ trong câu. |
+| 4 | **Random Swap (RS)** | `rs` | Hoán đổi vị trí 2 từ ngẫu nhiên trong câu (Bảo vệ dấu câu cuối). |
+| 5 | **Random Deletion (RD)** | `rd` | Xóa ngẫu nhiên các từ không thuộc Tap Bảo vệ với xác suất $p = \alpha$. |
+| 6 | **Cyber EDA (Proposed Method)** | `eda` | Kết hợp 4 biến đổi + Tap Bảo vệ Từ vựng TF-IDF (3,636 từ) + Greedy Resampling. |
+
+---
+
+## 👥 Phân Công Nhiệm Vụ Trong Nhóm (Task Allocation)
+
+| Thành viên | Vai trò & Trách nhiệm chính | Mô hình / Module Phụ trách | Output Bàn giao |
+| :--- | :--- | :--- | :--- |
+| **Trường** *(Team Lead)* | • Thiết kế Data Pipeline & Split độc lập 4 Scenario<br>• Phát triển module Cyber EDA & Benchmark Operations<br>• Fine-tune & Benchmark ModernBERT | **ModernBERT**<br>+ Data Split & Augmentation Module | • `src/dataset_splitter.py`<br>• `src/augmentation.py`<br>• `src/models/modernbert_trainer.py`<br>• Notebook `05_modernbert_experiment.ipynb` |
+| **Khoa** | • Xây dựng Baseline (Logistic Regression, Linear SVC)<br>• Xây dựng và thực nghiệm kiến trúc TextCNN<br>• Đánh giá 4 Scenario trên Baseline & TextCNN | **TextCNN & Baseline**<br>+ Baseline Pipeline | • Notebook `03_kaggle_baseline_pipeline.ipynb`<br>• `src/models/text_cnn.py`<br>• Notebook `04_textcnn_experiment.ipynb` |
+| **P.Anh** | • Cài đặt hàm Asymmetric Loss (ASL)<br>• Fine-tune SecureBERT 2.0 trên ngữ cảnh an ninh mạng<br>• Tinh chỉnh ngưỡng động (Dynamic Thresholding) cho Deep Learning | **SecureBERT 2.0 + ASL**<br>+ ASL Loss Module | • `src/losses/asl_loss.py`<br>• `src/models/securebert_asl_trainer.py`<br>• Notebook `06_securebert_asl_experiment.ipynb` |
+| **Quy** | • Xây dựng kiến trúc Dual-Tower Bi-Encoder<br>• Trích xuất Embeddings mô tả chuẩn MITRE 188 nhãn<br>• Huấn luyện Supervised Contrastive / Cosine Similarity Retrieval | **Bi-Encoder Dense Retrieval**<br>+ Dual-Tower Architecture | • `src/models/bi_encoder.py`<br>• `src/mitre_description_extractor.py`<br>• Notebook `07_biencoder_retrieval_experiment.ipynb` |
+
+---
+
+## 🏗️ Chiến Lược Kiến Trúc Mô Hình & Loss Functions
+
+### 1. TextCNN (Baseline Deep Learning)
+- Sử dụng mô hình Convolutional Neural Network cho phân loại văn bản đa nhãn với các kích thước filter $k \in \{3, 4, 5\}$.
+- Kết hợp Global Max Pooling và Dense Classifier với Sigmoid Activation.
+
+### 2. ModernBERT (General SOTA Transformer)
+- Kiến trúc Transformer thế hệ mới (ModernBERT-base) hỗ trợ ngữ cảnh dài, Rotary Positional Embeddings (RoPE), và FlashAttention-2 giúp tăng tốc huấn luyện.
+- Fine-tuning với hàm mất mát BCE + Class Weighting.
+
+### 3. SecureBERT 2.0 + Asymmetric Loss (ASL)
+- Sử dụng **SecureBERT 2.0** (bộ mã hóa Transformer pre-trained chuyên biệt trên dữ liệu An toàn thông tin / CTI).
+- Kết hợp hàm mất mát bất đối xứng **Asymmetric Loss (ASL)** nhằm giải quyết triệt để bài toán imbalance cực đoan ở 101 nhãn Tail ($<30$ mẫu):
   $$\mathcal{L}_{ASL} = - \sum_{k=1}^{188} y_k (1 - p_k)^{\gamma_+} \log(p_k) + (1 - y_k) (p_m)^{\gamma_-} \log(1 - p_m)$$
   với $p_m = \max(p_k - \text{margin}, 0)$, $\gamma_- = 4, \gamma_+ = 1, \text{margin} = 0.05$.
-- **Bi-Encoder Dense Retrieval**: Dual-tower matching giữa CTI text và phần mô tả văn bản chuẩn của 188 kỹ thuật MITRE.
+
+### 4. Bi-Encoder Dense Retrieval (Zero-Shot / Few-Shot Semantic Alignment)
+- Kiến trúc Dual-Tower: 
+  - Tower 1: $E_{CTI}(x) = \text{SecureBERT}(x_{\text{CTI narrative}})$
+  - Tower 2: $E_{MITRE}(t_i) = \text{SecureBERT}(\text{Description of Technique } t_i)$
+- Dự đoán bằng độ tương đồng Cosine: $s(x, t_i) = \cos(E_{CTI}(x), E_{MITRE}(t_i))$.
+- Đánh giá khả năng nhận diện zero-shot / few-shot cho các kỹ thuật hiếm thông qua chỉ số **Recall@3** và **Recall@5**.
 
 ---
 
-## 🧪 PHẦN 3: HỆ THỐNG THÍ NGHIỆM ĐÁNH GIÁ (188 NHÃN ACTIVE)
+## 🧪 Hệ Thống Bảng & Biểu Đồ Thực Nghiệm (Required Outputs)
 
-### 📊 Bảng 1: Benchmark Tổng thể Mô hình trên 188 Nhãn Active
-*(Huấn luyện 5 Random Seeds - Báo cáo: Mean ± Std)*
+### 📊 Danh Sách Bảng Kết Quả Chi Tiết Theo Kịch Bản (Tables)
+1. **Scenario A Output**: `results/baseline_results/scenario_A_cti_to_mitre.csv` / `.png` - Bảng & biểu đồ thực nghiệm In-Domain CTI-to-MITRE.
+2. **Scenario B Output**: `results/baseline_results/scenario_B_tram.csv` / `.png` - Bảng & biểu đồ thực nghiệm In-Domain TRAM.
+3. **Scenario C Output**: `results/baseline_results/scenario_C_cross_dataset.csv` / `.png` - Bảng & biểu đồ thực nghiệm Cross-Dataset Generalization.
+4. **Scenario D Output**: `results/baseline_results/scenario_D_joint_dataset.csv` / `.png` - Bảng & biểu đồ thực nghiệm Joint Dataset.
+5. **Master Summary Table**: `results/baseline_results/master_table_all_scenarios_comparison.csv` - Bảng tổng hợp toàn bộ 4 Scenario.
+6. **Table 4 (4-Tier Analysis)**: `results/baseline_results/4_tier_error_analysis.json` & `table5_per_label_metrics.csv` - Phân tích hiệu năng theo 4 tầng (Head $>500$, Major $100-499$, Medium $30-99$, Tail $<30$).
 
-| Nhóm Mô hình | Mô hình | Loss Function | Micro F1 (%) | Macro F1 (%) | Subset Acc (%) | Hamming Loss | Precision@3 | Recall@3 |
-| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| Classical Baselines | LogReg + Hybrid TF-IDF | BCE | $64.20 \pm 0.3$ | $42.10 \pm 0.4$ | $48.20$ | $0.0035$ | $32.10$ | $88.50$ |
-| | Linear SVC + Hybrid TF-IDF | BCE | $66.40 \pm 0.2$ | $45.30 \pm 0.3$ | $51.40$ | $0.0031$ | $33.50$ | $89.20$ |
-| General Transformers | BERT-base-uncased | BCE | $70.50 \pm 0.5$ | $52.10 \pm 0.6$ | $56.80$ | $0.0025$ | $36.80$ | $91.50$ |
-| Domain Transformers | RoBERTa-cyber | BCE | $73.80 \pm 0.4$ | $56.40 \pm 0.5$ | $60.20$ | $0.0021$ | $38.90$ | $93.20$ |
-| Proposed (SOTA) | **SecureBERT 2.0 + ASL** | **ASL** | **$78.50 \pm 0.3$** | **$65.80 \pm 0.4$** | **$66.40$** | **$0.0015$** | **$42.50$** | **$96.10$** |
-| Proposed (Zero-Shot) | **Bi-Encoder Dense Retrieval** | **SupCon** | **$76.20 \pm 0.4$** | **$68.10 \pm 0.5$** | **$64.10$** | **$0.0018$** | **$41.80$** | **$96.80$** |
+### 📈 Biểu Đồ So Sánh Quỹ Đạo Học Theo Epoch (Epoch-wise Learning Trajectory Benchmark)
+7. **Figure: Comparison of Macro F1 across Epochs for Deep Learning Models**:
+   - **Tên file xuất:** `results/deeplearning_results/epoch_learning_trajectory_comparison.png`
+   - **Cấu trúc biểu đồ:** Biểu đồ sóng đôi 2 Subplots song song:
+     - **Subplot trái (CTI-to-MITRE):** Trục tung `F1_MACRO`, Trục hoành `Epochs` ($1 \rightarrow 10$).
+     - **Subplot phải (TRAM):** Trục tung `F1_MACRO`, Trục hoành `Epochs` ($1 \rightarrow 10$).
+   - **So sánh các mô hình Deep Learning trong Plan hiện tại:**
+     - **Đường màu xanh lam:** `TextCNN`
+     - **Đường màu cam/xanh lá:** `ModernBERT-base`
+     - **Đường màu đỏ (SOTA):** `SecureBERT 2.0 + ASL` (Mô hình đề xuất)
+   - **Phân biệt phương pháp Augmentation qua Kiểu đường (Line Styles):**
+     - **Nét liền (Solid Line `-`):** Dữ liệu gốc (`No Augmentation`).
+     - **Nét đứt (Dashed Line `--`):** Dữ liệu tăng cường (`Cyber EDA`).
+   - **Ý nghĩa khoa học:** Đánh giá tốc độ hội tụ, khả năng chống over-fitting và sự bùng nổ chỉ số Macro F1 ở các Epoch muộn khi áp dụng Cyber EDA so với dữ liệu gốc.
 
 ---
 
-### 📊 Bảng 2: Phân Tích Hiệu Năng Theo Nhóm Tần Suất (188 Nhãn Active)
+## 📂 Cấu Trúc Thư Mục Dự Án Hoàn Chỉnh
 
-| Nhóm Tần suất Nhãn | Số lượng Nhãn | BCE Loss Macro F1 (%) | Focal Loss Macro F1 (%) | **ASL (Đề xuất) Macro F1 (%)** | **Bi-Encoder Recall@3 (%)** |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| Frequent ($\ge 100$ mẫu) | 52 | $78.50$ | $80.10$ | **$83.40$** | **$98.10$** |
-| Medium ($30 - 99$ mẫu) | 54 | $62.40$ | $65.80$ | **$71.20$** | **$95.40$** |
-| Rare ($< 30$ mẫu) | 82 | $25.10$ | $36.80$ | **$58.50$** | **$91.20$** |
+```text
+AI-Classification-And-Mapping-CTI-into-MITRE-ATT-CK-Techniques/
+├── DATASET_GUIDE.txt                    # Hướng dẫn quy trình 3 bước xử lý dữ liệu cho đồng đội
+├── PROJECT_EXECUTION_SUMMARY.txt        # Báo cáo tổng hợp tiến độ & cơ chế Cyber EDA
+├── implementation_plan.md               # Tài liệu Kế hoạch Thực nghiệm 4 Scenario
+│
+├── dataset/
+│   ├── raw/                             # Dữ liệu thô gốc (dataset.csv, single_label.json, multi_label.json)
+│   └── processed/                       # Dữ liệu tiền xử lý theo từng tập
+│       ├── cti_to_mitre/                # (12,944 samples, Train 10,345 / Test 2,599)
+│       ├── tram/                        # (8,508 samples, Train 6,803 / Test 1,705)
+│       └── joint/                       # (21,452 samples, Train 17,161 / Test 4,291)
+│
+├── src/                                 # Mã nguồn Python mô đun hóa
+│   ├── __init__.py
+│   ├── merge_datasets.py                # Chuẩn hóa & Khử trùng lặp raw dataset cho cti_to_mitre, tram, joint
+│   ├── preprocessing.py                 # Clean text, ẩn ma Txxxx, binarizer động, 80/20 stratified split
+│   ├── augmentation.py                  # Cyber EDA, SR, RI, RS, RD, Back-Translation
+│   ├── losses/
+│   │   ├── __init__.py
+│   │   └── asl_loss.py                  # Asymmetric Loss (ASL)
+│   └── models/
+│       ├── __init__.py
+│       ├── text_cnn.py                  # Mô hình TextCNN
+│       ├── modernbert_trainer.py        # Pipeline fine-tune ModernBERT
+│       ├── securebert_asl_trainer.py    # Pipeline fine-tune SecureBERT 2.0 + ASL
+│       └── bi_encoder.py                # Pipeline Bi-Encoder Dual-Tower
+│
+├── notebooks/                           # Jupyter Notebooks thực thi (100% English)
+│   ├── 01a_explore_cti_to_mitre.ipynb   # EDA độc lập tập CTI-to-MITRE
+│   ├── 01b_explore_tram.ipynb           # EDA độc lập tập TRAM
+│   ├── 01c_explore_joint.ipynb          # EDA tập Joint (Hợp nhất)
+│   ├── 01_merge_and_explore_dataset.ipynb
+│   ├── 02_preprocessing.ipynb
+│   ├── 03_kaggle_baseline_pipeline.ipynb # Notebook thực nghiệm 4 Scenario Baseline & Augmentation
+│   ├── 04_textcnn_experiment.ipynb      # Notebook thực nghiệm TextCNN (Khoa)
+│   ├── 05_modernbert_experiment.ipynb   # Notebook thực nghiệm ModernBERT (Trường)
+│   ├── 06_securebert_asl_experiment.ipynb # Notebook thực nghiệm SecureBERT + ASL (P.Anh)
+│   └── 07_biencoder_retrieval_experiment.ipynb # Notebook thực nghiệm Bi-Encoder (Quy)
+│
+└── results/                             # Thư mục lưu kết quả thực nghiệm
+    ├── EDA/                             # Biểu đồ PNG & CSV báo cáo EDA của 3 tập
+    │   ├── cti_to_mitre/
+    │   ├── tram/
+    │   └── joint/
+    └── baseline_results/                # Bảng CSV, biểu đồ PNG & báo cáo JSON của 4 Scenario
+```
+
+---
+
+## 🎯 Kế Hoạch Xác Nhận & Kiểm Thử (Verification Plan)
+
+### Automated Verification
+- Kiểm tra tính liên thông dữ liệu qua lệnh:
+  ```bash
+  python src/merge_datasets.py --target_dataset cti_to_mitre
+  python src/preprocessing.py --target_dataset cti_to_mitre
+  python src/augmentation.py --train_file dataset/processed/cti_to_mitre/train.csv --mode eda --save_csv
+  ```
+- Kiểm tra notebook `03_kaggle_baseline_pipeline.ipynb` tạo đủ các bảng CSV và biểu đồ PNG trong `results/baseline_results/` cho 4 Kịch bản Scenario A, B, C, D.
+
+### Manual Review
+- Đánh giá chỉ số Macro F1 & Micro F1 giữa các phương pháp Augmentation trên từng Scenario.
+- Kiểm tra số lượng nhãn bị F1 = 0.0 ở tầng Tail (<30 mẫu).

@@ -48,28 +48,31 @@ def clean_cti_text_preliminary(text):
     return t
 
 
-def merge_raw_datasets(raw_dir='dataset/raw', output_file='dataset/processed/01_merged_cti_dataset.csv'):
+def merge_raw_datasets(raw_dir='dataset/raw', output_file=None, target_dataset='joint'):
     """
-    Loads, cleans, and deduplicates raw CTI datasets:
-    - dataset.csv
-    - single_label.json
-    - multi_label.json
+    Loads, cleans, and deduplicates raw CTI datasets based on target_dataset:
+    - 'cti_to_mitre': dataset.csv
+    - 'tram': single_label.json + multi_label.json
+    - 'joint': all 3 raw datasets combined
     Saves and returns merged DataFrame with Cleaned_Text and Labels columns.
     """
     raw_path = Path(raw_dir)
-    output_path = Path(output_file)
+    if output_file is None:
+        output_path = Path('dataset/processed') / target_dataset / 'raw_merged.csv'
+    else:
+        output_path = Path(output_file)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    dataset_csv = raw_path / 'dataset.csv'
-    single_json = raw_path / 'single_label.json'
-    multi_json = raw_path / 'multi_label.json'
+    dataset_csv = raw_path / 'dataset.csv' if (raw_path / 'dataset.csv').exists() else next(raw_path.rglob('dataset.csv'), None)
+    single_json = raw_path / 'single_label.json' if (raw_path / 'single_label.json').exists() else next(raw_path.rglob('single_label.json'), None)
+    multi_json = raw_path / 'multi_label.json' if (raw_path / 'multi_label.json').exists() else next(raw_path.rglob('multi_label.json'), None)
 
     text_to_labels = {}
     order = []
 
-    # 1. Process dataset.csv
-    if dataset_csv.exists():
-        print(f"[INFO] Parsing {dataset_csv}...")
+    # 1. Process dataset.csv (CTI-to-MITRE)
+    if target_dataset in ['cti_to_mitre', 'joint', 'all'] and dataset_csv and dataset_csv.exists():
+        print(f"[INFO] Parsing CTI-to-MITRE dataset ({dataset_csv})...")
         df_ds = pd.read_csv(dataset_csv)
         ds_count = 0
         for _, row in df_ds.iterrows():
@@ -91,9 +94,9 @@ def merge_raw_datasets(raw_dir='dataset/raw', output_file='dataset/processed/01_
                 text_to_labels[cleaned_t].add(parent_l)
         print(f"   [RESULT] Processed {ds_count:,} valid entries from dataset.csv")
 
-    # 2. Process single_label.json
-    if single_json.exists():
-        print(f"[INFO] Parsing {single_json}...")
+    # 2. Process single_label.json (TRAM)
+    if target_dataset in ['tram', 'joint', 'all'] and single_json and single_json.exists():
+        print(f"[INFO] Parsing TRAM single_label ({single_json})...")
         with open(single_json, 'r', encoding='utf-8') as f:
             single_data = json.load(f)
         s_count = 0
@@ -116,9 +119,9 @@ def merge_raw_datasets(raw_dir='dataset/raw', output_file='dataset/processed/01_
                 text_to_labels[cleaned_t].add(parent_l)
         print(f"   [RESULT] Processed {s_count:,} valid entries from single_label.json")
 
-    # 3. Process multi_label.json
-    if multi_json.exists():
-        print(f"[INFO] Parsing {multi_json}...")
+    # 3. Process multi_label.json (TRAM)
+    if target_dataset in ['tram', 'joint', 'all'] and multi_json and multi_json.exists():
+        print(f"[INFO] Parsing TRAM multi_label ({multi_json})...")
         with open(multi_json, 'r', encoding='utf-8') as f:
             multi_data = json.load(f)
         m_count = 0
@@ -150,14 +153,19 @@ def merge_raw_datasets(raw_dir='dataset/raw', output_file='dataset/processed/01_
 
     df_merged = pd.DataFrame(final_rows)
     df_merged.to_csv(output_path, index=False, encoding='utf-8')
-    print(f"[SUCCESS] Exported merged dataset to: {output_path} ({len(df_merged):,} unique samples)")
+    
+    unique_labels = set([lbl for sublist in df_merged['Labels'].apply(lambda x: str(x).split(',')) for lbl in sublist])
+    print(f"[SUCCESS] Exported merged dataset ({target_dataset.upper()}) to: {output_path}")
+    print(f"   - Unique samples: {len(df_merged):,}")
+    print(f"   - Unique active target labels: {len(unique_labels)}")
     return df_merged
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="CTI ATT&CK Raw Dataset Merging & Deduplication Script")
     parser.add_argument('--raw_dir', type=str, default='dataset/raw', help='Path to raw datasets directory')
-    parser.add_argument('--output_file', type=str, default='dataset/processed/01_merged_cti_dataset.csv', help='Path to merged CSV output file')
+    parser.add_argument('--target_dataset', type=str, default='joint', choices=['cti_to_mitre', 'tram', 'joint'], help='Target dataset to build')
+    parser.add_argument('--output_file', type=str, default=None, help='Custom path to merged CSV output file')
 
     args = parser.parse_args()
-    merge_raw_datasets(raw_dir=args.raw_dir, output_file=args.output_file)
+    merge_raw_datasets(raw_dir=args.raw_dir, output_file=args.output_file, target_dataset=args.target_dataset)
