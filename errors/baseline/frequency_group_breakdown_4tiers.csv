@@ -1,5 +1,0 @@
-﻿Frequency Tier,Label Count,Zero F1 Labels,Zero F1 Ratio (%),Mean Precision (%),Mean Recall (%),Mean F1-Score (%)
-Head (>500),6,0,0.0,81.22,85.72,83.21
-Major (100-499),41,0,0.0,76.48,76.58,76.13
-Medium (30-99),46,0,0.0,68.55,63.65,63.94
-Tail (<30),95,9,9.47,63.63,64.94,60.32
