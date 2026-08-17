@@ -1,0 +1,1632 @@
+{
+  "Head (>500)": [
+    {
+      "Label": "T1059",
+      "Train_Count": 558,
+      "F1_Score": 0.8,
+      "Precision": 0.7613,
+      "Recall": 0.8429
+    }
+  ],
+  "Major (100-499)": [
+    {
+      "Label": "T1003",
+      "Train_Count": 122,
+      "F1_Score": 0.625,
+      "Precision": 0.8824,
+      "Recall": 0.4839
+    },
+    {
+      "Label": "T1016",
+      "Train_Count": 155,
+      "F1_Score": 0.7532,
+      "Precision": 0.7632,
+      "Recall": 0.7436
+    },
+    {
+      "Label": "T1021",
+      "Train_Count": 120,
+      "F1_Score": 0.5455,
+      "Precision": 0.6,
+      "Recall": 0.5
+    },
+    {
+      "Label": "T1027",
+      "Train_Count": 398,
+      "F1_Score": 0.7716,
+      "Precision": 0.7755,
+      "Recall": 0.7677
+    },
+    {
+      "Label": "T1033",
+      "Train_Count": 124,
+      "F1_Score": 0.7778,
+      "Precision": 0.913,
+      "Recall": 0.6774
+    },
+    {
+      "Label": "T1036",
+      "Train_Count": 219,
+      "F1_Score": 0.7429,
+      "Precision": 0.78,
+      "Recall": 0.7091
+    },
+    {
+      "Label": "T1053",
+      "Train_Count": 138,
+      "F1_Score": 0.8406,
+      "Precision": 0.8529,
+      "Recall": 0.8286
+    },
+    {
+      "Label": "T1055",
+      "Train_Count": 194,
+      "F1_Score": 0.9149,
+      "Precision": 0.9556,
+      "Recall": 0.8776
+    },
+    {
+      "Label": "T1056",
+      "Train_Count": 130,
+      "F1_Score": 0.8276,
+      "Precision": 0.96,
+      "Recall": 0.7273
+    },
+    {
+      "Label": "T1057",
+      "Train_Count": 168,
+      "F1_Score": 0.8462,
+      "Precision": 0.9167,
+      "Recall": 0.7857
+    },
+    {
+      "Label": "T1070",
+      "Train_Count": 275,
+      "F1_Score": 0.7907,
+      "Precision": 0.85,
+      "Recall": 0.7391
+    },
+    {
+      "Label": "T1071",
+      "Train_Count": 291,
+      "F1_Score": 0.9079,
+      "Precision": 0.8734,
+      "Recall": 0.9452
+    },
+    {
+      "Label": "T1082",
+      "Train_Count": 234,
+      "F1_Score": 0.8772,
+      "Precision": 0.9091,
+      "Recall": 0.8475
+    },
+    {
+      "Label": "T1083",
+      "Train_Count": 205,
+      "F1_Score": 0.6186,
+      "Precision": 0.6522,
+      "Recall": 0.5882
+    },
+    {
+      "Label": "T1090",
+      "Train_Count": 100,
+      "F1_Score": 0.7907,
+      "Precision": 0.9444,
+      "Recall": 0.68
+    },
+    {
+      "Label": "T1105",
+      "Train_Count": 272,
+      "F1_Score": 0.8369,
+      "Precision": 0.8082,
+      "Recall": 0.8676
+    },
+    {
+      "Label": "T1140",
+      "Train_Count": 156,
+      "F1_Score": 0.8267,
+      "Precision": 0.8611,
+      "Recall": 0.7949
+    },
+    {
+      "Label": "T1204",
+      "Train_Count": 150,
+      "F1_Score": 0.7945,
+      "Precision": 0.8056,
+      "Recall": 0.7838
+    },
+    {
+      "Label": "T1218",
+      "Train_Count": 190,
+      "F1_Score": 0.8315,
+      "Precision": 0.881,
+      "Recall": 0.7872
+    },
+    {
+      "Label": "T1543",
+      "Train_Count": 141,
+      "F1_Score": 0.6176,
+      "Precision": 0.6364,
+      "Recall": 0.6
+    },
+    {
+      "Label": "T1546",
+      "Train_Count": 139,
+      "F1_Score": 0.7037,
+      "Precision": 1.0,
+      "Recall": 0.5429
+    },
+    {
+      "Label": "T1547",
+      "Train_Count": 294,
+      "F1_Score": 0.7973,
+      "Precision": 0.7973,
+      "Recall": 0.7973
+    },
+    {
+      "Label": "T1553",
+      "Train_Count": 112,
+      "F1_Score": 0.7407,
+      "Precision": 0.7692,
+      "Recall": 0.7143
+    },
+    {
+      "Label": "T1555",
+      "Train_Count": 113,
+      "F1_Score": 0.8462,
+      "Precision": 0.9167,
+      "Recall": 0.7857
+    },
+    {
+      "Label": "T1560",
+      "Train_Count": 112,
+      "F1_Score": 0.64,
+      "Precision": 0.7273,
+      "Recall": 0.5714
+    },
+    {
+      "Label": "T1562",
+      "Train_Count": 140,
+      "F1_Score": 0.5294,
+      "Precision": 0.5455,
+      "Recall": 0.5143
+    },
+    {
+      "Label": "T1564",
+      "Train_Count": 136,
+      "F1_Score": 0.7742,
+      "Precision": 0.8571,
+      "Recall": 0.7059
+    },
+    {
+      "Label": "T1566",
+      "Train_Count": 154,
+      "F1_Score": 0.8354,
+      "Precision": 0.825,
+      "Recall": 0.8462
+    },
+    {
+      "Label": "T1573",
+      "Train_Count": 155,
+      "F1_Score": 0.7857,
+      "Precision": 0.7333,
+      "Recall": 0.8462
+    },
+    {
+      "Label": "T1574",
+      "Train_Count": 147,
+      "F1_Score": 0.7647,
+      "Precision": 0.8387,
+      "Recall": 0.7027
+    }
+  ],
+  "Medium (30-99)": [
+    {
+      "Label": "T1001",
+      "Train_Count": 46,
+      "F1_Score": 0.2857,
+      "Precision": 1.0,
+      "Recall": 0.1667
+    },
+    {
+      "Label": "T1005",
+      "Train_Count": 89,
+      "F1_Score": 0.5714,
+      "Precision": 0.6,
+      "Recall": 0.5455
+    },
+    {
+      "Label": "T1007",
+      "Train_Count": 40,
+      "F1_Score": 0.8696,
+      "Precision": 0.7692,
+      "Recall": 1.0
+    },
+    {
+      "Label": "T1008",
+      "Train_Count": 35,
+      "F1_Score": 0.6667,
+      "Precision": 0.8333,
+      "Recall": 0.5556
+    },
+    {
+      "Label": "T1012",
+      "Train_Count": 68,
+      "F1_Score": 0.5,
+      "Precision": 0.4737,
+      "Recall": 0.5294
+    },
+    {
+      "Label": "T1018",
+      "Train_Count": 46,
+      "F1_Score": 0.375,
+      "Precision": 0.75,
+      "Recall": 0.25
+    },
+    {
+      "Label": "T1037",
+      "Train_Count": 37,
+      "F1_Score": 0.875,
+      "Precision": 1.0,
+      "Recall": 0.7778
+    },
+    {
+      "Label": "T1041",
+      "Train_Count": 73,
+      "F1_Score": 0.6471,
+      "Precision": 0.6875,
+      "Recall": 0.6111
+    },
+    {
+      "Label": "T1046",
+      "Train_Count": 36,
+      "F1_Score": 0.625,
+      "Precision": 0.7143,
+      "Recall": 0.5556
+    },
+    {
+      "Label": "T1047",
+      "Train_Count": 67,
+      "F1_Score": 0.8947,
+      "Precision": 0.8095,
+      "Recall": 1.0
+    },
+    {
+      "Label": "T1048",
+      "Train_Count": 42,
+      "F1_Score": 0.5882,
+      "Precision": 0.8333,
+      "Recall": 0.4545
+    },
+    {
+      "Label": "T1049",
+      "Train_Count": 58,
+      "F1_Score": 0.6087,
+      "Precision": 0.7778,
+      "Recall": 0.5
+    },
+    {
+      "Label": "T1068",
+      "Train_Count": 30,
+      "F1_Score": 0.3077,
+      "Precision": 0.3333,
+      "Recall": 0.2857
+    },
+    {
+      "Label": "T1069",
+      "Train_Count": 52,
+      "F1_Score": 0.7143,
+      "Precision": 0.6667,
+      "Recall": 0.7692
+    },
+    {
+      "Label": "T1074",
+      "Train_Count": 78,
+      "F1_Score": 0.5946,
+      "Precision": 0.6471,
+      "Recall": 0.55
+    },
+    {
+      "Label": "T1078",
+      "Train_Count": 72,
+      "F1_Score": 0.6,
+      "Precision": 0.75,
+      "Recall": 0.5
+    },
+    {
+      "Label": "T1087",
+      "Train_Count": 77,
+      "F1_Score": 0.3784,
+      "Precision": 0.3889,
+      "Recall": 0.3684
+    },
+    {
+      "Label": "T1095",
+      "Train_Count": 43,
+      "F1_Score": 0.8421,
+      "Precision": 1.0,
+      "Recall": 0.7273
+    },
+    {
+      "Label": "T1098",
+      "Train_Count": 38,
+      "F1_Score": 0.4615,
+      "Precision": 1.0,
+      "Recall": 0.3
+    },
+    {
+      "Label": "T1102",
+      "Train_Count": 81,
+      "F1_Score": 0.5455,
+      "Precision": 0.6923,
+      "Recall": 0.45
+    },
+    {
+      "Label": "T1106",
+      "Train_Count": 93,
+      "F1_Score": 0.7143,
+      "Precision": 0.7895,
+      "Recall": 0.6522
+    },
+    {
+      "Label": "T1110",
+      "Train_Count": 56,
+      "F1_Score": 0.7143,
+      "Precision": 0.7143,
+      "Recall": 0.7143
+    },
+    {
+      "Label": "T1112",
+      "Train_Count": 91,
+      "F1_Score": 0.5581,
+      "Precision": 0.6,
+      "Recall": 0.5217
+    },
+    {
+      "Label": "T1113",
+      "Train_Count": 98,
+      "F1_Score": 0.9565,
+      "Precision": 1.0,
+      "Recall": 0.9167
+    },
+    {
+      "Label": "T1114",
+      "Train_Count": 41,
+      "F1_Score": 0.2667,
+      "Precision": 0.4,
+      "Recall": 0.2
+    },
+    {
+      "Label": "T1119",
+      "Train_Count": 38,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1120",
+      "Train_Count": 35,
+      "F1_Score": 0.4286,
+      "Precision": 0.6,
+      "Recall": 0.3333
+    },
+    {
+      "Label": "T1124",
+      "Train_Count": 51,
+      "F1_Score": 0.9167,
+      "Precision": 1.0,
+      "Recall": 0.8462
+    },
+    {
+      "Label": "T1132",
+      "Train_Count": 75,
+      "F1_Score": 0.7,
+      "Precision": 0.6667,
+      "Recall": 0.7368
+    },
+    {
+      "Label": "T1133",
+      "Train_Count": 30,
+      "F1_Score": 0.3636,
+      "Precision": 0.6667,
+      "Recall": 0.25
+    },
+    {
+      "Label": "T1134",
+      "Train_Count": 59,
+      "F1_Score": 0.8889,
+      "Precision": 1.0,
+      "Recall": 0.8
+    },
+    {
+      "Label": "T1135",
+      "Train_Count": 35,
+      "F1_Score": 0.5882,
+      "Precision": 0.625,
+      "Recall": 0.5556
+    },
+    {
+      "Label": "T1136",
+      "Train_Count": 31,
+      "F1_Score": 0.8571,
+      "Precision": 1.0,
+      "Recall": 0.75
+    },
+    {
+      "Label": "T1137",
+      "Train_Count": 43,
+      "F1_Score": 0.7368,
+      "Precision": 0.875,
+      "Recall": 0.6364
+    },
+    {
+      "Label": "T1189",
+      "Train_Count": 44,
+      "F1_Score": 0.4444,
+      "Precision": 0.5714,
+      "Recall": 0.3636
+    },
+    {
+      "Label": "T1203",
+      "Train_Count": 50,
+      "F1_Score": 0.5455,
+      "Precision": 0.6,
+      "Recall": 0.5
+    },
+    {
+      "Label": "T1222",
+      "Train_Count": 30,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1486",
+      "Train_Count": 42,
+      "F1_Score": 0.375,
+      "Precision": 0.6,
+      "Recall": 0.2727
+    },
+    {
+      "Label": "T1497",
+      "Train_Count": 96,
+      "F1_Score": 0.5909,
+      "Precision": 0.65,
+      "Recall": 0.5417
+    },
+    {
+      "Label": "T1499",
+      "Train_Count": 39,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1505",
+      "Train_Count": 55,
+      "F1_Score": 0.6667,
+      "Precision": 1.0,
+      "Recall": 0.5
+    },
+    {
+      "Label": "T1518",
+      "Train_Count": 98,
+      "F1_Score": 0.6512,
+      "Precision": 0.7368,
+      "Recall": 0.5833
+    },
+    {
+      "Label": "T1542",
+      "Train_Count": 33,
+      "F1_Score": 0.5455,
+      "Precision": 1.0,
+      "Recall": 0.375
+    },
+    {
+      "Label": "T1548",
+      "Train_Count": 71,
+      "F1_Score": 0.7097,
+      "Precision": 0.8462,
+      "Recall": 0.6111
+    },
+    {
+      "Label": "T1550",
+      "Train_Count": 50,
+      "F1_Score": 0.5833,
+      "Precision": 0.6364,
+      "Recall": 0.5385
+    },
+    {
+      "Label": "T1552",
+      "Train_Count": 66,
+      "F1_Score": 0.3478,
+      "Precision": 0.6667,
+      "Recall": 0.2353
+    },
+    {
+      "Label": "T1556",
+      "Train_Count": 34,
+      "F1_Score": 0.6154,
+      "Precision": 0.8,
+      "Recall": 0.5
+    },
+    {
+      "Label": "T1558",
+      "Train_Count": 42,
+      "F1_Score": 0.7619,
+      "Precision": 0.8,
+      "Recall": 0.7273
+    },
+    {
+      "Label": "T1559",
+      "Train_Count": 38,
+      "F1_Score": 0.6667,
+      "Precision": 1.0,
+      "Recall": 0.5
+    },
+    {
+      "Label": "T1568",
+      "Train_Count": 44,
+      "F1_Score": 0.8421,
+      "Precision": 1.0,
+      "Recall": 0.7273
+    },
+    {
+      "Label": "T1569",
+      "Train_Count": 48,
+      "F1_Score": 0.4444,
+      "Precision": 0.6667,
+      "Recall": 0.3333
+    },
+    {
+      "Label": "T1583",
+      "Train_Count": 59,
+      "F1_Score": 0.5,
+      "Precision": 0.6667,
+      "Recall": 0.4
+    },
+    {
+      "Label": "T1584",
+      "Train_Count": 35,
+      "F1_Score": 0.5,
+      "Precision": 0.5714,
+      "Recall": 0.4444
+    },
+    {
+      "Label": "T1587",
+      "Train_Count": 38,
+      "F1_Score": 0.5714,
+      "Precision": 0.5455,
+      "Recall": 0.6
+    },
+    {
+      "Label": "T1588",
+      "Train_Count": 85,
+      "F1_Score": 0.7568,
+      "Precision": 0.875,
+      "Recall": 0.6667
+    },
+    {
+      "Label": "T1608",
+      "Train_Count": 47,
+      "F1_Score": 0.6316,
+      "Precision": 0.8571,
+      "Recall": 0.5
+    }
+  ],
+  "Tail (<30)": [
+    {
+      "Label": "T1006",
+      "Train_Count": 4,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1010",
+      "Train_Count": 22,
+      "F1_Score": 0.75,
+      "Precision": 1.0,
+      "Recall": 0.6
+    },
+    {
+      "Label": "T1011",
+      "Train_Count": 6,
+      "F1_Score": 0.6667,
+      "Precision": 1.0,
+      "Recall": 0.5
+    },
+    {
+      "Label": "T1014",
+      "Train_Count": 22,
+      "F1_Score": 0.75,
+      "Precision": 1.0,
+      "Recall": 0.6
+    },
+    {
+      "Label": "T1020",
+      "Train_Count": 21,
+      "F1_Score": 0.5,
+      "Precision": 0.6667,
+      "Recall": 0.4
+    },
+    {
+      "Label": "T1025",
+      "Train_Count": 21,
+      "F1_Score": 0.2222,
+      "Precision": 0.25,
+      "Recall": 0.2
+    },
+    {
+      "Label": "T1029",
+      "Train_Count": 14,
+      "F1_Score": 0.3333,
+      "Precision": 0.5,
+      "Recall": 0.25
+    },
+    {
+      "Label": "T1030",
+      "Train_Count": 10,
+      "F1_Score": 0.5,
+      "Precision": 1.0,
+      "Recall": 0.3333
+    },
+    {
+      "Label": "T1039",
+      "Train_Count": 11,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1040",
+      "Train_Count": 14,
+      "F1_Score": 0.4,
+      "Precision": 1.0,
+      "Recall": 0.25
+    },
+    {
+      "Label": "T1052",
+      "Train_Count": 12,
+      "F1_Score": 0.8,
+      "Precision": 1.0,
+      "Recall": 0.6667
+    },
+    {
+      "Label": "T1072",
+      "Train_Count": 8,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1080",
+      "Train_Count": 18,
+      "F1_Score": 0.4,
+      "Precision": 1.0,
+      "Recall": 0.25
+    },
+    {
+      "Label": "T1091",
+      "Train_Count": 20,
+      "F1_Score": 0.5714,
+      "Precision": 1.0,
+      "Recall": 0.4
+    },
+    {
+      "Label": "T1092",
+      "Train_Count": 5,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1104",
+      "Train_Count": 14,
+      "F1_Score": 0.5,
+      "Precision": 1.0,
+      "Recall": 0.3333
+    },
+    {
+      "Label": "T1111",
+      "Train_Count": 10,
+      "F1_Score": 0.5,
+      "Precision": 1.0,
+      "Recall": 0.3333
+    },
+    {
+      "Label": "T1115",
+      "Train_Count": 25,
+      "F1_Score": 0.9231,
+      "Precision": 0.8571,
+      "Recall": 1.0
+    },
+    {
+      "Label": "T1123",
+      "Train_Count": 22,
+      "F1_Score": 0.5714,
+      "Precision": 1.0,
+      "Recall": 0.4
+    },
+    {
+      "Label": "T1125",
+      "Train_Count": 22,
+      "F1_Score": 0.6667,
+      "Precision": 0.75,
+      "Recall": 0.6
+    },
+    {
+      "Label": "T1127",
+      "Train_Count": 10,
+      "F1_Score": 0.8,
+      "Precision": 1.0,
+      "Recall": 0.6667
+    },
+    {
+      "Label": "T1129",
+      "Train_Count": 18,
+      "F1_Score": 0.4,
+      "Precision": 1.0,
+      "Recall": 0.25
+    },
+    {
+      "Label": "T1176",
+      "Train_Count": 13,
+      "F1_Score": 0.6667,
+      "Precision": 0.6667,
+      "Recall": 0.6667
+    },
+    {
+      "Label": "T1185",
+      "Train_Count": 17,
+      "F1_Score": 0.4,
+      "Precision": 1.0,
+      "Recall": 0.25
+    },
+    {
+      "Label": "T1187",
+      "Train_Count": 14,
+      "F1_Score": 0.6667,
+      "Precision": 1.0,
+      "Recall": 0.5
+    },
+    {
+      "Label": "T1190",
+      "Train_Count": 22,
+      "F1_Score": 0.4,
+      "Precision": 0.5,
+      "Recall": 0.3333
+    },
+    {
+      "Label": "T1195",
+      "Train_Count": 22,
+      "F1_Score": 0.7273,
+      "Precision": 0.8,
+      "Recall": 0.6667
+    },
+    {
+      "Label": "T1197",
+      "Train_Count": 17,
+      "F1_Score": 0.75,
+      "Precision": 0.75,
+      "Recall": 0.75
+    },
+    {
+      "Label": "T1199",
+      "Train_Count": 9,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1200",
+      "Train_Count": 3,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1201",
+      "Train_Count": 8,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1202",
+      "Train_Count": 4,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1205",
+      "Train_Count": 23,
+      "F1_Score": 0.5,
+      "Precision": 1.0,
+      "Recall": 0.3333
+    },
+    {
+      "Label": "T1207",
+      "Train_Count": 6,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1210",
+      "Train_Count": 18,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1211",
+      "Train_Count": 5,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1212",
+      "Train_Count": 4,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1213",
+      "Train_Count": 19,
+      "F1_Score": 0.75,
+      "Precision": 1.0,
+      "Recall": 0.6
+    },
+    {
+      "Label": "T1216",
+      "Train_Count": 11,
+      "F1_Score": 0.6667,
+      "Precision": 0.6667,
+      "Recall": 0.6667
+    },
+    {
+      "Label": "T1217",
+      "Train_Count": 9,
+      "F1_Score": 0.6667,
+      "Precision": 1.0,
+      "Recall": 0.5
+    },
+    {
+      "Label": "T1219",
+      "Train_Count": 20,
+      "F1_Score": 0.2857,
+      "Precision": 0.5,
+      "Recall": 0.2
+    },
+    {
+      "Label": "T1220",
+      "Train_Count": 12,
+      "F1_Score": 0.5,
+      "Precision": 1.0,
+      "Recall": 0.3333
+    },
+    {
+      "Label": "T1221",
+      "Train_Count": 15,
+      "F1_Score": 0.4,
+      "Precision": 1.0,
+      "Recall": 0.25
+    },
+    {
+      "Label": "T1480",
+      "Train_Count": 27,
+      "F1_Score": 0.4444,
+      "Precision": 1.0,
+      "Recall": 0.2857
+    },
+    {
+      "Label": "T1482",
+      "Train_Count": 12,
+      "F1_Score": 0.8,
+      "Precision": 1.0,
+      "Recall": 0.6667
+    },
+    {
+      "Label": "T1484",
+      "Train_Count": 24,
+      "F1_Score": 0.6667,
+      "Precision": 1.0,
+      "Recall": 0.5
+    },
+    {
+      "Label": "T1485",
+      "Train_Count": 19,
+      "F1_Score": 0.2222,
+      "Precision": 0.25,
+      "Recall": 0.2
+    },
+    {
+      "Label": "T1489",
+      "Train_Count": 25,
+      "F1_Score": 0.4,
+      "Precision": 0.5,
+      "Recall": 0.3333
+    },
+    {
+      "Label": "T1490",
+      "Train_Count": 22,
+      "F1_Score": 0.8,
+      "Precision": 1.0,
+      "Recall": 0.6667
+    },
+    {
+      "Label": "T1491",
+      "Train_Count": 10,
+      "F1_Score": 0.5,
+      "Precision": 1.0,
+      "Recall": 0.3333
+    },
+    {
+      "Label": "T1495",
+      "Train_Count": 4,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1496",
+      "Train_Count": 14,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1498",
+      "Train_Count": 26,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1525",
+      "Train_Count": 5,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1526",
+      "Train_Count": 5,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1528",
+      "Train_Count": 10,
+      "F1_Score": 0.5,
+      "Precision": 0.5,
+      "Recall": 0.5
+    },
+    {
+      "Label": "T1529",
+      "Train_Count": 13,
+      "F1_Score": 0.8,
+      "Precision": 1.0,
+      "Recall": 0.6667
+    },
+    {
+      "Label": "T1530",
+      "Train_Count": 7,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1531",
+      "Train_Count": 4,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1534",
+      "Train_Count": 8,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1535",
+      "Train_Count": 6,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1537",
+      "Train_Count": 3,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1538",
+      "Train_Count": 3,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1539",
+      "Train_Count": 14,
+      "F1_Score": 0.4,
+      "Precision": 1.0,
+      "Recall": 0.25
+    },
+    {
+      "Label": "T1554",
+      "Train_Count": 13,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1557",
+      "Train_Count": 27,
+      "F1_Score": 0.4444,
+      "Precision": 1.0,
+      "Recall": 0.2857
+    },
+    {
+      "Label": "T1561",
+      "Train_Count": 25,
+      "F1_Score": 0.6154,
+      "Precision": 0.5714,
+      "Recall": 0.6667
+    },
+    {
+      "Label": "T1563",
+      "Train_Count": 18,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1565",
+      "Train_Count": 18,
+      "F1_Score": 0.5714,
+      "Precision": 1.0,
+      "Recall": 0.4
+    },
+    {
+      "Label": "T1567",
+      "Train_Count": 22,
+      "F1_Score": 0.6667,
+      "Precision": 1.0,
+      "Recall": 0.5
+    },
+    {
+      "Label": "T1570",
+      "Train_Count": 16,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1571",
+      "Train_Count": 26,
+      "F1_Score": 0.4,
+      "Precision": 0.375,
+      "Recall": 0.4286
+    },
+    {
+      "Label": "T1572",
+      "Train_Count": 16,
+      "F1_Score": 0.2857,
+      "Precision": 0.3333,
+      "Recall": 0.25
+    },
+    {
+      "Label": "T1578",
+      "Train_Count": 15,
+      "F1_Score": 0.6667,
+      "Precision": 1.0,
+      "Recall": 0.5
+    },
+    {
+      "Label": "T1580",
+      "Train_Count": 8,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1585",
+      "Train_Count": 29,
+      "F1_Score": 0.5,
+      "Precision": 0.6,
+      "Recall": 0.4286
+    },
+    {
+      "Label": "T1586",
+      "Train_Count": 22,
+      "F1_Score": 0.6667,
+      "Precision": 0.6667,
+      "Recall": 0.6667
+    },
+    {
+      "Label": "T1589",
+      "Train_Count": 26,
+      "F1_Score": 0.4444,
+      "Precision": 0.6667,
+      "Recall": 0.3333
+    },
+    {
+      "Label": "T1590",
+      "Train_Count": 28,
+      "F1_Score": 0.5556,
+      "Precision": 0.4545,
+      "Recall": 0.7143
+    },
+    {
+      "Label": "T1591",
+      "Train_Count": 20,
+      "F1_Score": 0.6667,
+      "Precision": 0.5714,
+      "Recall": 0.8
+    },
+    {
+      "Label": "T1592",
+      "Train_Count": 20,
+      "F1_Score": 0.8,
+      "Precision": 0.8,
+      "Recall": 0.8
+    },
+    {
+      "Label": "T1593",
+      "Train_Count": 13,
+      "F1_Score": 0.4,
+      "Precision": 0.5,
+      "Recall": 0.3333
+    },
+    {
+      "Label": "T1594",
+      "Train_Count": 5,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1595",
+      "Train_Count": 15,
+      "F1_Score": 0.4,
+      "Precision": 1.0,
+      "Recall": 0.25
+    },
+    {
+      "Label": "T1596",
+      "Train_Count": 27,
+      "F1_Score": 0.5,
+      "Precision": 0.6,
+      "Recall": 0.4286
+    },
+    {
+      "Label": "T1597",
+      "Train_Count": 12,
+      "F1_Score": 0.2857,
+      "Precision": 0.25,
+      "Recall": 0.3333
+    },
+    {
+      "Label": "T1598",
+      "Train_Count": 26,
+      "F1_Score": 0.4,
+      "Precision": 0.375,
+      "Recall": 0.4286
+    },
+    {
+      "Label": "T1599",
+      "Train_Count": 15,
+      "F1_Score": 0.6667,
+      "Precision": 1.0,
+      "Recall": 0.5
+    },
+    {
+      "Label": "T1600",
+      "Train_Count": 13,
+      "F1_Score": 0.5,
+      "Precision": 1.0,
+      "Recall": 0.3333
+    },
+    {
+      "Label": "T1601",
+      "Train_Count": 27,
+      "F1_Score": 0.8333,
+      "Precision": 1.0,
+      "Recall": 0.7143
+    },
+    {
+      "Label": "T1602",
+      "Train_Count": 14,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1606",
+      "Train_Count": 21,
+      "F1_Score": 1.0,
+      "Precision": 1.0,
+      "Recall": 1.0
+    },
+    {
+      "Label": "T1609",
+      "Train_Count": 6,
+      "F1_Score": 0.6667,
+      "Precision": 1.0,
+      "Recall": 0.5
+    },
+    {
+      "Label": "T1610",
+      "Train_Count": 7,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1611",
+      "Train_Count": 9,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1612",
+      "Train_Count": 4,
+      "F1_Score": 1.0,
+      "Precision": 1.0,
+      "Recall": 1.0
+    },
+    {
+      "Label": "T1613",
+      "Train_Count": 6,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1614",
+      "Train_Count": 28,
+      "F1_Score": 0.3333,
+      "Precision": 0.4,
+      "Recall": 0.2857
+    },
+    {
+      "Label": "T1615",
+      "Train_Count": 6,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1619",
+      "Train_Count": 4,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    },
+    {
+      "Label": "T1620",
+      "Train_Count": 8,
+      "F1_Score": 0.0,
+      "Precision": 0.0,
+      "Recall": 0.0
+    }
+  ],
+  "zero_f1_labels": [
+    {
+      "Label": "T1006",
+      "Tier": "Tail (<30)",
+      "Train_Count": 4,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1039",
+      "Tier": "Tail (<30)",
+      "Train_Count": 11,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1072",
+      "Tier": "Tail (<30)",
+      "Train_Count": 8,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1092",
+      "Tier": "Tail (<30)",
+      "Train_Count": 5,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1119",
+      "Tier": "Medium (30-99)",
+      "Train_Count": 38,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1199",
+      "Tier": "Tail (<30)",
+      "Train_Count": 9,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1200",
+      "Tier": "Tail (<30)",
+      "Train_Count": 3,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1201",
+      "Tier": "Tail (<30)",
+      "Train_Count": 8,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1202",
+      "Tier": "Tail (<30)",
+      "Train_Count": 4,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1207",
+      "Tier": "Tail (<30)",
+      "Train_Count": 6,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1210",
+      "Tier": "Tail (<30)",
+      "Train_Count": 18,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1211",
+      "Tier": "Tail (<30)",
+      "Train_Count": 5,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1212",
+      "Tier": "Tail (<30)",
+      "Train_Count": 4,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1222",
+      "Tier": "Medium (30-99)",
+      "Train_Count": 30,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1495",
+      "Tier": "Tail (<30)",
+      "Train_Count": 4,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1496",
+      "Tier": "Tail (<30)",
+      "Train_Count": 14,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1498",
+      "Tier": "Tail (<30)",
+      "Train_Count": 26,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1499",
+      "Tier": "Medium (30-99)",
+      "Train_Count": 39,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1525",
+      "Tier": "Tail (<30)",
+      "Train_Count": 5,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1526",
+      "Tier": "Tail (<30)",
+      "Train_Count": 5,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1530",
+      "Tier": "Tail (<30)",
+      "Train_Count": 7,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1531",
+      "Tier": "Tail (<30)",
+      "Train_Count": 4,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1534",
+      "Tier": "Tail (<30)",
+      "Train_Count": 8,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1535",
+      "Tier": "Tail (<30)",
+      "Train_Count": 6,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1537",
+      "Tier": "Tail (<30)",
+      "Train_Count": 3,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1538",
+      "Tier": "Tail (<30)",
+      "Train_Count": 3,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1554",
+      "Tier": "Tail (<30)",
+      "Train_Count": 13,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1563",
+      "Tier": "Tail (<30)",
+      "Train_Count": 18,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1570",
+      "Tier": "Tail (<30)",
+      "Train_Count": 16,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1580",
+      "Tier": "Tail (<30)",
+      "Train_Count": 8,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1594",
+      "Tier": "Tail (<30)",
+      "Train_Count": 5,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1602",
+      "Tier": "Tail (<30)",
+      "Train_Count": 14,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1610",
+      "Tier": "Tail (<30)",
+      "Train_Count": 7,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1611",
+      "Tier": "Tail (<30)",
+      "Train_Count": 9,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1613",
+      "Tier": "Tail (<30)",
+      "Train_Count": 6,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1615",
+      "Tier": "Tail (<30)",
+      "Train_Count": 6,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1619",
+      "Tier": "Tail (<30)",
+      "Train_Count": 4,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    },
+    {
+      "Label": "T1620",
+      "Tier": "Tail (<30)",
+      "Train_Count": 8,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1_Score": 0.0
+    }
+  ]
+}

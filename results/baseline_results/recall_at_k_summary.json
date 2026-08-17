@@ -1,0 +1,26 @@
+{
+  "CTI-to-MITRE (Scenario A) - Logistic Regression": {
+    "Recall@1": 0.7195,
+    "Recall@3": 0.8776,
+    "Recall@5": 0.915,
+    "Recall@10": 0.9531
+  },
+  "CTI-to-MITRE (Scenario A) - Linear SVC": {
+    "Recall@1": 0.7276,
+    "Recall@3": 0.8803,
+    "Recall@5": 0.9146,
+    "Recall@10": 0.9454
+  },
+  "TRAM (Scenario B) - Logistic Regression": {
+    "Recall@1": 0.8293,
+    "Recall@3": 0.9556,
+    "Recall@5": 0.9751,
+    "Recall@10": 0.9893
+  },
+  "TRAM (Scenario B) - Linear SVC": {
+    "Recall@1": 0.8504,
+    "Recall@3": 0.9596,
+    "Recall@5": 0.971,
+    "Recall@10": 0.9818
+  }
+}

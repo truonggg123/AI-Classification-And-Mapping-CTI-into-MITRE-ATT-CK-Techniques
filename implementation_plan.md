@@ -89,15 +89,28 @@ Trên từng Kịch bản (Scenario A, B, C, D), thực hiện so sánh đối c
 
 ## 🧪 Hệ Thống Bảng & Biểu Đồ Thực Nghiệm (Required Outputs)
 
-### 📊 Danh Sách Bảng Kết Quả Chi Tiết Theo Kịch Bản (Tables)
-1. **Scenario A Output**: `results/baseline_results/scenario_A_cti_to_mitre.csv` / `.png` - Bảng & biểu đồ thực nghiệm In-Domain CTI-to-MITRE.
-2. **Scenario B Output**: `results/baseline_results/scenario_B_tram.csv` / `.png` - Bảng & biểu đồ thực nghiệm In-Domain TRAM.
-3. **Scenario C Output**: `results/baseline_results/scenario_C_cross_dataset.csv` / `.png` - Bảng & biểu đồ thực nghiệm Cross-Dataset Generalization.
-4. **Scenario D Output**: `results/baseline_results/scenario_D_joint_dataset.csv` / `.png` - Bảng & biểu đồ thực nghiệm Joint Dataset.
-5. **Master Summary Table**: `results/baseline_results/master_table_all_scenarios_comparison.csv` - Bảng tổng hợp toàn bộ 4 Scenario.
-6. **Table 4 (4-Tier Analysis)**: `results/baseline_results/4_tier_error_analysis.json` & `table5_per_label_metrics.csv` - Phân tích hiệu năng theo 4 tầng (Head $>500$, Major $100-499$, Medium $30-99$, Tail $<30$).
+Mọi kết quả thực nghiệm sẽ được xuất và quản lý động theo từng thư mục mô hình: `results/[model_name]_results/` 
+(Ví dụ: `results/baseline_results/`, `results/textcnn_results/`, `results/modernbert_results/`, `results/securebert_asl_results/`, `results/biencoder_results/`).
 
-### 📈 Biểu Đồ So Sánh Quỹ Đạo Học Theo Epoch (Epoch-wise Learning Trajectory Benchmark)
+### 🎯 Các Chỉ Số Đánh Giá Chuẩn Quốc Tế (Evaluation Metrics)
+Mỗi mô hình đều được đánh giá qua bộ 9 chỉ số chuẩn mực NCKH:
+1. **Macro F1** (Đánh giá mức độ công bằng trên cả nhãn hiếm)
+2. **Micro F1** (Đánh giá tổng thể số lượng mẫu)
+3. **Precision (Macro)**
+4. **Recall (Macro)**
+5. **Hamming Loss** (Độ hao hụt dự đoán đa nhãn)
+6. **Exact Match Accuracy** (Tỷ lệ khớp 100% tập nhãn)
+7. **Recall@1, Recall@3, Recall@5, Recall@10** (Tỷ lệ nhãn thực tế nằm trong Top-k kỹ thuật được mô hình xếp hạng cao nhất)
+
+### 📊 Danh Sách Bảng Kết Quả Chi Tiết Theo Kịch Bản (Tables)
+1. **Scenario A Output**: `results/[model_name]_results/scenario_A_cti_to_mitre.csv` / `.png` - Bảng & biểu đồ thực nghiệm In-Domain CTI-to-MITRE (Bao gồm Recall@1, Recall@3, Recall@5, Recall@10).
+2. **Scenario B Output**: `results/[model_name]_results/scenario_B_tram.csv` / `.png` - Bảng & biểu đồ thực nghiệm In-Domain TRAM (Bao gồm Recall@k).
+3. **Scenario C Output**: `results/[model_name]_results/scenario_C_cross_dataset.csv` / `.png` - Bảng & biểu đồ thực nghiệm Cross-Dataset Generalization.
+4. **Scenario D Output**: `results/[model_name]_results/scenario_D_joint_dataset.csv` / `.png` - Bảng & biểu đồ thực nghiệm Joint Dataset.
+5. **Master Summary Table**: `results/[model_name]_results/master_table_all_scenarios_comparison.csv` - Bảng tổng hợp toàn bộ 4 Scenario.
+6. **Table 4 (4-Tier Analysis)**: `results/[model_name]_results/4_tier_error_analysis.json` & `table5_per_label_metrics.csv` - Phân tích hiệu năng theo 4 tầng (Head $>500$, Major $100-499$, Medium $30-99$, Tail $<30$).
+
+### 📈 Biểu Đồ So Sánh Quỹ Đạo Học Theo Epoch & Ranking Metrics
 7. **Figure: Comparison of Macro F1 across Epochs for Deep Learning Models**:
    - **Tên file xuất:** `results/deeplearning_results/epoch_learning_trajectory_comparison.png`
    - **Cấu trúc biểu đồ:** Biểu đồ sóng đôi 2 Subplots song song:
@@ -111,6 +124,42 @@ Trên từng Kịch bản (Scenario A, B, C, D), thực hiện so sánh đối c
      - **Nét liền (Solid Line `-`):** Dữ liệu gốc (`No Augmentation`).
      - **Nét đứt (Dashed Line `--`):** Dữ liệu tăng cường (`Cyber EDA`).
    - **Ý nghĩa khoa học:** Đánh giá tốc độ hội tụ, khả năng chống over-fitting và sự bùng nổ chỉ số Macro F1 ở các Epoch muộn khi áp dụng Cyber EDA so với dữ liệu gốc.
+
+8. **Figure: Top-k Ranking Performance (Recall@k Benchmark with Cyber EDA)**:
+   - **Tên file xuất:** `results/[model_name]_results/recall_at_k_ranking.png`
+   - **Tiêu đề hình:** `Chart 8: Top-k Ranking Performance (Recall@k) Across Baseline Models & Datasets (Cyber EDA Augmentation)`
+   - **Cấu trúc biểu đồ:** Biểu đồ cột sóng đôi 2 subplots thể hiện tỷ lệ tìm thấy nhãn đúng tại các ngưỡng Top-k ($k \in \{1, 3, 5, 10\}$) cho cả 2 mô hình (Logistic Regression vs Linear SVC) trên 2 tập dataset (CTI-to-MITRE Scenario A và TRAM Scenario B) áp dụng tăng cường dữ liệu Cyber EDA.
+   - **Ý nghĩa khoa học:** Minh chứng khả năng xếp hạng ứng viên của mô hình, giúp chuyên gia SOC nhanh chóng định vị kỹ thuật MITRE ATT&CK đúng trong Top-k gợi ý.
+
+---
+
+## 🔍 Khung Phân Tích Lỗi Chuyên Sâu (Comprehensive Error Analysis Framework)
+
+Để tài liệu NCKH đạt chất lượng cao nhất, hệ thống thực nghiệm tích hợp khung phân tích lỗi toàn diện trên 3 khía cạnh tại `results/[model_name]_results/`:
+
+### 1. Phân Tích Hiệu Năng Theo 4 Tầng Tần Suất (4-Tier Frequency Breakdown)
+Chia 188 nhãn MITRE ATT&CK Active Parent Techniques thành 4 tầng dựa trên tần suất mẫu huấn luyện:
+- **Head Tier ($>500$ mẫu):** Các kỹ thuật xuất hiện phổ biến nhất (T1059, T1071,...).
+- **Major Tier ($100 - 499$ mẫu):** Các kỹ thuật tần suất cao.
+- **Medium Tier ($30 - 99$ mẫu):** Các kỹ thuật tần suất trung bình.
+- **Tail Tier ($<30$ mẫu - 101 nhãn hiếm):** Nhóm kỹ thuật hiếm bị mất cân bằng nặng nề nhất.
+- **Output:** `results/[model_name]_results/4_tier_error_analysis.json` & `table4_frequency_tier_breakdown.png`
+
+### 2. Phân Tích Cặp Nhãn Hay Nhầm Lẫn Nhất (Confused Label Matrix)
+- Trích xuất Top 10 cặp nhãn MITRE ATT&CK có tỷ lệ nhầm lẫn cao nhất (co-occurrence of False Positives & False Negatives).
+- Giúp phát hiện các kỹ thuật có mô tả ngữ nghĩa quá gần nhau (ví dụ: nhầm lẫn giữa T1059.001 PowerShell và T1059.003 Windows Command Shell, hoặc T1003 OS Credential Dumping và T1555 Credentials from Password Stores).
+- **Output:** `results/[model_name]_results/confused_label_pairs.csv` & `confused_label_pairs.png`
+
+### 3. Phân Tích Định Tính Theo 3 Dạng Lỗi (Categorical Case Studies)
+- **Zero-Hit / Under-Prediction (Mô hình bỏ sót):** Nhãn thực tế có trong Ground Truth nhưng mô hình không dự đoán được (Recall thấp ở nhãn Tail).
+- **Spurious / Over-Prediction (Mô hình gán thừa):** Mô hình gán nhãn không có trong Ground Truth do bắt nhầm từ khóa nhiễu (Precision thấp).
+- **Partial Match / Exact Match Failure:** Phân tích các văn bản CTI dự đoán đúng một phần tập nhãn nhưng không đạt được Exact Match Accuracy.
+- **Output:** `results/[model_name]_results/text_case_studies.json` (Trích xuất 9 mẫu định tính tiêu biểu cho bài báo).
+
+### 4. Danh Sách Các Nhãn Không Dự Đoán Được (Zero-F1 / Unpredicted Techniques Tracker)
+- Thống kê toàn bộ các kỹ thuật MITRE ATT&CK có chỉ số **F1-Score = 0.0** (mô hình không thể nhận diện thành công mẫu nào).
+- Thống kê số lượng nhãn bị F1 = 0.0 theo từng tầng tần suất (Head, Major, Medium, Tail) để theo dõi sự giảm thiểu nhãn chết khi áp dụng Cyber EDA và các mô hình Deep Learning.
+- **Output:** `results/[model_name]_results/zero_f1_unpredicted_labels.csv` & tích hợp trong `4_tier_error_analysis.json`
 
 ---
 
