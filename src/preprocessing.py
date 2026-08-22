@@ -204,21 +204,37 @@ def run_preprocessing_pipeline(input_file=None, processed_dir=None, results_dir=
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="CTI ATT&CK Preprocessing, Anonymization & Stratification Script")
-    parser.add_argument('--input_file', type=str, default=None, help='Path to merged input CSV file')
-    parser.add_argument('--target_dataset', type=str, default='joint', choices=['cti_to_mitre', 'tram', 'joint'], help='Target dataset to preprocess')
-    parser.add_argument('--processed_dir', type=str, default=None, help='Path to processed output directory')
+    parser.add_argument('--input_file', type=str, default=None, help='Path to merged input CSV file (ignored when --target_dataset=all)')
+    parser.add_argument('--target_dataset', type=str, default='all', choices=['cti_to_mitre', 'tram', 'joint', 'all'], help='Target dataset to preprocess. Use "all" to preprocess all 3 datasets at once.')
+    parser.add_argument('--processed_dir', type=str, default=None, help='Path to processed output directory (ignored when --target_dataset=all)')
     parser.add_argument('--results_dir', type=str, default='results', help='Path to results directory')
     parser.add_argument('--max_labels', type=int, default=3, help='Maximum label count threshold per sample')
     parser.add_argument('--test_size', type=float, default=0.20, help='Test set split ratio')
     parser.add_argument('--seed', type=int, default=42, help='Random seed for stratification')
     
     args = parser.parse_args()
-    run_preprocessing_pipeline(
-        input_file=args.input_file,
-        target_dataset=args.target_dataset,
-        processed_dir=args.processed_dir,
-        results_dir=args.results_dir,
-        max_labels=args.max_labels,
-        test_size=args.test_size,
-        random_state=args.seed
-    )
+    if args.target_dataset == 'all':
+        for ds in ['cti_to_mitre', 'tram', 'joint']:
+            print(f"\n{'='*60}")
+            print(f"[PREPROCESSING] target_dataset = {ds}")
+            print(f"{'='*60}")
+            run_preprocessing_pipeline(
+                input_file=None,
+                target_dataset=ds,
+                processed_dir=None,
+                results_dir=args.results_dir,
+                max_labels=args.max_labels,
+                test_size=args.test_size,
+                random_state=args.seed
+            )
+        print("\n[DONE] All 3 datasets preprocessed successfully.")
+    else:
+        run_preprocessing_pipeline(
+            input_file=args.input_file,
+            target_dataset=args.target_dataset,
+            processed_dir=args.processed_dir,
+            results_dir=args.results_dir,
+            max_labels=args.max_labels,
+            test_size=args.test_size,
+            random_state=args.seed
+        )

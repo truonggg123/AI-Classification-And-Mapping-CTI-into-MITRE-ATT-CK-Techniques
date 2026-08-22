@@ -164,8 +164,16 @@ def merge_raw_datasets(raw_dir='dataset/raw', output_file=None, target_dataset='
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="CTI ATT&CK Raw Dataset Merging & Deduplication Script")
     parser.add_argument('--raw_dir', type=str, default='dataset/raw', help='Path to raw datasets directory')
-    parser.add_argument('--target_dataset', type=str, default='joint', choices=['cti_to_mitre', 'tram', 'joint'], help='Target dataset to build')
-    parser.add_argument('--output_file', type=str, default=None, help='Custom path to merged CSV output file')
+    parser.add_argument('--target_dataset', type=str, default='all', choices=['cti_to_mitre', 'tram', 'joint', 'all'], help='Target dataset to build. Use "all" to build all 3 datasets at once.')
+    parser.add_argument('--output_file', type=str, default=None, help='Custom path to merged CSV output file (ignored when --target_dataset=all)')
 
     args = parser.parse_args()
-    merge_raw_datasets(raw_dir=args.raw_dir, output_file=args.output_file, target_dataset=args.target_dataset)
+    if args.target_dataset == 'all':
+        for ds in ['cti_to_mitre', 'tram', 'joint']:
+            print(f"\n{'='*60}")
+            print(f"[BUILDING] target_dataset = {ds}")
+            print(f"{'='*60}")
+            merge_raw_datasets(raw_dir=args.raw_dir, output_file=None, target_dataset=ds)
+        print("\n[DONE] All 3 datasets merged successfully.")
+    else:
+        merge_raw_datasets(raw_dir=args.raw_dir, output_file=args.output_file, target_dataset=args.target_dataset)
