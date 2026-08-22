@@ -1,16 +1,16 @@
 """
 CTI & MITRE ATT&CK Preprocessing, Anonymization & Stratification Module
-Loads 01_merged_cti_dataset.csv, filters out high multi-label outliers (<= 3 labels),
+Loads merged CTI datasets, filters out high multi-label outliers (<= 3 labels),
 anonymizes variable technical entities ([CVE], [IPV4], [URL], [FILE_PATH], [HASH]),
-tokenizes CTI text for TF-IDF baselines, binarizes 378 target labels, and performs
-an 80/20 multi-label stratified train/test split.
+tokenizes CTI text for TF-IDF baselines, binarizes dynamic target labels, and performs
+a 70/10/20 multi-label stratified train/val/test split.
 
 Usage (Module):
     from src.preprocessing import run_preprocessing_pipeline
-    run_preprocessing_pipeline(input_file='dataset/processed/01_merged_cti_dataset.csv', processed_dir='dataset/processed', results_dir='results')
+    run_preprocessing_pipeline(target_dataset='all')
 
 Usage (CLI):
-    python src/preprocessing.py --input_file dataset/processed/01_merged_cti_dataset.csv --processed_dir dataset/processed --results_dir results
+    python src/preprocessing.py --target_dataset all
 """
 
 import argparse
@@ -80,10 +80,10 @@ def tokenize_cti_text(text):
     return " ".join(tokens)
 
 
-def run_preprocessing_pipeline(input_file=None, processed_dir=None, results_dir='results', target_dataset='joint', max_labels=3, test_size=0.20, random_state=42):
+def run_preprocessing_pipeline(input_file=None, processed_dir=None, results_dir='results', target_dataset='joint', max_labels=3, train_size=0.70, val_size=0.10, test_size=0.20, random_state=42):
     """
     Loads merged CTI dataset, filters outliers (<= max_labels), anonymizes entities,
-    tokenizes text, binarizes targets, performs stratified split, and exports artifacts.
+    tokenizes text, binarizes targets, performs 70/10/20 stratified train/val/test split, and exports artifacts.
     """
     # Resolve input_file and processed_dir if not explicitly set
     if processed_dir is None:
@@ -152,22 +152,40 @@ def run_preprocessing_pipeline(input_file=None, processed_dir=None, results_dir=
         pickle.dump(mlb, f)
     print(f"[INFO] Saved MultiLabelBinarizer to: {binarizer_path} ({len(mlb.classes_)} classes)")
     
-    print("\n=== STEP 5: MULTI-LABEL STRATIFIED TRAIN/TEST SPLIT ===")
-    msss = MultilabelStratifiedShuffleSplit(n_splits=1, test_size=test_size, random_state=random_state)
-    train_indices, test_indices = next(msss.split(df_processed['Cleaned_Text'].values, Y))
+    print("\n=== STEP 5: MULTI-LABEL STRATIFIED TRAIN/VAL/TEST SPLIT (70/10/20) ===")
+    # Step 5a: Split off test set (20%)
+    msss_test = MultilabelStratifiedShuffleSplit(n_splits=1, test_size=test_size, random_state=random_state)
+    train_val_indices, test_indices = next(msss_test.split(df_processed['Cleaned_Text'].values, Y))
+    
+    # Step 5b: Split remaining 80% into Train (70%) and Val (10%)
+    val_ratio_of_train_val = val_size / (train_size + val_size)
+    msss_val = MultilabelStratifiedShuffleSplit(n_splits=1, test_size=val_ratio_of_train_val, random_state=random_state)
+    train_sub_indices, val_sub_indices = next(msss_val.split(
+        df_processed['Cleaned_Text'].iloc[train_val_indices].values,
+        Y[train_val_indices]
+    ))
+    
+    train_indices = train_val_indices[train_sub_indices]
+    val_indices = train_val_indices[val_sub_indices]
     
     df_train = df_processed.iloc[train_indices].reset_index(drop=True)
+    df_val = df_processed.iloc[val_indices].reset_index(drop=True)
     df_test = df_processed.iloc[test_indices].reset_index(drop=True)
     
     train_csv_path = processed_path / 'train.csv'
+    val_csv_path = processed_path / 'val.csv'
     test_csv_path = processed_path / 'test.csv'
+    
     df_train.to_csv(train_csv_path, index=False, encoding='utf-8')
+    df_val.to_csv(val_csv_path, index=False, encoding='utf-8')
     df_test.to_csv(test_csv_path, index=False, encoding='utf-8')
     
     train_label_coverage = (Y[train_indices].sum(axis=0) > 0).sum()
+    val_label_coverage = (Y[val_indices].sum(axis=0) > 0).sum()
     test_label_coverage = (Y[test_indices].sum(axis=0) > 0).sum()
     
     print(f"[INFO] Train samples: {len(df_train):,} ({len(df_train)/len(df_processed)*100:.2f}%) | Label coverage: {train_label_coverage}/{len(mlb.classes_)}")
+    print(f"[INFO] Val samples  : {len(df_val):,} ({len(df_val)/len(df_processed)*100:.2f}%) | Label coverage: {val_label_coverage}/{len(mlb.classes_)}")
     print(f"[INFO] Test samples : {len(df_test):,} ({len(df_test)/len(df_processed)*100:.2f}%) | Label coverage: {test_label_coverage}/{len(mlb.classes_)}")
     
     print("\n=== STEP 6: EXPORT PREPROCESSING REPORT ===")
@@ -178,18 +196,22 @@ def run_preprocessing_pipeline(input_file=None, processed_dir=None, results_dir=
         "outlier_filter_rule": f"Label_Count <= {max_labels}",
         "final_valid_samples": len(df_processed),
         "train_samples": len(df_train),
+        "val_samples": len(df_val),
         "test_samples": len(df_test),
         "train_ratio": round(len(df_train) / len(df_processed), 4),
+        "val_ratio": round(len(df_val) / len(df_processed), 4),
         "test_ratio": round(len(df_test) / len(df_processed), 4),
         "total_unique_target_labels": len(mlb.classes_),
         "train_label_coverage": int(train_label_coverage),
+        "val_label_coverage": int(val_label_coverage),
         "test_label_coverage": int(test_label_coverage),
         "random_seed": random_state,
-        "split_method": "MultilabelStratifiedShuffleSplit",
+        "split_method": "MultilabelStratifiedShuffleSplit (70/10/20)",
         "anonymized_entities": ["CVE", "IPV4", "URL", "FILE_PATH", "HASH"],
         "output_files": {
             "processed_dataset": str(processed_output_path),
             "train_set": str(train_csv_path),
+            "val_set": str(val_csv_path),
             "test_set": str(test_csv_path),
             "multilabel_binarizer": str(binarizer_path)
         }
@@ -209,7 +231,9 @@ if __name__ == '__main__':
     parser.add_argument('--processed_dir', type=str, default=None, help='Path to processed output directory (ignored when --target_dataset=all)')
     parser.add_argument('--results_dir', type=str, default='results', help='Path to results directory')
     parser.add_argument('--max_labels', type=int, default=3, help='Maximum label count threshold per sample')
-    parser.add_argument('--test_size', type=float, default=0.20, help='Test set split ratio')
+    parser.add_argument('--train_size', type=float, default=0.70, help='Train set split ratio (default: 0.70)')
+    parser.add_argument('--val_size', type=float, default=0.10, help='Validation set split ratio (default: 0.10)')
+    parser.add_argument('--test_size', type=float, default=0.20, help='Test set split ratio (default: 0.20)')
     parser.add_argument('--seed', type=int, default=42, help='Random seed for stratification')
     
     args = parser.parse_args()
@@ -224,6 +248,8 @@ if __name__ == '__main__':
                 processed_dir=None,
                 results_dir=args.results_dir,
                 max_labels=args.max_labels,
+                train_size=args.train_size,
+                val_size=args.val_size,
                 test_size=args.test_size,
                 random_state=args.seed
             )
@@ -235,6 +261,8 @@ if __name__ == '__main__':
             processed_dir=args.processed_dir,
             results_dir=args.results_dir,
             max_labels=args.max_labels,
+            train_size=args.train_size,
+            val_size=args.val_size,
             test_size=args.test_size,
             random_state=args.seed
         )

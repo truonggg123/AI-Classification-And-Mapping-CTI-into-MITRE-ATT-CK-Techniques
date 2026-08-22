@@ -361,13 +361,13 @@ def add_word(new_words, synonym_dict):
         for offset, w in enumerate(syn_words):
             new_words.insert(random_idx + offset, w)
 
-def cyber_eda(text, protected_set, synonym_dict, alpha_sr=0.1, alpha_ri=0.03, alpha_rs=0.01, p_rd=0.02):
+def cyber_eda(text, protected_set, synonym_dict, alpha_sr=0.10, alpha_ri=0.05, alpha_rs=0.15, p_rd=0.05):
     """
-    Optimized Cyber EDA pipeline:
+    Optimized Cyber EDA pipeline (Optimal Config_4 - High Random Swap):
     - alpha_sr: Synonym Replacement ratio (0.10)
-    - alpha_ri: Random Insertion ratio (0.03)
-    - alpha_rs: Random Swap ratio (0.01) - kept minimal to preserve command syntax/verb order
-    - p_rd: Random Deletion probability (0.02) - kept minimal to prevent loss of critical context
+    - alpha_ri: Random Insertion ratio (0.05)
+    - alpha_rs: Random Swap ratio (0.15)
+    - p_rd: Random Deletion probability (0.05)
     """
     words = text.split()
     num_words = len(words)
@@ -385,7 +385,7 @@ def cyber_eda(text, protected_set, synonym_dict, alpha_sr=0.1, alpha_ri=0.03, al
 
     return " ".join(words)
 
-def single_eda(text, op, protected_set, synonym_dict, alpha_sr=0.1, alpha_ri=0.03, alpha_rs=0.01, p_rd=0.02):
+def single_eda(text, op, protected_set, synonym_dict, alpha_sr=0.10, alpha_ri=0.05, alpha_rs=0.15, p_rd=0.05):
     """
     Applies a single atomic EDA operation (SR, RI, RS, or RD).
     """
@@ -448,7 +448,7 @@ def unmask_special_tokens(text):
 
 # --- Main Pipeline ---
 
-def run_augmentation(mode='eda', train_file='dataset/processed/cti_to_mitre/train.csv', df_train=None, target_count=None, save_csv=False, cache_dir='dataset/processed', output_file=None):
+def run_augmentation(mode='eda', train_file='dataset/processed/cti_to_mitre/train.csv', df_train=None, target_count=None, save_csv=False, cache_dir='dataset/processed', output_file=None, alpha_sr=0.10, alpha_ri=0.05, alpha_rs=0.15, p_rd=0.05):
     valid_modes = ['sr', 'synonym', 'ri', 'insert', 'rs', 'swap', 'rd', 'delete', 'eda', 'cyber_eda']
     if mode not in valid_modes:
         raise ValueError(f"Invalid mode '{mode}'. Choose from {valid_modes}")
@@ -474,34 +474,27 @@ def run_augmentation(mode='eda', train_file='dataset/processed/cti_to_mitre/trai
         cache_path_dir = Path(cache_dir)
         train_path = cache_path_dir / "train.csv"
 
-    # Auto-resolve target_count based on empirical dataset MEAN if not explicitly specified
-    if target_count is None or target_count <= 0:
-        file_str = str(train_path).lower()
-        if 'cti_to_mitre' in file_str:
-            target_count = 55   # Empirical MEAN for CTI-to-MITRE train set
-        elif 'tram' in file_str:
-            target_count = 151  # Empirical MEAN for TRAM train set
-        elif 'joint' in file_str:
-            target_count = 95   # Empirical MEAN for JOINT train set
-        else:
-            target_count = 120  # Fallback default
-        print(f"[INFO] Auto-resolved target_count to dataset MEAN: {target_count} samples/class")
-    else:
-        print(f"[INFO] Using specified target_count: {target_count} samples/class")
-
-    if 'is_augmented' not in df_train.columns:
-        df_train['is_augmented'] = 0
-    print(f"[INFO] Loaded training dataset with {len(df_train):,} samples.")
-    
-    # Build Cyber Knowledge Base from STIX JSON
-    protected_set, synonym_dict = build_cyber_knowledge_base(cache_dir=cache_path_dir)
-    
     # Parse labels
     df_train['Label_List'] = df_train['Labels'].apply(lambda x: str(x).split(','))
     
     # Track current dynamic label frequencies for Multi-Label Aware Greedy Sampling
     dynamic_label_counts = Counter([lbl for sublist in df_train['Label_List'] for lbl in sublist])
     print(f"[INFO] Total labels found: {len(dynamic_label_counts)}")
+
+    # Auto-resolve target_count based on empirical dataset MEAN if not explicitly specified
+    if target_count is None or target_count <= 0:
+        target_count = int(round(np.mean(list(dynamic_label_counts.values()))))
+        print(f"[INFO] Auto-resolved target_count to empirical dataset MEAN: {target_count} samples/class")
+    else:
+        print(f"[INFO] Using specified target_count: {target_count} samples/class")
+
+    if 'is_augmented' not in df_train.columns:
+        df_train['is_augmented'] = 0
+    print(f"[INFO] Loaded training dataset with {len(df_train):,} samples.")
+    print(f"[INFO] Cyber EDA Ratios: SR={alpha_sr}, RI={alpha_ri}, RS={alpha_rs}, RD={p_rd}")
+    
+    # Build Cyber Knowledge Base from STIX JSON
+    protected_set, synonym_dict = build_cyber_knowledge_base(cache_dir=cache_path_dir)
     
     minority_classes = {lbl: dynamic_label_counts[lbl] for lbl in dynamic_label_counts if dynamic_label_counts[lbl] < target_count}
     print(f"[INFO] Initial classes requiring augmentation (< {target_count} samples): {len(minority_classes)}")
@@ -540,9 +533,9 @@ def run_augmentation(mode='eda', train_file='dataset/processed/cti_to_mitre/trai
         original_text = original_row['Cleaned_Text']
         
         if mode in ['eda', 'cyber_eda']:
-            augmented_text = cyber_eda(original_text, protected_set, synonym_dict)
+            augmented_text = cyber_eda(original_text, protected_set, synonym_dict, alpha_sr=alpha_sr, alpha_ri=alpha_ri, alpha_rs=alpha_rs, p_rd=p_rd)
         elif mode in ['sr', 'synonym', 'ri', 'insert', 'rs', 'swap', 'rd', 'delete']:
-            augmented_text = single_eda(original_text, mode, protected_set, synonym_dict)
+            augmented_text = single_eda(original_text, mode, protected_set, synonym_dict, alpha_sr=alpha_sr, alpha_ri=alpha_ri, alpha_rs=alpha_rs, p_rd=p_rd)
         else:
             raise ValueError(f"Unknown mode: {mode}")
             
@@ -601,7 +594,20 @@ if __name__ == '__main__':
     parser.add_argument('--mode', type=str, default='eda', choices=['sr', 'synonym', 'ri', 'insert', 'rs', 'swap', 'rd', 'delete', 'eda', 'cyber_eda', 'bt'], help='Augmentation mode')
     parser.add_argument('--train_file', type=str, default='dataset/processed/cti_to_mitre/train.csv', help='Path to input train.csv')
     parser.add_argument('--target_count', type=int, default=0, help='Minimum sample count target per class (0 = Auto-resolve to dataset MEAN)')
+    parser.add_argument('--alpha_sr', type=float, default=0.10, help='Synonym Replacement ratio (default: 0.10)')
+    parser.add_argument('--alpha_ri', type=float, default=0.05, help='Random Insertion ratio (default: 0.05)')
+    parser.add_argument('--alpha_rs', type=float, default=0.15, help='Random Swap ratio (default: 0.15 - Config_4 Optimal)')
+    parser.add_argument('--p_rd', type=float, default=0.05, help='Random Deletion probability (default: 0.05)')
     parser.add_argument('--save_csv', action='store_true', help='Save augmented dataset to CSV file')
     args = parser.parse_args()
     
-    run_augmentation(mode=args.mode, train_file=args.train_file, target_count=args.target_count, save_csv=args.save_csv)
+    run_augmentation(
+        mode=args.mode,
+        train_file=args.train_file,
+        target_count=args.target_count,
+        alpha_sr=args.alpha_sr,
+        alpha_ri=args.alpha_ri,
+        alpha_rs=args.alpha_rs,
+        p_rd=args.p_rd,
+        save_csv=args.save_csv
+    )
