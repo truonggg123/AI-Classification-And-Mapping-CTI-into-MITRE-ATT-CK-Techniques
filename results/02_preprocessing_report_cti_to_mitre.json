@@ -4,15 +4,18 @@
   "removed_outliers_count": 0,
   "outlier_filter_rule": "Label_Count <= 3",
   "final_valid_samples": 12944,
-  "train_samples": 10345,
+  "train_samples": 9042,
+  "val_samples": 1303,
   "test_samples": 2599,
-  "train_ratio": 0.7992,
+  "train_ratio": 0.6985,
+  "val_ratio": 0.1007,
   "test_ratio": 0.2008,
   "total_unique_target_labels": 188,
   "train_label_coverage": 188,
+  "val_label_coverage": 185,
   "test_label_coverage": 188,
   "random_seed": 42,
-  "split_method": "MultilabelStratifiedShuffleSplit",
+  "split_method": "MultilabelStratifiedShuffleSplit (70/10/20)",
   "anonymized_entities": [
     "CVE",
     "IPV4",
@@ -23,6 +26,7 @@
   "output_files": {
     "processed_dataset": "dataset\\processed\\cti_to_mitre\\02_processed_cti_dataset.csv",
     "train_set": "dataset\\processed\\cti_to_mitre\\train.csv",
+    "val_set": "dataset\\processed\\cti_to_mitre\\val.csv",
     "test_set": "dataset\\processed\\cti_to_mitre\\test.csv",
     "multilabel_binarizer": "dataset\\processed\\cti_to_mitre\\multilabel_binarizer.pkl"
   }

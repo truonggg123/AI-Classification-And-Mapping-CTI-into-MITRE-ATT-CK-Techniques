@@ -361,13 +361,13 @@ def add_word(new_words, synonym_dict):
         for offset, w in enumerate(syn_words):
             new_words.insert(random_idx + offset, w)
 
-def cyber_eda(text, protected_set, synonym_dict, alpha_sr=0.10, alpha_ri=0.05, alpha_rs=0.15, p_rd=0.05):
+def cyber_eda(text, protected_set, synonym_dict, alpha_sr=0.12, alpha_ri=0.12, alpha_rs=0.12, p_rd=0.12):
     """
-    Optimized Cyber EDA pipeline (Optimal Config_4 - High Random Swap):
-    - alpha_sr: Synonym Replacement ratio (0.10)
-    - alpha_ri: Random Insertion ratio (0.05)
-    - alpha_rs: Random Swap ratio (0.15)
-    - p_rd: Random Deletion probability (0.05)
+    Domain-Aware Cyber EDA pipeline (Optimal Uniform Alpha = 0.12):
+    - alpha_sr: Synonym Replacement ratio (0.12)
+    - alpha_ri: Random Insertion ratio (0.12)
+    - alpha_rs: Random Swap ratio (0.12)
+    - p_rd: Random Deletion probability (0.12)
     """
     words = text.split()
     num_words = len(words)
@@ -385,9 +385,9 @@ def cyber_eda(text, protected_set, synonym_dict, alpha_sr=0.10, alpha_ri=0.05, a
 
     return " ".join(words)
 
-def single_eda(text, op, protected_set, synonym_dict, alpha_sr=0.10, alpha_ri=0.05, alpha_rs=0.15, p_rd=0.05):
+def single_eda(text, op, protected_set, synonym_dict, alpha_sr=0.12, alpha_ri=0.12, alpha_rs=0.12, p_rd=0.12):
     """
-    Applies a single atomic EDA operation (SR, RI, RS, or RD).
+    Applies a single atomic EDA operation (SR, RI, RS, or RD) with optimal alpha=0.12.
     """
     words = text.split()
     num_words = len(words)
@@ -448,10 +448,14 @@ def unmask_special_tokens(text):
 
 # --- Main Pipeline ---
 
-def run_augmentation(mode='eda', train_file='dataset/processed/cti_to_mitre/train.csv', df_train=None, target_count=None, save_csv=False, cache_dir='dataset/processed', output_file=None, alpha_sr=0.10, alpha_ri=0.05, alpha_rs=0.15, p_rd=0.05):
+def run_augmentation(mode='eda', train_file='dataset/processed/cti_to_mitre/train.csv', df_train=None, target_count=None, save_csv=False, cache_dir='dataset/processed', output_file=None, alpha_sr=0.12, alpha_ri=0.12, alpha_rs=0.12, p_rd=0.12, seed=42):
     valid_modes = ['sr', 'synonym', 'ri', 'insert', 'rs', 'swap', 'rd', 'delete', 'eda', 'cyber_eda']
     if mode not in valid_modes:
         raise ValueError(f"Invalid mode '{mode}'. Choose from {valid_modes}")
+
+    # Fix Bug #2: Set random seed for full reproducibility
+    random.seed(seed)
+    np.random.seed(seed)
 
     if df_train is None:
         train_path = Path(train_file)
@@ -591,13 +595,15 @@ def run_augmentation(mode='eda', train_file='dataset/processed/cti_to_mitre/trai
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="CTI Data Augmentation Pipeline")
-    parser.add_argument('--mode', type=str, default='eda', choices=['sr', 'synonym', 'ri', 'insert', 'rs', 'swap', 'rd', 'delete', 'eda', 'cyber_eda', 'bt'], help='Augmentation mode')
+    # Note: Back Translation (bt) mode is not supported in this module.
+    parser.add_argument('--mode', type=str, default='eda', choices=['sr', 'synonym', 'ri', 'insert', 'rs', 'swap', 'rd', 'delete', 'eda', 'cyber_eda'], help='Augmentation mode')
     parser.add_argument('--train_file', type=str, default='dataset/processed/cti_to_mitre/train.csv', help='Path to input train.csv')
     parser.add_argument('--target_count', type=int, default=0, help='Minimum sample count target per class (0 = Auto-resolve to dataset MEAN)')
-    parser.add_argument('--alpha_sr', type=float, default=0.10, help='Synonym Replacement ratio (default: 0.10)')
-    parser.add_argument('--alpha_ri', type=float, default=0.05, help='Random Insertion ratio (default: 0.05)')
-    parser.add_argument('--alpha_rs', type=float, default=0.15, help='Random Swap ratio (default: 0.15 - Config_4 Optimal)')
-    parser.add_argument('--p_rd', type=float, default=0.05, help='Random Deletion probability (default: 0.05)')
+    parser.add_argument('--alpha_sr', type=float, default=0.12, help='Synonym Replacement ratio (default: 0.12 - Optimal)')
+    parser.add_argument('--alpha_ri', type=float, default=0.12, help='Random Insertion ratio (default: 0.12 - Optimal)')
+    parser.add_argument('--alpha_rs', type=float, default=0.12, help='Random Swap ratio (default: 0.12 - Optimal)')
+    parser.add_argument('--p_rd', type=float, default=0.12, help='Random Deletion probability (default: 0.12 - Optimal)')
+    parser.add_argument('--seed', type=int, default=42, help='Random seed for reproducibility (default: 42)')
     parser.add_argument('--save_csv', action='store_true', help='Save augmented dataset to CSV file')
     args = parser.parse_args()
     
@@ -609,5 +615,6 @@ if __name__ == '__main__':
         alpha_ri=args.alpha_ri,
         alpha_rs=args.alpha_rs,
         p_rd=args.p_rd,
+        seed=args.seed,
         save_csv=args.save_csv
     )
