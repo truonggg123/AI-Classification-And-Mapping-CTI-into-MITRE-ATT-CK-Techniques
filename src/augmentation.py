@@ -97,23 +97,26 @@ def build_cyber_knowledge_base(cache_dir="dataset/processed", force_download=Fal
     cache_path = Path(cache_dir) / "enterprise-attack.json"
     url = "https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/enterprise-attack/enterprise-attack.json"
 
-    # Check known cache locations
-    if not cache_path.exists() and not force_download:
-        potential_files = [
-            Path(cache_dir) / "enterprise-attack.json",
-            Path('dataset/processed/enterprise-attack.json'),
-            Path('dataset/enterprise-attack.json'),
-            Path('enterprise-attack.json'),
-            Path('/kaggle/input/enterprise-attack.json')
-        ]
+    # Priority search locations for STIX JSON
+    potential_files = [
+        Path('dataset/processed/enterprise-attack.json'),
+        Path(cache_dir) / "enterprise-attack.json",
+        Path('dataset/enterprise-attack.json'),
+        Path('enterprise-attack.json'),
+        Path('/kaggle/input/enterprise-attack.json')
+    ]
+    
+    cache_path = None
+    if not force_download:
         for p in potential_files:
-            if p.exists():
+            if p.exists() and p.stat().st_size > 10000:
                 cache_path = p
                 print(f"[INFO] Found existing enterprise-attack.json at: {cache_path}")
                 break
 
-    if not cache_path.exists() or force_download:
-        target_dir = Path(cache_dir)
+    if cache_path is None or force_download:
+        # Default destination is dataset/processed/enterprise-attack.json
+        target_dir = Path('dataset/processed')
         is_writable = False
         try:
             target_dir.mkdir(parents=True, exist_ok=True)
@@ -127,22 +130,35 @@ def build_cyber_knowledge_base(cache_dir="dataset/processed", force_download=Fal
         if not is_writable:
             target_dir = Path("/kaggle/working") if Path("/kaggle/working").exists() else Path(".")
             target_dir.mkdir(parents=True, exist_ok=True)
-            cache_path = target_dir / "enterprise-attack.json"
-            print(f"[INFO] Primary cache directory is read-only. Redirecting cache download to writable path: {cache_path}")
 
+        cache_path = target_dir / "enterprise-attack.json"
+        temp_download_path = target_dir / "enterprise-attack.json.tmp"
+        
         print(f"[INFO] Downloading MITRE STIX JSON from GitHub ({url})...")
         try:
             req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req, timeout=30) as response:
+            with urllib.request.urlopen(req, timeout=60) as response:
                 cache_path.parent.mkdir(parents=True, exist_ok=True)
-                with open(cache_path, 'wb') as f:
+                with open(temp_download_path, 'wb') as f:
                     f.write(response.read())
-            print(f"[INFO] Download and cache saved to {cache_path}")
-        except Exception as e:
-            if cache_path.exists():
-                print(f"[WARNING] Failed to download new data ({e}). Using existing cache at {cache_path}.")
+            # Atomic rename once download is 100% complete
+            if temp_download_path.exists() and temp_download_path.stat().st_size > 10000:
+                if cache_path.exists():
+                    cache_path.unlink()
+                temp_download_path.rename(cache_path)
+                print(f"[INFO] Download and cache saved to {cache_path}")
             else:
-                raise RuntimeError(f"Cannot download STIX JSON and no local cache found: {e}")
+                raise RuntimeError("Downloaded file is incomplete or corrupted.")
+        except Exception as e:
+            if temp_download_path.exists():
+                temp_download_path.unlink()
+            # If an existing file exists and has data, use it
+            valid_existing = [p for p in potential_files if p.exists() and p.stat().st_size > 10000]
+            if valid_existing:
+                cache_path = valid_existing[0]
+                print(f"[WARNING] Download failed ({e}). Falling back to existing cache at {cache_path}.")
+            else:
+                raise RuntimeError(f"Cannot download STIX JSON and no valid local cache found: {e}")
     else:
         print(f"[INFO] Using cached STIX JSON at: {cache_path}")
 
@@ -500,6 +516,20 @@ def run_augmentation(mode='eda', train_file='dataset/processed/cti_to_mitre/trai
     # Build Cyber Knowledge Base from STIX JSON
     protected_set, synonym_dict = build_cyber_knowledge_base(cache_dir=cache_path_dir)
     
+    # Load validation and test text sets to strictly prevent data leakage during augmentation
+    forbidden_eval_texts = set()
+    for eval_file in ['val.csv', 'test.csv']:
+        eval_path = train_path.parent / eval_file
+        if eval_path.exists():
+            df_eval = pd.read_csv(eval_path)
+            if 'Cleaned_Text' in df_eval.columns:
+                for t in df_eval['Cleaned_Text'].dropna():
+                    norm_t = re.sub(r'\s+', ' ', str(t).lower()).strip()
+                    if norm_t:
+                        forbidden_eval_texts.add(norm_t)
+    if forbidden_eval_texts:
+        print(f"[INFO] Loaded {len(forbidden_eval_texts):,} validation/test texts into strict anti-leakage filter.")
+    
     minority_classes = {lbl: dynamic_label_counts[lbl] for lbl in dynamic_label_counts if dynamic_label_counts[lbl] < target_count}
     print(f"[INFO] Initial classes requiring augmentation (< {target_count} samples): {len(minority_classes)}")
     
@@ -536,15 +566,23 @@ def run_augmentation(mode='eda', train_file='dataset/processed/cti_to_mitre/trai
         original_row = df_train.iloc[idx]
         original_text = original_row['Cleaned_Text']
         
-        if mode in ['eda', 'cyber_eda']:
-            augmented_text = cyber_eda(original_text, protected_set, synonym_dict, alpha_sr=alpha_sr, alpha_ri=alpha_ri, alpha_rs=alpha_rs, p_rd=p_rd)
-        elif mode in ['sr', 'synonym', 'ri', 'insert', 'rs', 'swap', 'rd', 'delete']:
-            augmented_text = single_eda(original_text, mode, protected_set, synonym_dict, alpha_sr=alpha_sr, alpha_ri=alpha_ri, alpha_rs=alpha_rs, p_rd=p_rd)
-        else:
-            raise ValueError(f"Unknown mode: {mode}")
+        # Apply transformation with anti-leakage retry loop
+        augmented_text = original_text
+        for attempt in range(5):
+            if mode in ['eda', 'cyber_eda']:
+                candidate_text = cyber_eda(original_text, protected_set, synonym_dict, alpha_sr=alpha_sr, alpha_ri=alpha_ri, alpha_rs=alpha_rs, p_rd=p_rd)
+            elif mode in ['sr', 'synonym', 'ri', 'insert', 'rs', 'swap', 'rd', 'delete']:
+                candidate_text = single_eda(original_text, mode, protected_set, synonym_dict, alpha_sr=alpha_sr, alpha_ri=alpha_ri, alpha_rs=alpha_rs, p_rd=p_rd)
+            else:
+                raise ValueError(f"Unknown mode: {mode}")
+                
+            candidate_text = re.sub(r'\s+', ' ', candidate_text).strip()
+            norm_candidate = candidate_text.lower()
             
-        # Standardize whitespace
-        augmented_text = re.sub(r'\s+', ' ', augmented_text).strip()
+            # Ensure not empty and does not collide with validation or test sets
+            if candidate_text and norm_candidate not in forbidden_eval_texts:
+                augmented_text = candidate_text
+                break
         
         # Re-tokenize
         tokens = re.findall(r"[a-z0-9_\[\]]+(?:[./:-][a-z0-9_\[\]]+)*", augmented_text.lower())

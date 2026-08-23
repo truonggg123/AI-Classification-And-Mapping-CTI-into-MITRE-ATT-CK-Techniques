@@ -132,14 +132,39 @@ def run_preprocessing_pipeline(input_file=None, processed_dir=None, results_dir=
     print(f"[INFO] Removed {removed_outlier_count} outlier samples with > {max_labels} labels.")
     print(f"[INFO] Retained {len(df_filtered):,} valid samples.")
     
-    print("\n=== STEP 3: ENTITY ANONYMIZATION & DOMAIN TOKENIZATION ===")
+    print("\n=== STEP 3: ENTITY ANONYMIZATION, DEDUPLICATION & DOMAIN TOKENIZATION ===")
     df_filtered['Cleaned_Text'] = df_filtered['Cleaned_Text'].apply(anonymize_cti_text)
-    df_filtered['Tokenized_Text'] = df_filtered['Cleaned_Text'].apply(tokenize_cti_text)
-    df_processed = df_filtered[df_filtered['Cleaned_Text'].str.len() > 0].reset_index(drop=True)
+    df_filtered = df_filtered[df_filtered['Cleaned_Text'].str.len() > 0].copy()
+    
+    # Strict normalized deduplication to prevent Train/Val/Test data leakage
+    def norm_key(s):
+        return re.sub(r'\s+', ' ', str(s).lower()).strip()
+    
+    df_filtered['norm_key'] = df_filtered['Cleaned_Text'].apply(norm_key)
+    
+    def union_labels_func(series):
+        all_lbls = set()
+        for x in series:
+            for l in str(x).split(','):
+                l_clean = l.strip()
+                if l_clean and l_clean != 'nan':
+                    all_lbls.add(l_clean)
+        return ','.join(sorted(all_lbls))
+    
+    df_dedup = df_filtered.groupby('norm_key', as_index=False).agg({
+        'Cleaned_Text': 'first',
+        'Labels': union_labels_func
+    })
+    df_dedup['Tokenized_Text'] = df_dedup['Cleaned_Text'].apply(tokenize_cti_text)
+    df_dedup['Label_Count'] = df_dedup['Labels'].apply(lambda x: len([l for l in str(x).split(',') if l.strip()]))
+    df_processed = df_dedup[df_dedup['Label_Count'] <= max_labels].copy().reset_index(drop=True)
     df_processed['source_sample_id'] = df_processed.index + 1
     
+    if len(df_filtered) != len(df_processed):
+        print(f"[INFO] Merged {len(df_filtered) - len(df_processed)} duplicate instances into unified unique text samples.")
+    
     processed_output_path = processed_path / '02_processed_cti_dataset.csv'
-    df_processed.to_csv(processed_output_path, index=False, encoding='utf-8')
+    df_processed[['Cleaned_Text', 'Labels', 'Label_Count', 'Tokenized_Text', 'source_sample_id']].to_csv(processed_output_path, index=False, encoding='utf-8')
     print(f"[INFO] Saved preprocessed dataset to: {processed_output_path}")
     
     print("\n=== STEP 4: LABEL BINARIZATION (DYNAMIC TARGET SPACE) ===")
