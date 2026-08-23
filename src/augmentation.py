@@ -576,8 +576,9 @@ def run_augmentation(mode='eda', train_file='dataset/processed/cti_to_mitre/trai
     
     # Save output if requested
     if save_csv:
+        output_filename = "train_augmented_eda.csv" if mode in ['eda', 'cyber_eda'] else f"train_augmented_{mode}.csv"
         try:
-            output_path = train_path.parent / f"train_augmented_{mode}.csv"
+            output_path = train_path.parent / output_filename
             df_new_train.to_csv(output_path, index=False, encoding='utf-8')
             print(f"[SUCCESS] Saved augmented dataset to: {output_path}")
         except Exception as e:
@@ -585,7 +586,7 @@ def run_augmentation(mode='eda', train_file='dataset/processed/cti_to_mitre/trai
             if Path('/kaggle/working').exists():
                 out_dir = Path(f"/kaggle/working/dataset/processed/{train_path.parent.name}")
                 out_dir.mkdir(parents=True, exist_ok=True)
-                output_path = out_dir / f"train_augmented_{mode}.csv"
+                output_path = out_dir / output_filename
                 df_new_train.to_csv(output_path, index=False, encoding='utf-8')
                 print(f"[SUCCESS] Saved augmented dataset (Kaggle working) to: {output_path}")
             else:
@@ -593,28 +594,107 @@ def run_augmentation(mode='eda', train_file='dataset/processed/cti_to_mitre/trai
     
     return df_new_train
 
+
+def run_all_benchmarks(
+    target_dataset='all',
+    mode='eda',
+    target_count=0,
+    alpha_sr=0.12,
+    alpha_ri=0.12,
+    alpha_rs=0.12,
+    p_rd=0.12,
+    seed=42,
+    save_csv=True
+):
+    """
+    Executes Cyber EDA augmentation across one or all 3 standard benchmarks ('cti_to_mitre', 'tram', 'joint').
+    """
+    if target_dataset == 'all':
+        benchmarks = ['cti_to_mitre', 'tram', 'joint']
+    elif target_dataset in ['joint', 'cti_to_mitre', 'tram']:
+        benchmarks = [target_dataset]
+    else:
+        raise ValueError(f"Unknown target_dataset: '{target_dataset}'. Choose from ['all', 'joint', 'cti_to_mitre', 'tram']")
+
+    print("=" * 80)
+    print(f"[START] RUNNING CYBER EDA AUGMENTATION PIPELINE")
+    print(f"Target Benchmarks: {benchmarks}")
+    print(f"Mode: {mode.upper()} | Ratios: SR={alpha_sr}, RI={alpha_ri}, RS={alpha_rs}, RD={p_rd} | Seed={seed}")
+    print("=" * 80)
+
+    for subset in benchmarks:
+        train_path = Path(f"dataset/processed/{subset}/train.csv")
+        if not train_path.exists():
+            print(f"[WARNING] Cannot find {train_path}. Skipping '{subset}' benchmark.")
+            continue
+        print(f"\n>>> Processing Benchmark: [{subset.upper()}] <<<")
+        run_augmentation(
+            mode=mode,
+            train_file=str(train_path),
+            target_count=target_count,
+            alpha_sr=alpha_sr,
+            alpha_ri=alpha_ri,
+            alpha_rs=alpha_rs,
+            p_rd=p_rd,
+            seed=seed,
+            save_csv=save_csv
+        )
+
+    print("\n" + "=" * 80)
+    print("[SUCCESS] COMPLETED CYBER EDA FOR ALL SPECIFIED BENCHMARKS!")
+    print("=" * 80)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="CTI Data Augmentation Pipeline")
-    # Note: Back Translation (bt) mode is not supported in this module.
-    parser.add_argument('--mode', type=str, default='eda', choices=['sr', 'synonym', 'ri', 'insert', 'rs', 'swap', 'rd', 'delete', 'eda', 'cyber_eda'], help='Augmentation mode')
-    parser.add_argument('--train_file', type=str, default='dataset/processed/cti_to_mitre/train.csv', help='Path to input train.csv')
+    parser.add_argument(
+        '--target_dataset', 
+        type=str, 
+        default='all', 
+        choices=['all', 'joint', 'cti_to_mitre', 'tram'], 
+        help='Target dataset benchmark to run (default: all -> runs all 3 datasets)'
+    )
+    parser.add_argument(
+        '--mode', 
+        type=str, 
+        default='eda', 
+        choices=['sr', 'synonym', 'ri', 'insert', 'rs', 'swap', 'rd', 'delete', 'eda', 'cyber_eda'], 
+        help='Augmentation mode (default: eda)'
+    )
+    parser.add_argument('--train_file', type=str, default=None, help='Explicit path to input train.csv (overrides --target_dataset if provided)')
     parser.add_argument('--target_count', type=int, default=0, help='Minimum sample count target per class (0 = Auto-resolve to dataset MEAN)')
-    parser.add_argument('--alpha_sr', type=float, default=0.12, help='Synonym Replacement ratio (default: 0.12 - Optimal)')
-    parser.add_argument('--alpha_ri', type=float, default=0.12, help='Random Insertion ratio (default: 0.12 - Optimal)')
-    parser.add_argument('--alpha_rs', type=float, default=0.12, help='Random Swap ratio (default: 0.12 - Optimal)')
-    parser.add_argument('--p_rd', type=float, default=0.12, help='Random Deletion probability (default: 0.12 - Optimal)')
+    parser.add_argument('--alpha_sr', type=float, default=0.12, help='Synonym Replacement ratio (default: 0.12)')
+    parser.add_argument('--alpha_ri', type=float, default=0.12, help='Random Insertion ratio (default: 0.12)')
+    parser.add_argument('--alpha_rs', type=float, default=0.12, help='Random Swap ratio (default: 0.12)')
+    parser.add_argument('--p_rd', type=float, default=0.12, help='Random Deletion probability (default: 0.12)')
     parser.add_argument('--seed', type=int, default=42, help='Random seed for reproducibility (default: 42)')
-    parser.add_argument('--save_csv', action='store_true', help='Save augmented dataset to CSV file')
+    parser.add_argument('--no_save', action='store_true', help='Do not save augmented dataset to CSV file (dry-run simulation)')
     args = parser.parse_args()
     
-    run_augmentation(
-        mode=args.mode,
-        train_file=args.train_file,
-        target_count=args.target_count,
-        alpha_sr=args.alpha_sr,
-        alpha_ri=args.alpha_ri,
-        alpha_rs=args.alpha_rs,
-        p_rd=args.p_rd,
-        seed=args.seed,
-        save_csv=args.save_csv
-    )
+    save_csv = not args.no_save
+
+    if args.train_file is not None:
+        run_augmentation(
+            mode=args.mode,
+            train_file=args.train_file,
+            target_count=args.target_count,
+            alpha_sr=args.alpha_sr,
+            alpha_ri=args.alpha_ri,
+            alpha_rs=args.alpha_rs,
+            p_rd=args.p_rd,
+            seed=args.seed,
+            save_csv=save_csv
+        )
+    else:
+        run_all_benchmarks(
+            target_dataset=args.target_dataset,
+            mode=args.mode,
+            target_count=args.target_count,
+            alpha_sr=args.alpha_sr,
+            alpha_ri=args.alpha_ri,
+            alpha_rs=args.alpha_rs,
+            p_rd=args.p_rd,
+            seed=args.seed,
+            save_csv=save_csv
+        )
+
