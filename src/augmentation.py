@@ -24,74 +24,10 @@ import numpy as np
 from pathlib import Path
 from collections import Counter
 from tqdm import tqdm
-from sklearn.feature_extraction.text import TfidfVectorizer
-
-def extract_protected_lexicon_via_tfidf_idf(stix_data, min_idf_quantile=0.15):
-    """
-    Extracts Domain Protected Lexicon directly from MITRE STIX JSON metadata
-    filtered dynamically using TF-IDF Inverse Document Frequency (IDF) over technique descriptions.
-    Mathematically filters out non-discriminative low-IDF words (both English & generic IT stopwords)
-    without needing any hardcoded/manual stopword lists. 100% objective for publication.
-    """
-    descriptions = []
-    for obj in stix_data.get('objects', []):
-        if obj.get('type') == 'attack-pattern' and obj.get('description'):
-            descriptions.append(obj['description'])
-
-    if descriptions:
-        vectorizer = TfidfVectorizer(lowercase=True, token_pattern=r"(?u)\b\w[\w\.-]+\b")
-        vectorizer.fit(descriptions)
-        feature_names = vectorizer.get_feature_names_out()
-        idf_scores = dict(zip(feature_names, vectorizer.idf_))
-        all_idfs = list(idf_scores.values())
-        idf_cutoff = float(np.quantile(all_idfs, min_idf_quantile)) if all_idfs else 1.5
-    else:
-        idf_scores = {}
-        idf_cutoff = 0.0
-
-    raw_candidates = set()
-    for obj in stix_data.get('objects', []):
-        obj_type = obj.get('type')
-        
-        # 1. Extract Platforms (e.g. windows, linux, macos, active-directory, containers)
-        for platform in obj.get('x_mitre_platforms', []):
-            p_clean = platform.lower().strip()
-            if len(p_clean) > 2:
-                raw_candidates.add(p_clean)
-                for part in re.split(r'[\s\-_]+', p_clean):
-                    if len(part) > 2:
-                        raw_candidates.add(part)
-            
-        # 2. Extract Data Sources (e.g. process, file, command, registry, network, memory)
-        for ds in obj.get('x_mitre_data_sources', []):
-            for part in re.split(r'[\s\-_:]+', ds.lower()):
-                clean_part = part.strip(".,;:!?()\"'")
-                if len(clean_part) > 2:
-                    raw_candidates.add(clean_part)
-                    
-        # 3. Extract keywords from Technique, Tool, and Malware names
-        if obj_type in ['attack-pattern', 'tool', 'malware']:
-            name = obj.get('name', '')
-            for word in name.lower().split():
-                clean_word = word.strip(".,;:!?()\"'")
-                if len(clean_word) > 2:
-                    raw_candidates.add(clean_word)
-
-    protected_terms = set()
-    for term in raw_candidates:
-        # Keep terms whose IDF score > cutoff (high IDF = discriminative entity/technique term).
-        # Terms not in corpus vocabulary get default 999.0 (retained as unique entity).
-        term_idf = idf_scores.get(term, 999.0)
-        if term_idf > idf_cutoff:
-            protected_terms.add(term)
-
-    print(f"[INFO] [TF-IDF Filter] Extracted {len(protected_terms)} high-IDF domain protected terms (IDF cutoff: {idf_cutoff:.2f}).")
-    return protected_terms
-
-def build_cyber_knowledge_base(cache_dir="dataset/processed", force_download=False, custom_protected_tokens=None):
+def build_cyber_knowledge_base(cache_dir="dataset/processed", force_download=False):
     """
     Extracts and builds:
-    1. Protected List: Protected domain terms extracted directly from MITRE STIX metadata + STIX IDs + custom user tokens.
+    1. Protected List: Technical entity tokens [CVE], [IPV4], etc. (preserves tokenizer integrity).
     2. Synonym Dictionary: Domain aliases/synonyms for APT Groups, Malware & Tools.
     """
     cache_path = Path(cache_dir) / "enterprise-attack.json"
@@ -165,30 +101,13 @@ def build_cyber_knowledge_base(cache_dir="dataset/processed", force_download=Fal
     with open(cache_path, 'r', encoding='utf-8') as f:
         stix_data = json.load(f)
 
-    protected_set = set()
+    protected_set = set(SPECIAL_TOKENS)
     synonym_raw = {}
 
-    # Dynamically extract Domain Protected Lexicon via TF-IDF IDF Filtering 
-    stix_metadata_terms = extract_protected_lexicon_via_tfidf_idf(stix_data)
-    protected_set.update(stix_metadata_terms)
-
-    # 1. Retain all primary tool, malware, attack-pattern names and MITRE STIX IDs (e.g. T1059, T1059.001)
+    # Extract aliases/synonyms for APT Groups, Malware & Tools from STIX
     for obj in stix_data.get('objects', []):
         obj_type = obj.get('type')
         name = obj.get('name', '').strip().lower()
-
-        if obj_type in ['tool', 'malware', 'attack-pattern']:
-            if name:
-                protected_set.add(name)
-            
-            for ref in obj.get('external_references', []):
-                if ref.get('source_name') == 'mitre-attack':
-                    mitre_id = ref.get('external_id', '').strip().lower()
-                    if mitre_id:
-                        protected_set.add(mitre_id)
-                        if '.' in mitre_id:
-                            parent_id = mitre_id.split('.')[0]
-                            protected_set.add(parent_id)
 
         if obj_type in ['intrusion-set', 'malware', 'tool']:
             primary_name = name
@@ -207,15 +126,9 @@ def build_cyber_knowledge_base(cache_dir="dataset/processed", force_download=Fal
                         synonym_raw[alias] = set()
                     synonym_raw[alias].update([n for n in all_names if n != alias])
 
-    # 2. Add custom protected tokens/terms provided by user
-    if custom_protected_tokens:
-        for item in custom_protected_tokens:
-            protected_set.add(item.lower().strip())
-        print(f"[INFO] Added {len(custom_protected_tokens)} custom protected terms into protected list.")
-
     synonym_dict = {k: sorted(list(v)) for k, v in synonym_raw.items()}
 
-    print(f"[INFO] Completed Protected List: {len(protected_set)} terms.")
+    print(f"[INFO] Completed Protected List: {len(protected_set)} tokens.")
     print(f"[INFO] Completed Synonym Dictionary: {len(synonym_dict)} entries.")
 
     return protected_set, synonym_dict
@@ -224,13 +137,12 @@ SPECIAL_TOKENS = ["[CVE]", "[URL]", "[FILE_PATH]", "[IPV4]", "[HASH]"]
 
 def is_special_token(word):
     # Automatically preserves any token in bracket format e.g. [CVE], [REGISTRY], [CUSTOM_TOKEN]
-    return word.strip().upper() in SPECIAL_TOKENS or (word.startswith('[') and word.endswith(']'))
+    clean = word.strip().upper()
+    return clean in SPECIAL_TOKENS or (clean.startswith('[') and clean.endswith(']'))
 
-def is_protected(word, protected_set):
-    if is_special_token(word):
-        return True
-    clean_word = word.lower().strip(".,;:!?()\"'")
-    return clean_word in protected_set
+def is_protected(word, protected_set=None):
+    # Only protects technical entity placeholders, preserving tokenizer integrity (identical to Generic EDA)
+    return is_special_token(word)
 
 # --- Cyber EDA implementation ---
 

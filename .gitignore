@@ -1,1 +1,10 @@
 /dataset/processed/
+*.zip
+__pycache__/
+*.py[cod]
+
+# PyTorch Model Checkpoints & Large Weights
+*.pt
+*.pth
+*.bin
+*.npz
