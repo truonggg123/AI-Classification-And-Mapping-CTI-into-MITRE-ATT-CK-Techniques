@@ -289,13 +289,13 @@ def add_word(new_words, synonym_dict):
         for offset, w in enumerate(syn_words):
             new_words.insert(random_idx + offset, w)
 
-def cyber_eda(text, protected_set, synonym_dict, alpha_sr=0.12, alpha_ri=0.12, alpha_rs=0.12, p_rd=0.12):
+def cyber_eda(text, protected_set, synonym_dict, alpha_sr=0.21, alpha_ri=0.21, alpha_rs=0.21, p_rd=0.21):
     """
-    Domain-Aware Cyber EDA pipeline (Optimal Uniform Alpha = 0.12):
-    - alpha_sr: Synonym Replacement ratio (0.12)
-    - alpha_ri: Random Insertion ratio (0.12)
-    - alpha_rs: Random Swap ratio (0.12)
-    - p_rd: Random Deletion probability (0.12)
+    Domain-Aware Cyber EDA pipeline (Optimal Uniform Alpha = 0.21):
+    - alpha_sr: Synonym Replacement ratio (0.21)
+    - alpha_ri: Random Insertion ratio (0.21)
+    - alpha_rs: Random Swap ratio (0.21)
+    - p_rd: Random Deletion probability (0.21)
     """
     words = text.split()
     num_words = len(words)
@@ -313,9 +313,9 @@ def cyber_eda(text, protected_set, synonym_dict, alpha_sr=0.12, alpha_ri=0.12, a
 
     return " ".join(words)
 
-def single_eda(text, op, protected_set, synonym_dict, alpha_sr=0.12, alpha_ri=0.12, alpha_rs=0.12, p_rd=0.12):
+def single_eda(text, op, protected_set, synonym_dict, alpha_sr=0.21, alpha_ri=0.21, alpha_rs=0.21, p_rd=0.21):
     """
-    Applies a single atomic EDA operation (SR, RI, RS, or RD) with optimal alpha=0.12.
+    Applies a single atomic EDA operation (SR, RI, RS, or RD) with optimal alpha=0.21.
     """
     words = text.split()
     num_words = len(words)
@@ -376,7 +376,7 @@ def unmask_special_tokens(text):
 
 # --- Main Pipeline ---
 
-def run_augmentation(mode='eda', train_file='dataset/processed/cti_to_mitre/train.csv', df_train=None, target_count=None, save_csv=False, cache_dir='dataset/processed', output_file=None, alpha_sr=0.12, alpha_ri=0.12, alpha_rs=0.12, p_rd=0.12, seed=42):
+def run_augmentation(mode='eda', train_file='dataset/processed/cti_to_mitre/train.csv', df_train=None, target_count=None, save_csv=False, cache_dir='dataset/processed', output_file=None, alpha_sr=0.21, alpha_ri=0.21, alpha_rs=0.21, p_rd=0.21, seed=42):
     valid_modes = ['sr', 'synonym', 'ri', 'insert', 'rs', 'swap', 'rd', 'delete', 'eda', 'cyber_eda']
     if mode not in valid_modes:
         raise ValueError(f"Invalid mode '{mode}'. Choose from {valid_modes}")
@@ -549,10 +549,10 @@ def run_all_benchmarks(
     target_dataset='all',
     mode='eda',
     target_count=0,
-    alpha_sr=0.12,
-    alpha_ri=0.12,
-    alpha_rs=0.12,
-    p_rd=0.12,
+    alpha_sr=0.21,
+    alpha_ri=0.21,
+    alpha_rs=0.21,
+    p_rd=0.21,
     seed=42,
     save_csv=True
 ):
@@ -613,10 +613,10 @@ if __name__ == '__main__':
     )
     parser.add_argument('--train_file', type=str, default=None, help='Explicit path to input train.csv (overrides --target_dataset if provided)')
     parser.add_argument('--target_count', type=int, default=0, help='Minimum sample count target per class (0 = Auto-resolve to dataset MEAN)')
-    parser.add_argument('--alpha_sr', type=float, default=0.12, help='Synonym Replacement ratio (default: 0.12)')
-    parser.add_argument('--alpha_ri', type=float, default=0.12, help='Random Insertion ratio (default: 0.12)')
-    parser.add_argument('--alpha_rs', type=float, default=0.12, help='Random Swap ratio (default: 0.12)')
-    parser.add_argument('--p_rd', type=float, default=0.12, help='Random Deletion probability (default: 0.12)')
+    parser.add_argument('--alpha_sr', type=float, default=0.21, help='Synonym Replacement ratio (default: 0.21)')
+    parser.add_argument('--alpha_ri', type=float, default=0.21, help='Random Insertion ratio (default: 0.21)')
+    parser.add_argument('--alpha_rs', type=float, default=0.21, help='Random Swap ratio (default: 0.21)')
+    parser.add_argument('--p_rd', type=float, default=0.21, help='Random Deletion probability (default: 0.21)')
     parser.add_argument('--seed', type=int, default=42, help='Random seed for reproducibility (default: 42)')
     parser.add_argument('--no_save', action='store_true', help='Do not save augmented dataset to CSV file (dry-run simulation)')
     args = parser.parse_args()

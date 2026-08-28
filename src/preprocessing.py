@@ -157,11 +157,23 @@ def run_preprocessing_pipeline(input_file=None, processed_dir=None, results_dir=
     })
     df_dedup['Tokenized_Text'] = df_dedup['Cleaned_Text'].apply(tokenize_cti_text)
     df_dedup['Label_Count'] = df_dedup['Labels'].apply(lambda x: len([l for l in str(x).split(',') if l.strip()]))
+
+    # --- NOISE FILTER: Remove samples with too few tokens (e.g. "2.", "3.", ".plist.") ---
+    MIN_TOKENS = 5
+    before_noise_filter = len(df_dedup)
+    df_dedup = df_dedup[
+        df_dedup['Tokenized_Text'].str.split().str.len() >= MIN_TOKENS
+    ].copy()
+    noise_removed = before_noise_filter - len(df_dedup)
+    if noise_removed > 0:
+        print(f"[INFO] Removed {noise_removed} noise samples with fewer than {MIN_TOKENS} tokens.")
+
     df_processed = df_dedup[df_dedup['Label_Count'] <= max_labels].copy().reset_index(drop=True)
     df_processed['source_sample_id'] = df_processed.index + 1
     
-    if len(df_filtered) != len(df_processed):
-        print(f"[INFO] Merged {len(df_filtered) - len(df_processed)} duplicate instances into unified unique text samples.")
+    dedup_removed = len(df_filtered) - before_noise_filter
+    if dedup_removed > 0:
+        print(f"[INFO] Merged {dedup_removed} duplicate instances into unified unique text samples.")
     
     processed_output_path = processed_path / '02_processed_cti_dataset.csv'
     df_processed[['Cleaned_Text', 'Labels', 'Label_Count', 'Tokenized_Text', 'source_sample_id']].to_csv(processed_output_path, index=False, encoding='utf-8')

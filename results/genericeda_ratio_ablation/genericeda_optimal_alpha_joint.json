@@ -1,0 +1,12 @@
+{
+  "method": "Generic WordNet EDA",
+  "target_dataset": "joint",
+  "optimal_alpha": 0.29,
+  "optimal_config": "Config_29",
+  "val_macro_f1": 0.5284,
+  "test_macro_f1": 0.48,
+  "delta_val_f1": 0.0201,
+  "delta_test_f1": 0.0006,
+  "baseline_val_f1": 0.5083,
+  "baseline_test_f1": 0.4794
+}

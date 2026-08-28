@@ -1,8 +1,12 @@
 """
-Cyber EDA Ratio Tuning Study — CTI-to-MITRE Benchmark
+Generic WordNet EDA Ratio Tuning Study — CTI-to-MITRE Benchmark
 =====================================================
-Systematic Hyperparameter Tuning for Uniform EDA Augmentation Intensity alpha in [0.01, 0.20]
-with Step Size = 0.01 (21 Configurations: 1 Baseline + 20 Uniform Ratios).
+Systematic Hyperparameter Tuning for Uniform Generic WordNet EDA Augmentation Intensity
+alpha in [0.01, 0.20] with Step Size = 0.01 (21 Configurations: 1 Baseline + 20 Uniform Ratios).
+
+Augmentation Method:
+- Uses standard WordNet (NLTK) as synonym source (no domain-specific KB).
+- Serves as comparison baseline against CyberEDA (STIX-based).
 
 Theoretical Foundation:
 ----------------------
@@ -18,7 +22,7 @@ Evaluation Protocol:
 - Selection Criterion: Optimal alpha* selected strictly on validation split (val.csv, 10%).
 - Final Reporting: Evaluated on held-out test split (test.csv, 20%).
 - Proxy Model: OneVsRest LinearSVC + Hybrid TF-IDF (Word (1,2) + Char (2,4)).
-- Output Folder: results/cybereda_ratio_ablation/
+- Output Folder: results/genericeda_ratio_ablation/
 """
 
 import os, sys, re, json, time, pickle, random, argparse, warnings
@@ -46,7 +50,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 root_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(root_dir))
-from src.augmentation import build_cyber_knowledge_base, cyber_eda
+from src.generic_eda import apply_generic_eda
 
 
 # ===========================================================================
@@ -96,9 +100,10 @@ def analyze_4_tier(y_true, y_pred, label_counts, labels_list):
     return tier_summary, zero_f1_labels
 
 
-def generate_augmented_dataset(df_train, protected_set, synonym_dict,
+def generate_augmented_dataset(df_train, protected_set=None, synonym_dict=None,
                                 target_count=48, alpha_sr=0.05, alpha_ri=0.05,
                                 alpha_rs=0.05, p_rd=0.05, seed=42):
+    """Multi-label greedy resampling with Generic WordNet EDA."""
     set_seed(seed)
     df = df_train.copy()
     if 'is_augmented' not in df.columns:
@@ -118,7 +123,7 @@ def generate_augmented_dataset(df_train, protected_set, synonym_dict,
         seq_i, loc_i = ei
         set_seed(seed + seq_i)
         row = df.loc[loc_i]
-        aug = cyber_eda(str(row['Cleaned_Text']), protected_set, synonym_dict,
+        aug = apply_generic_eda(str(row['Cleaned_Text']),
                         alpha_sr=alpha_sr, alpha_ri=alpha_ri, alpha_rs=alpha_rs, p_rd=p_rd)
         aug = re.sub(r'\s+', ' ', str(aug)).strip()
         toks = re.findall(r"[a-z0-9_\[\]]+(?:[./:-][a-z0-9_\[\]]+)*", aug.lower())
@@ -126,8 +131,9 @@ def generate_augmented_dataset(df_train, protected_set, synonym_dict,
                 'Label_Count': row['Label_Count'], 'Tokenized_Text': " ".join(toks),
                 'source_sample_id': row['source_sample_id'], 'is_augmented': 1}
 
-    with ThreadPoolExecutor(max_workers=8) as ex:
-        records = list(ex.map(_aug, enumerate(rows_to_aug)))
+    # NOTE: NLTK WordNet is NOT thread-safe (zipfile reader raises AssertionError
+    # under concurrent access). Use sequential processing instead.
+    records = [_aug(ei) for ei in enumerate(rows_to_aug)]
     return pd.concat([df.drop(columns=['_lbl']), pd.DataFrame(records)], ignore_index=True)
 
 
@@ -162,7 +168,7 @@ def plot_macro_f1_comparison(results, out_dir, dataset_name="cti_to_mitre"):
     ax.set_xticks(x); ax.set_xticklabels(labels, rotation=35, ha='right', fontsize=9)
     ax.set_ylabel('Macro F1 Score', fontsize=11)
     ax.set_ylim(min(val_f1+tst_f1)-0.025, max(val_f1+tst_f1)+0.045)
-    ax.set_title(f'Figure 1: Cyber EDA Uniform Ratio Tuning on {dataset_name.upper()} (alpha in [0.01, 0.20], step=0.01)\n'
+    ax.set_title(f'Figure 1: Generic WordNet EDA Uniform Ratio Tuning on {dataset_name.upper()} (alpha in [0.01, 0.20], step=0.01)\n'
                  'Dark Blue: Optimal Validation Config (alpha*) | Solid: Validation | Hatched: Test', fontsize=11)
     ax.legend(fontsize=9, loc='lower right', ncol=2)
     ax.grid(axis='y', alpha=0.3); plt.tight_layout()
@@ -200,7 +206,7 @@ def print_console_table(results):
     hdr  = f"  {'Config':<12} {'Alpha (alpha)':<14} {'Val Macro F1':>14} {'Test Macro F1':>14} {'Delta Val':>12} {'Delta Test':>12} {'ZF1-Test':>10}"
     sep  = "-" * 98
     print(f"\n{line}")
-    print("  RANKED UNIFORM TUNING RESULTS (Sorted by Validation Macro F1)")
+    print("  RANKED UNIFORM TUNING RESULTS — Generic WordNet EDA (Sorted by Val Macro F1)")
     print(hdr); print(sep)
     print(f"  {'Config_0':<12} {'0.00 (Base)':<14} {bv:>14.4f} {bt:>14.4f} {'---':>12} {'---':>12} {baseline['num_zero_f1_test_classes']:>10}  [BASELINE]")
     print(sep)
@@ -222,12 +228,13 @@ def print_console_table(results):
 def run_ablation_study(target_dataset='cti_to_mitre'):
     project_root = Path(__file__).resolve().parent.parent
     data_dir     = project_root / 'dataset' / 'processed' / target_dataset
-    out_dir      = project_root / 'results' / 'cybereda_ratio_ablation'
+    out_dir      = project_root / 'results' / 'genericeda_ratio_ablation'
     out_dir.mkdir(parents=True, exist_ok=True)
 
     print("=" * 80)
-    print(f"  CYBER EDA UNIFORM RATIO TUNING — BENCHMARK ({target_dataset.upper()})")
+    print(f"  GENERIC WORDNET EDA UNIFORM RATIO TUNING — BENCHMARK ({target_dataset.upper()})")
     print("  Theoretical Basis: Wei & Zou (EMNLP 2019) Uniform Alpha Paradigm")
+    print("  Synonym Source: WordNet (NLTK) — General English (No Domain KB)")
     print("  Tuning Range: alpha in [0.01, 0.30] with Step Size = 0.01 (30 Ratios + Baseline)")
     print("=" * 80)
 
@@ -254,10 +261,8 @@ def run_ablation_study(target_dataset='cti_to_mitre'):
 
     print(f"  Dataset: {target_dataset} | Train: {len(df_train):,} | Val: {len(df_val):,} | Test: {len(df_test):,} | Classes: {len(labels_list)} | Target: {target_count}/class")
 
-    # ── Step 2: Build Cyber Knowledge Base ─────────────────────────────
-    print("\n[STEP 2] Loading Cyber Knowledge Base (MITRE STIX)...")
-    cache_dir = project_root / 'dataset' / 'processed'
-    protected_set, synonym_dict = build_cyber_knowledge_base(cache_dir=cache_dir)
+    # (No domain KB needed for WordNet EDA)
+    protected_set, synonym_dict = None, None
 
     # ── Step 3: Define 31 Uniform Configs (alpha in [0.01, 0.30]) ──────────
     configs = [
@@ -275,7 +280,7 @@ def run_ablation_study(target_dataset='cti_to_mitre'):
             "id": f"Config_{i}",
             "axis": "Uniform EDA Tuning",
             "name": f"Uniform Alpha={a:.2f}",
-            "description": f"Uniform intensity alpha={a:.2f} across SR, RI, RS, and RD.",
+            "description": f"Uniform intensity alpha={a:.2f} across SR, RI, RS, and RD (WordNet).",
             "alpha_sr": a, "alpha_ri": a, "alpha_rs": a, "p_rd": a,
         })
 
@@ -356,7 +361,7 @@ def run_ablation_study(target_dataset='cti_to_mitre'):
     optimal_alpha = best_val['ratios']['alpha_sr']
 
     print(f"\n[OPTIMAL HYPERPARAMETER SELECTION]")
-    print(f"  Selected Winner: {best_val['config_id']} (alpha* = {optimal_alpha:.2f})")
+    print(f"  [Generic WordNet EDA] Selected Winner: {best_val['config_id']} (alpha* = {optimal_alpha:.2f})")
     print(f"  Validation Macro F1 = {best_val['val_metrics']['Macro_F1']:.4f} (Delta: {best_val['val_metrics']['Macro_F1']-bv:+.4f})")
     print(f"  Held-out Test Macro F1 = {best_val['test_metrics']['Macro_F1']:.4f} (Delta: {best_val['test_metrics']['Macro_F1']-bt:+.4f})")
 
@@ -379,9 +384,29 @@ def run_ablation_study(target_dataset='cti_to_mitre'):
             "Delta Test F1": round(tm['Macro_F1'] - bt, 4),
             "Time (s)":      r['execution_time_seconds'],
         })
-    csv_name = f'cybereda_ablation_results_{target_dataset}.csv'
+    csv_name = f'genericeda_ablation_results_{target_dataset}.csv'
     pd.DataFrame(rows).to_csv(out_dir / csv_name, index=False, encoding='utf-8')
     print(f"\n  [SAVED] {out_dir / csv_name}")
+
+    # ── Save optimal alpha to JSON (for downstream pipeline use) ────────
+    import json as _json
+    summary = {
+        "method":           "Generic WordNet EDA",
+        "target_dataset":   target_dataset,
+        "optimal_alpha":    optimal_alpha,
+        "optimal_config":   best_val['config_id'],
+        "val_macro_f1":     round(best_val['val_metrics']['Macro_F1'], 4),
+        "test_macro_f1":    round(best_val['test_metrics']['Macro_F1'], 4),
+        "delta_val_f1":     round(best_val['val_metrics']['Macro_F1'] - bv, 4),
+        "delta_test_f1":    round(best_val['test_metrics']['Macro_F1'] - bt, 4),
+        "baseline_val_f1":  round(bv, 4),
+        "baseline_test_f1": round(bt, 4),
+    }
+    json_path = out_dir / f'genericeda_optimal_alpha_{target_dataset}.json'
+    with open(json_path, 'w', encoding='utf-8') as _jf:
+        _json.dump(summary, _jf, indent=2, ensure_ascii=False)
+    print(f"  [SAVED] {json_path}")
+
 
     # ── Step 7: Render Academic Figures ─────────────────────────────────
     plot_macro_f1_comparison(all_results, out_dir, dataset_name=target_dataset)
@@ -389,13 +414,13 @@ def run_ablation_study(target_dataset='cti_to_mitre'):
 
     print(f"\n{'=' * 80}")
     print(f"  ALL EXPERIMENTS COMPLETED SUCCESSFULLY.")
-    print(f"  OUTPUTS SAVED IN: results/cybereda_ratio_ablation/")
+    print(f"  OUTPUTS SAVED IN: results/genericeda_ratio_ablation/")
     print(f"  OPTIMAL alpha* = {optimal_alpha:.2f} (dataset: {target_dataset})")
     print(f"{'=' * 80}")
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Cyber EDA Ratio Tuning Experiment")
+    parser = argparse.ArgumentParser(description="Generic WordNet EDA Ratio Tuning Experiment — CTI-to-MITRE")
     parser.add_argument('--target_dataset', type=str, default='cti_to_mitre',
                         choices=['cti_to_mitre', 'joint', 'tram'],
                         help='Dataset to run tuning on (default: cti_to_mitre)')

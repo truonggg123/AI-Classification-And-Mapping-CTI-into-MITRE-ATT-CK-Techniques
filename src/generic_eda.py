@@ -162,8 +162,8 @@ def generic_random_deletion(words, p):
     return new_words
 
 
-def apply_generic_eda(text, alpha_sr=0.12, alpha_ri=0.12, alpha_rs=0.12, p_rd=0.12):
-    """Applies one of the 4 Generic EDA operators to a sentence."""
+def apply_generic_eda(text, alpha_sr=0.29, alpha_ri=0.29, alpha_rs=0.29, p_rd=0.29):
+    """Applies one of the 4 Generic EDA operators to a sentence (Optimal Alpha = 0.29)."""
     if not text or not str(text).strip():
         return text
     
@@ -196,10 +196,10 @@ def apply_generic_eda(text, alpha_sr=0.12, alpha_ri=0.12, alpha_rs=0.12, p_rd=0.
 def run_generic_eda_for_benchmark(
     train_file='dataset/processed/joint/train.csv',
     target_count=None,
-    alpha_sr=0.12,
-    alpha_ri=0.12,
-    alpha_rs=0.12,
-    p_rd=0.12,
+    alpha_sr=0.29,
+    alpha_ri=0.29,
+    alpha_rs=0.29,
+    p_rd=0.29,
     seed=42,
     save_csv=True,
     output_filename="train_augmented_generic_eda.csv"
@@ -341,10 +341,10 @@ def run_generic_eda_for_benchmark(
 def run_all_generic_benchmarks(
     target_dataset='all',
     target_count=0,
-    alpha_sr=0.12,
-    alpha_ri=0.12,
-    alpha_rs=0.12,
-    p_rd=0.12,
+    alpha_sr=0.29,
+    alpha_ri=0.29,
+    alpha_rs=0.29,
+    p_rd=0.29,
     seed=42,
     save_csv=True,
     output_filename="train_augmented_generic_eda.csv"
@@ -389,10 +389,10 @@ if __name__ == '__main__':
     )
     parser.add_argument('--train_file', type=str, default=None, help='Explicit path to input train.csv')
     parser.add_argument('--target_count', type=int, default=0, help='Minimum sample count target per class (0 = Auto-resolve to MEAN)')
-    parser.add_argument('--alpha_sr', type=float, default=0.12, help='Synonym Replacement ratio (default: 0.12)')
-    parser.add_argument('--alpha_ri', type=float, default=0.12, help='Random Insertion ratio (default: 0.12)')
-    parser.add_argument('--alpha_rs', type=float, default=0.12, help='Random Swap ratio (default: 0.12)')
-    parser.add_argument('--p_rd', type=float, default=0.12, help='Random Deletion probability (default: 0.12)')
+    parser.add_argument('--alpha_sr', type=float, default=0.29, help='Synonym Replacement ratio (default: 0.29, optimal alpha* from joint ablation)')
+    parser.add_argument('--alpha_ri', type=float, default=0.29, help='Random Insertion ratio (default: 0.29, optimal alpha* from joint ablation)')
+    parser.add_argument('--alpha_rs', type=float, default=0.29, help='Random Swap ratio (default: 0.29, optimal alpha* from joint ablation)')
+    parser.add_argument('--p_rd', type=float, default=0.29, help='Random Deletion probability (default: 0.29, optimal alpha* from joint ablation)')
     parser.add_argument('--seed', type=int, default=42, help='Random seed (default: 42)')
     parser.add_argument('--output_filename', type=str, default="train_augmented_generic_eda.csv", help='Output CSV filename')
     parser.add_argument('--no_save', action='store_true', help='Dry-run mode without saving CSV to disk')
