@@ -1,0 +1,48 @@
+{
+  "scenario": "B2_E1",
+  "scenario_title": "Cyber EDA two-stage; outputs B2 global and E1 Minority-F2",
+  "seed": 42,
+  "experiment_registry": {
+    "title": "Cyber EDA two-stage; outputs B2 global and E1 Minority-F2",
+    "stage1_mode": "cyber",
+    "stage2": true,
+    "minority_f2": true
+  },
+  "training_config": {
+    "seed": 42,
+    "model_checkpoint": "answerdotai/ModernBERT-base",
+    "max_length": 512,
+    "model_epochs": 6,
+    "stage2_epochs": 6,
+    "train_batch_size": 16,
+    "eval_batch_size": 16,
+    "gradient_accumulation_steps": 1,
+    "learning_rate": 3e-05,
+    "weight_decay": 0.01,
+    "warmup_ratio": 0.1,
+    "max_grad_norm": 1.0,
+    "gamma_neg": 4.0,
+    "gamma_pos": 1.0,
+    "asl_clip": 0.05,
+    "asl_eps": 1e-08,
+    "threshold_min": 0.05,
+    "threshold_max": 0.95,
+    "threshold_step": 0.01,
+    "min_val_support_per_label": 5,
+    "num_workers": 2,
+    "log_every_batches": 250,
+    "early_stopping_patience": 2,
+    "minority_support_threshold": 20,
+    "minority_fbeta_beta": 2.0,
+    "run_test": true,
+    "force_rerun": false
+  },
+  "stage1_source_files": [
+    "train_augmented_eda.csv"
+  ],
+  "primary_train_rows": 5103,
+  "stage1_rows": 6949,
+  "validation_rows": 722,
+  "test_rows": 1424,
+  "num_labels": 50
+}
