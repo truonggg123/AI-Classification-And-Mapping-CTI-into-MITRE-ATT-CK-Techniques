@@ -199,9 +199,17 @@ def synonym_replacement(words, n, synonym_dict):
             i += 1
     return new_words
 
-def random_deletion(words, p, protected_set):
+def random_deletion(words, p, protected_set, min_words=5):
+    """
+    Randomly deletes words with probability p, keeping protected entity tokens.
+    Guarantees the output retains at least min_words (or original length if shorter)
+    to prevent semantic collapse into 1-2 word fragments.
+    """
     if len(words) <= 1:
         return words
+    
+    target_min = min(len(words), min_words)
+    
     new_words = []
     for word in words:
         if is_protected(word, protected_set):
@@ -210,8 +218,14 @@ def random_deletion(words, p, protected_set):
         r = random.uniform(0, 1)
         if r > p:
             new_words.append(word)
-    if len(new_words) == 0:
-        return [random.choice(words)]
+            
+    # Guard against over-deletion: preserve at least target_min words
+    if len(new_words) < target_min:
+        chosen_indices = sorted(random.sample(range(len(words)), target_min))
+        protected_indices = {i for i, w in enumerate(words) if is_protected(w, protected_set)}
+        all_chosen = sorted(set(chosen_indices) | protected_indices)
+        new_words = [words[i] for i in all_chosen]
+        
     return new_words
 
 def random_swap(words, n, protected_set):

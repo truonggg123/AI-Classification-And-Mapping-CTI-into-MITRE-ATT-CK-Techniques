@@ -43,6 +43,10 @@ def is_special_token(word):
     clean = word.strip().upper()
     return clean in SPECIAL_TOKENS or (clean.startswith('[') and clean.endswith(']'))
 
+def is_protected(word, protected_set=None):
+    """Preserves technical entity tokens, identical to Cyber EDA."""
+    return is_special_token(word)
+
 def get_wordnet_synonyms(word):
     """Extracts general English synonyms for a word using WordNet."""
     clean_word = word.lower().strip(".,;:!?()\"'")
@@ -59,18 +63,18 @@ def get_wordnet_synonyms(word):
 
 
 # ===========================================================================
-# 4 Atomic Generic EDA Operations (Wei & Zou, EMNLP 2019)
+# Generic WordNet EDA Operations (Aligned with Cyber EDA Pipeline)
 # ===========================================================================
 
 def generic_synonym_replacement(words, n):
-    """Replaces up to n words with standard WordNet synonyms."""
+    """Replaces up to n words with standard WordNet synonyms, preserving capitalization & punctuation."""
     if len(words) <= 1:
         return words
     
     new_words = words.copy()
     candidate_indices = [
         i for i, w in enumerate(new_words) 
-        if not is_special_token(w) and len(get_wordnet_synonyms(w)) > 0
+        if not is_protected(w) and len(get_wordnet_synonyms(w)) > 0
     ]
     
     if not candidate_indices:
@@ -87,11 +91,11 @@ def generic_synonym_replacement(words, n):
             synonym = random.choice(synonyms)
             syn_words = synonym.split()
             
-            # Preserve capitalization
+            # Preserve capitalization of first word
             if orig_word and orig_word[0].isupper():
                 syn_words[0] = syn_words[0].capitalize()
                 
-            # Preserve punctuation
+            # Preserve trailing punctuation from last replaced word if present
             punct = ""
             for char in reversed(orig_word):
                 if char in ".,;:!?":
@@ -107,86 +111,155 @@ def generic_synonym_replacement(words, n):
     return new_words
 
 
+def add_wordnet_synonym(new_words):
+    """Finds a candidate word in sentence, fetches WordNet synonym, and inserts at random position."""
+    if not new_words:
+        return
+    candidate_words = [w for w in new_words if not is_protected(w)]
+    if not candidate_words:
+        return
+    random_word = random.choice(candidate_words)
+    synonyms = get_wordnet_synonyms(random_word)
+    if synonyms:
+        random_synonym = random.choice(synonyms)
+        random_idx = random.randint(0, len(new_words))
+        syn_words = random_synonym.split()
+        for offset, w in enumerate(syn_words):
+            new_words.insert(random_idx + offset, w)
+
+
 def generic_random_insertion(words, n):
-    """Finds WordNet synonyms for valid words and inserts them randomly."""
+    """Finds WordNet synonyms for words in sentence and inserts them at random positions n times."""
     if len(words) <= 1:
         return words
     
     new_words = words.copy()
     for _ in range(n):
-        candidate_words = [w for w in new_words if not is_special_token(w)]
-        if not candidate_words:
-            continue
-        random_word = random.choice(candidate_words)
-        synonyms = get_wordnet_synonyms(random_word)
-        if synonyms:
-            synonym = random.choice(synonyms)
-            random_idx = random.randint(0, len(new_words))
-            new_words.insert(random_idx, synonym)
+        add_wordnet_synonym(new_words)
     return new_words
 
 
-def generic_random_swap(words, n):
-    """Randomly swaps two words in the sentence n times."""
+def swap_word(new_words, protected_set=None):
+    """Swaps two non-protected words, preserving punctuation at the original positions."""
+    if len(new_words) <= 1:
+        return new_words
+    random_idx_1 = random.randint(0, len(new_words) - 1)
+    random_idx_2 = random_idx_1
+    counter = 0
+    while random_idx_2 == random_idx_1:
+        random_idx_2 = random.randint(0, len(new_words) - 1)
+        counter += 1
+        if counter > 50:
+            return new_words
+    
+    if is_protected(new_words[random_idx_1], protected_set) or is_protected(new_words[random_idx_2], protected_set):
+        return new_words
+        
+    # Preserve trailing punctuation at the original position in sentence
+    def split_punct(w):
+        clean = w.rstrip(".,;:!?")
+        punct = w[len(clean):]
+        return clean, punct
+
+    w1_clean, w1_punct = split_punct(new_words[random_idx_1])
+    w2_clean, w2_punct = split_punct(new_words[random_idx_2])
+
+    new_words[random_idx_1] = w2_clean + w1_punct
+    new_words[random_idx_2] = w1_clean + w2_punct
+    return new_words
+
+
+def generic_random_swap(words, n, protected_set=None):
+    """Randomly swaps two words in the sentence n times, preserving entity tokens and punctuation."""
+    new_words = words.copy()
+    for _ in range(n):
+        new_words = swap_word(new_words, protected_set)
+    return new_words
+
+
+def generic_random_deletion(words, p, protected_set=None, min_words=5):
+    """
+    Randomly deletes words with probability p, keeping protected entity tokens.
+    Guarantees the output retains at least min_words (or original length if shorter)
+    to prevent semantic collapse into 1-2 word fragments.
+    """
     if len(words) <= 1:
         return words
     
-    new_words = words.copy()
-    length = len(new_words)
-    for _ in range(n):
-        idx1 = random.randint(0, length - 1)
-        idx2 = random.randint(0, length - 1)
-        counter = 0
-        while idx1 == idx2 and counter < 10:
-            idx2 = random.randint(0, length - 1)
-            counter += 1
-        new_words[idx1], new_words[idx2] = new_words[idx2], new_words[idx1]
-    return new_words
-
-
-def generic_random_deletion(words, p):
-    """Randomly deletes words with probability p, keeping special entity tokens."""
-    if len(words) <= 1:
-        return words
+    target_min = min(len(words), min_words)
     
     new_words = []
-    for w in words:
-        if is_special_token(w):
-            new_words.append(w)
+    for word in words:
+        if is_protected(word, protected_set):
+            new_words.append(word)
             continue
-        if random.uniform(0, 1) > p:
-            new_words.append(w)
+        r = random.uniform(0, 1)
+        if r > p:
+            new_words.append(word)
             
-    if len(new_words) == 0:
-        return [random.choice(words)]
+    # Guard against over-deletion: preserve at least target_min words
+    if len(new_words) < target_min:
+        chosen_indices = sorted(random.sample(range(len(words)), target_min))
+        protected_indices = {i for i, w in enumerate(words) if is_protected(w, protected_set)}
+        all_chosen = sorted(set(chosen_indices) | protected_indices)
+        new_words = [words[i] for i in all_chosen]
+        
     return new_words
 
 
-def apply_generic_eda(text, alpha_sr=0.29, alpha_ri=0.29, alpha_rs=0.29, p_rd=0.29):
-    """Applies one of the 4 Generic EDA operators to a sentence (Optimal Alpha = 0.29)."""
+def apply_generic_eda(text, alpha_sr=0.13, alpha_ri=0.13, alpha_rs=0.13, p_rd=0.13, protected_set=None):
+    """
+    Generic WordNet EDA sequential pipeline (SR -> RI -> RS -> RD):
+    Follows the exact sequential pipeline structure of Cyber EDA, differing ONLY in synonym source (WordNet vs STIX).
+    - alpha_sr: Synonym Replacement ratio
+    - alpha_ri: Random Insertion ratio
+    - alpha_rs: Random Swap ratio
+    - p_rd: Random Deletion probability
+    """
     if not text or not str(text).strip():
         return text
     
     words = str(text).split()
     num_words = len(words)
-    if num_words <= 1:
+    if num_words == 0:
         return text
     
-    n_sr = max(1, math.ceil(alpha_sr * num_words))
-    n_ri = max(1, math.ceil(alpha_ri * num_words))
-    n_rs = max(1, math.ceil(alpha_rs * num_words))
+    n_sr = max(1, int(alpha_sr * num_words))
+    n_ri = max(1, int(alpha_ri * num_words))
+    n_rs = max(1, int(alpha_rs * num_words))
     
-    op = random.choice(['sr', 'ri', 'rs', 'rd'])
-    if op == 'sr':
-        aug_words = generic_synonym_replacement(words, n_sr)
-    elif op == 'ri':
-        aug_words = generic_random_insertion(words, n_ri)
-    elif op == 'rs':
-        aug_words = generic_random_swap(words, n_rs)
-    else:
-        aug_words = generic_random_deletion(words, p_rd)
+    words = generic_synonym_replacement(words, n_sr)
+    words = generic_random_insertion(words, n_ri)
+    words = generic_random_swap(words, n_rs, protected_set)
+    words = generic_random_deletion(words, p_rd, protected_set)
         
-    return " ".join(aug_words)
+    return " ".join(words)
+
+
+def single_generic_eda(text, op, alpha_sr=0.13, alpha_ri=0.13, alpha_rs=0.13, p_rd=0.13, protected_set=None):
+    """
+    Applies a single atomic Generic EDA operation (SR, RI, RS, or RD).
+    """
+    words = str(text).split()
+    num_words = len(words)
+    if num_words == 0:
+        return text
+
+    if op in ['sr', 'synonym']:
+        n_sr = max(1, int(alpha_sr * num_words))
+        words = generic_synonym_replacement(words, n_sr)
+    elif op in ['ri', 'insert']:
+        n_ri = max(1, int(alpha_ri * num_words))
+        words = generic_random_insertion(words, n_ri)
+    elif op in ['rs', 'swap']:
+        n_rs = max(1, int(alpha_rs * num_words))
+        words = generic_random_swap(words, n_rs, protected_set)
+    elif op in ['rd', 'delete']:
+        words = generic_random_deletion(words, p_rd, protected_set)
+    else:
+        raise ValueError(f"Unknown single EDA operation: {op}")
+
+    return " ".join(words)
 
 
 # ===========================================================================
@@ -196,10 +269,10 @@ def apply_generic_eda(text, alpha_sr=0.29, alpha_ri=0.29, alpha_rs=0.29, p_rd=0.
 def run_generic_eda_for_benchmark(
     train_file='dataset/processed/joint/train.csv',
     target_count=None,
-    alpha_sr=0.29,
-    alpha_ri=0.29,
-    alpha_rs=0.29,
-    p_rd=0.29,
+    alpha_sr=0.13,
+    alpha_ri=0.13,
+    alpha_rs=0.13,
+    p_rd=0.13,
     seed=42,
     save_csv=True,
     output_filename="train_augmented_generic_eda.csv"
@@ -298,6 +371,7 @@ def run_generic_eda_for_benchmark(
             candidate_text = re.sub(r'\s+', ' ', candidate_text).strip()
             norm_candidate = candidate_text.lower()
             
+            # Ensure not empty and does not collide with validation or test sets
             if candidate_text and norm_candidate not in forbidden_eval_texts:
                 augmented_text = candidate_text
                 break
@@ -341,10 +415,10 @@ def run_generic_eda_for_benchmark(
 def run_all_generic_benchmarks(
     target_dataset='all',
     target_count=0,
-    alpha_sr=0.29,
-    alpha_ri=0.29,
-    alpha_rs=0.29,
-    p_rd=0.29,
+    alpha_sr=0.13,
+    alpha_ri=0.13,
+    alpha_rs=0.13,
+    p_rd=0.13,
     seed=42,
     save_csv=True,
     output_filename="train_augmented_generic_eda.csv"
@@ -389,10 +463,10 @@ if __name__ == '__main__':
     )
     parser.add_argument('--train_file', type=str, default=None, help='Explicit path to input train.csv')
     parser.add_argument('--target_count', type=int, default=0, help='Minimum sample count target per class (0 = Auto-resolve to MEAN)')
-    parser.add_argument('--alpha_sr', type=float, default=0.29, help='Synonym Replacement ratio (default: 0.29, optimal alpha* from joint ablation)')
-    parser.add_argument('--alpha_ri', type=float, default=0.29, help='Random Insertion ratio (default: 0.29, optimal alpha* from joint ablation)')
-    parser.add_argument('--alpha_rs', type=float, default=0.29, help='Random Swap ratio (default: 0.29, optimal alpha* from joint ablation)')
-    parser.add_argument('--p_rd', type=float, default=0.29, help='Random Deletion probability (default: 0.29, optimal alpha* from joint ablation)')
+    parser.add_argument('--alpha_sr', type=float, default=0.13, help='Synonym Replacement ratio (default: 0.13)')
+    parser.add_argument('--alpha_ri', type=float, default=0.13, help='Random Insertion ratio (default: 0.13)')
+    parser.add_argument('--alpha_rs', type=float, default=0.13, help='Random Swap ratio (default: 0.13)')
+    parser.add_argument('--p_rd', type=float, default=0.13, help='Random Deletion probability (default: 0.13)')
     parser.add_argument('--seed', type=int, default=42, help='Random seed (default: 42)')
     parser.add_argument('--output_filename', type=str, default="train_augmented_generic_eda.csv", help='Output CSV filename')
     parser.add_argument('--no_save', action='store_true', help='Dry-run mode without saving CSV to disk')
@@ -424,3 +498,4 @@ if __name__ == '__main__':
             save_csv=save_csv,
             output_filename=args.output_filename
         )
+

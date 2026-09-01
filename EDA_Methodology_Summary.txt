@@ -1,0 +1,376 @@
+================================================================================
+       PHƯƠNG PHÁP EDA (EASY DATA AUGMENTATION) — TÓM TẮT CHI TIẾT
+       Dự án: AI Classification & Mapping CTI into MITRE ATT&CK Techniques
+================================================================================
+
+1. GIỚI THIỆU VỀ EDA
+================================================================================
+
+EDA (Easy Data Augmentation) là một kỹ thuật tăng cường dữ liệu văn bản (text
+augmentation) được đề xuất bởi Wei & Zou (EMNLP 2019). Mục tiêu là tạo ra các
+câu văn mới từ câu gốc bằng cách thực hiện các biến đổi ngôn ngữ đơn giản,
+giữ nguyên nhãn (label) gốc, nhằm mở rộng tập huấn luyện mà không cần thu thập
+thêm dữ liệu mới.
+
+Tại sao cần EDA trong dự án CTI to MITRE ATT&CK?
+  - Dữ liệu CTI (Cyber Threat Intelligence) rất khan hiếm và khó thu thập.
+  - Bài toán multi-label với 188 kỹ thuật MITRE ATT&CK, nhiều kỹ thuật chỉ có
+    rất ít mẫu huấn luyện (tail classes, < 30 mẫu).
+  - Class imbalance nghiêm trọng: mô hình bị bias về các kỹ thuật phổ biến.
+  - EDA giúp cân bằng lại phân phối dữ liệu (balancing minority classes).
+
+
+2. 4 PHÉP BIẾN ĐỔI CỐT LÕI CỦA EDA
+================================================================================
+
+EDA gồm 4 phép toán nguyên tử (atomic operations), áp dụng lên một câu văn:
+
+[SR] SYNONYM REPLACEMENT — Thay thế từ bằng từ đồng nghĩa
+------------------------------------------------------------------------------
+  Công thức: n_sr = max(1, floor(alpha_sr x L))  với L = độ dài câu (số từ)
+  Cơ chế:
+    1. Chọn ngẫu nhiên n_sr từ trong câu (không phải stop words).
+    2. Tìm từ đồng nghĩa từ nguồn từ điển (WordNet hoặc STIX Knowledge Base).
+    3. Thay thế từ gốc bằng một từ đồng nghĩa ngẫu nhiên.
+    4. Bảo toàn viết hoa chữ đầu và dấu câu cuối từ.
+
+  Ví dụ:
+    Gốc:  "The attacker exploited a vulnerability in the system"
+    Sau:  "The attacker leveraged a weakness in the system"
+
+[RI] RANDOM INSERTION — Chèn từ đồng nghĩa vào vị trí ngẫu nhiên
+------------------------------------------------------------------------------
+  Công thức: n_ri = max(1, floor(alpha_ri x L))
+  Cơ chế:
+    1. Chọn ngẫu nhiên một từ trong câu (không phải stop word).
+    2. Tìm từ đồng nghĩa của từ đó.
+    3. Chèn từ đồng nghĩa vào một vị trí ngẫu nhiên trong câu.
+    4. Lặp lại n_ri lần.
+
+  Ví dụ:
+    Gốc:  "The malware used lateral movement techniques"
+    Sau:  "The malware used lateral sideways movement techniques"
+
+[RS] RANDOM SWAP — Hoán đổi vị trí hai từ ngẫu nhiên
+------------------------------------------------------------------------------
+  Công thức: n_rs = max(1, floor(alpha_rs x L))
+  Cơ chế:
+    1. Chọn ngẫu nhiên hai vị trí khác nhau trong câu.
+    2. Hoán đổi hai từ tại hai vị trí đó.
+    3. Bảo toàn dấu câu ở vị trí cuối.
+    4. Lặp lại n_rs lần.
+
+  Ví dụ:
+    Gốc:  "adversary compromised the domain controller"
+    Sau:  "adversary domain compromised the controller"
+
+[RD] RANDOM DELETION — Xóa từ ngẫu nhiên theo xác suất p
+------------------------------------------------------------------------------
+  Công thức: mỗi từ bị xóa với xác suất p_rd
+  Cơ chế:
+    1. Duyệt qua từng từ trong câu.
+    2. Với xác suất p_rd: xóa từ đó.
+    3. Với xác suất (1 - p_rd): giữ từ đó.
+    4. Nếu câu kết quả rỗng: trả về một từ bất kỳ từ câu gốc.
+
+  Ví dụ:
+    Gốc:  "the threat actor used spear phishing emails to gain access"
+    Sau:  "the threat actor spear phishing to gain access"
+
+
+3. HAI BIẾN THỂ EDA SỬ DỤNG TRONG DỰ ÁN
+================================================================================
+
+Dự án triển khai HAI biến thể EDA độc lập, khác nhau ở nguồn từ điển đồng nghĩa:
+
+  Tiêu chí            | Cyber EDA                     | Generic WordNet EDA
+  --------------------|-------------------------------|----------------------
+  File triển khai     | src/augmentation.py           | src/generic_eda.py
+  Nguồn từ điển       | MITRE STIX JSON               | NLTK WordNet
+  Loại từ điển        | Domain-specific (cyber)       | General English
+  Từ đồng nghĩa VD    | APT28 <-> Fancy Bear          | attack <-> assail
+  Scenario dự án      | B2_E1 (CyberEDA 2-stage)      | G0, G1 (Generic EDA)
+  Alpha tối ưu (joint)| 0.21                          | 0.29
+  Cách áp dụng 4 ops  | Tuần tự: SR->RI->RS->RD       | Chọn ngẫu nhiên 1 op
+
+3.1 Cyber EDA (src/augmentation.py)
+------------------------------------------------------------
+Nguồn từ điển: MITRE ATT&CK STIX JSON
+  - URL: https://github.com/mitre-attack/attack-stix-data
+  - Trích xuất tên APT Groups, Malware, Tools và các alias của chúng
+  - Ví dụ từ điển được xây dựng:
+      "apt28"         <-> ["fancy bear", "sofacy", "pawn storm", "sednit"]
+      "cobalt strike" <-> ["beacon"]
+      "wannacry"      <-> ["wanna decryptor", "wncry"]
+
+Protected Set (các token KHÔNG bị biến đổi):
+  Bao gồm: [CVE], [URL], [FILE_PATH], [IPV4], [HASH]
+  Lý do: Đây là placeholder cho thực thể kỹ thuật quan trọng trong văn bản CTI.
+  Thay đổi các token này sẽ phá vỡ ngữ nghĩa đặc trưng của văn bản.
+
+SR trong Cyber EDA: Tìm kiếm entity đa từ (multi-word) trong câu, ví dụ
+  tìm cụm "apt28" và thay bằng "fancy bear" — không thay từng từ riêng lẻ.
+
+Cyber EDA áp dụng CẢ 4 phép toán tuần tự:
+  cyber_eda(text): SR -> RI -> RS -> RD  (pipeline đầy đủ, 1 lần gọi)
+
+3.2 Generic WordNet EDA (src/generic_eda.py)
+------------------------------------------------------------
+Nguồn từ điển: NLTK WordNet (English thông dụng)
+  - Không sử dụng knowledge base đặc thù cybersecurity
+  - Tìm synonym thông qua: wordnet.synsets(word) -> lemma.name()
+  - Từ có ít hơn 2 ký tự và special tokens đều bị bỏ qua
+
+Generic EDA chỉ áp dụng MỘT trong 4 phép toán (chọn ngẫu nhiên):
+  apply_generic_eda(text):
+    op = random.choice(['sr', 'ri', 'rs', 'rd'])
+    -> Áp dụng ĐÚNG 1 operation được chọn
+
+Điểm khác với Wei & Zou (2019) gốc:
+  - Paper gốc áp dụng tất cả 4 ops, mỗi ops tạo 1 câu riêng -> 4 câu/mẫu
+  - Dự án này: mỗi lần gọi chỉ tạo 1 câu từ 1 op ngẫu nhiên
+    (phù hợp hơn cho multi-label greedy resampling)
+
+
+4. PIPELINE AUGMENTATION ĐẦY ĐỦ TRONG DỰ ÁN
+================================================================================
+
+Quy trình tổng thể (cả Cyber EDA và Generic EDA đều theo pipeline này):
+
+BƯỚC 1 — Tải dữ liệu huấn luyện (train.csv)
+  - Đọc dữ liệu từ 3 benchmark: cti_to_mitre, tram, joint.
+  - Parse cột "Labels" thành danh sách nhãn (multi-label format).
+
+BƯỚC 2 — Tính Target Count (Empirical MEAN)
+  - Đếm tần suất xuất hiện của mỗi MITRE ATT&CK technique trong train set.
+  - target_count = round(MEAN(tất cả label frequencies))
+  - Ví dụ joint dataset: target_count ≈ 48 mẫu/class
+  - Lý do chọn MEAN thay vì MAX: Không upscale lên maximum (quá expensive
+    về dữ liệu synthetic), chọn mức trung bình để hài hòa giữa giảm
+    imbalance và tránh oversynthetic data.
+
+BƯỚC 3 — Anti-Leakage Filter (Bộ lọc chống rò rỉ)
+  - Load toàn bộ văn bản gốc từ val.csv và test.csv vào tập "forbidden".
+  - Bất kỳ câu augmented nào khớp với val/test -> bị loại bỏ, thử lại.
+  - Mỗi mẫu được thử tối đa 5 lần augmentation.
+  - Đảm bảo tính toàn vẹn của đánh giá (evaluation integrity).
+
+BƯỚC 4 — Multi-Label Aware Greedy Resampling
+  - Xác định minority classes: labels có count < target_count.
+  - Sắp xếp theo tần suất TĂNG DẦN (rarest first — xử lý classes hiếm nhất trước).
+  - Với mỗi minority class, lặp:
+    a. Chọn ngẫu nhiên một mẫu huấn luyện chứa label đó.
+    b. Thêm index mẫu đó vào danh sách cần augment.
+    c. Cập nhật dynamic_label_counts cho TẤT CẢ labels trong mẫu (greedy):
+       1 lần augment có thể boost nhiều labels đồng thời.
+    d. Dừng khi count của label đó >= target_count.
+  
+  Ưu điểm của Multi-Label Greedy:
+    - Hiệu quả hơn single-label resampling
+    - Tận dụng co-occurrence tự nhiên giữa các ATT&CK techniques
+      (ví dụ: 1 mẫu CTI thường chứa nhiều techniques cùng lúc)
+
+BƯỚC 5 — Sinh câu augmented
+  - Với mỗi index trong danh sách cần augment:
+    * Lấy câu gốc từ train set
+    * Áp dụng EDA (Cyber hoặc Generic)
+    * Lọc qua anti-leakage filter (thử tối đa 5 lần)
+    * Gắn nhãn is_augmented = 1 cho câu mới
+
+BƯỚC 6 — Nối và lưu kết quả
+  - df_final = concat(df_original, df_augmented)
+  - Lưu ra: train_augmented_eda.csv (hoặc train_augmented_generic_eda.csv)
+  - File mới dùng cho quá trình huấn luyện mô hình phân loại.
+
+
+5. CHỌN THAM SỐ ALPHA — QUY TRÌNH ABLATION STUDY
+================================================================================
+
+5.1 Tham số Alpha là gì?
+------------------------------------------------------------
+Alpha là tỉ lệ biến đổi, kiểm soát "mức độ mạnh" của augmentation:
+
+  alpha_sr: Tỉ lệ từ được thay thế -> n_sr = max(1, floor(alpha x L))
+  alpha_ri: Tỉ lệ từ được chèn thêm -> n_ri = max(1, floor(alpha x L))
+  alpha_rs: Tỉ lệ từ được hoán đổi -> n_rs = max(1, floor(alpha x L))
+  p_rd:     Xác suất mỗi từ bị xóa (áp dụng độc lập cho từng từ)
+
+Ràng buộc đồng nhất (uniform alpha):
+  alpha_sr = alpha_ri = alpha_rs = p_rd = alpha (theo Wei & Zou 2019)
+
+Ví dụ cụ thể với câu 10 từ và alpha = 0.21:
+  n_sr = max(1, floor(0.21 x 10)) = max(1, 2) = 2  -> thay 2 từ
+  n_ri = 2  -> chèn 2 từ
+  n_rs = 2  -> hoán đổi 2 cặp
+  p_rd = 0.21 -> mỗi từ có 21% cơ hội bị xóa (trung bình ~2 từ bị xóa)
+
+5.2 Quy trình Ablation Study (src/genericeda_ratio_ablation_study.py)
+------------------------------------------------------------
+Mục tiêu: Tìm alpha* tối ưu cho Generic WordNet EDA trên dataset thực.
+
+Thiết kế thí nghiệm:
+  Dải khảo sát: alpha in {0.00, 0.01, 0.02, ..., 0.30}  (31 cấu hình)
+  Config_0 (alpha=0.00): baseline không augmentation
+  Config_1 đến Config_30: alpha từ 0.01 đến 0.30
+
+Proxy Model (mô hình đại diện — nhanh, đủ nhạy cho ablation):
+  - OneVsRest LinearSVC + Hybrid TF-IDF
+  - Word TF-IDF: ngram (1,2), max_features=25,000, sublinear_tf=True
+  - Char TF-IDF: ngram (2,4), max_features=25,000, sublinear_tf=True
+  - Hai loại feature được stack theo chiều ngang (hstack)
+  Lý do chọn LinearSVC:
+    * Training cực nhanh (~2 phút/config, tổng ~1 giờ cho 31 config)
+    * Đủ nhạy cảm để phân biệt tác động của alpha thay đổi nhỏ
+    * Không cần GPU, tiết kiệm tài nguyên cho hyperparameter search
+
+Tiêu chí lựa chọn (Model Selection Protocol):
+  Alpha* được chọn DỰA TRÊN VALIDATION SET (val.csv), KHÔNG dùng test set.
+  Metric chính: Macro-F1 trên validation split.
+  Test set chỉ dùng để báo cáo kết quả cuối cùng (held-out reporting).
+  -> Đây là quy trình chuẩn để tránh selection bias.
+
+5.3 Kết quả Ablation Study thực tế — Dataset Joint
+------------------------------------------------------------
+Nguồn dữ liệu: results/genericeda_ratio_ablation/genericeda_ablation_results_joint.csv
+
+  Config     Alpha   Val Macro-F1   Test Macro-F1   DeltaVal   DeltaTest
+  ---------  -----   ------------   -------------   --------   ---------
+  Config_0   0.00    0.5083         0.4794          (base)     (base)
+  Config_1   0.01    0.5084         0.4731          +0.0001    -0.0063
+  Config_5   0.05    0.5013         0.4752          -0.0070    -0.0042
+  Config_9   0.09    0.5105         0.4837          +0.0022    +0.0043
+  Config_10  0.10    0.5107         0.4813          +0.0024    +0.0019
+  Config_14  0.14    0.5144         0.4890          +0.0061    +0.0096
+  Config_16  0.16    0.5209         0.4872          +0.0126    +0.0078
+  Config_19  0.19    0.5200         0.4909          +0.0117    +0.0115
+  Config_22  0.22    0.5247         0.4814          +0.0164    +0.0020
+  Config_26  0.26    0.5254         0.4804          +0.0171    +0.0010
+  Config_27  0.27    0.5278         0.4823          +0.0194    +0.0029
+  Config_28  0.28    0.5278         0.4792          +0.0195    -0.0002
+  Config_29  0.29    0.5284  ★      0.4800          +0.0201    +0.0006
+  Config_30  0.30    0.5273         0.4823          +0.0190    +0.0029
+
+  ★ OPTIMAL: alpha* = 0.29 (Config_29)
+    Val Macro-F1  = 0.5284  (+0.0201 so với baseline 0.5083)
+    Test Macro-F1 = 0.4800  (+0.0006 so với baseline 0.4794)
+
+5.4 Phân tích lý giải tại sao alpha* = 0.29
+------------------------------------------------------------
+Vùng alpha thấp (0.01 – 0.10):
+  - Cải thiện rất ít (delta Val <= +0.0024)
+  - Augmentation quá yếu, câu mới gần như giống câu gốc
+  - Model không học thêm được nhiều pattern đa dạng
+  - alpha=0.05 thậm chí làm giảm Val F1 (-0.007) -> noise > signal
+
+Vùng alpha trung bình (0.10 – 0.20):
+  - Cải thiện tăng dần, đặc biệt ở Medium/Tail classes
+  - Val F1 tăng từ +0.001 lên +0.012
+  - Đây là vùng Wei & Zou (2019) khuyến nghị (sweet-spot ~ 0.10 với text ngắn)
+
+Vùng alpha cao (0.20 – 0.30):
+  - Với dữ liệu CTI, alpha cao hơn tiếp tục cải thiện Val F1
+  - Câu augmented có thay đổi đủ lớn -> tăng diversity thực sự
+  - alpha = 0.29: Val Macro-F1 đạt MAX = 0.5284
+
+alpha = 0.30:
+  - Val F1 giảm nhẹ (0.5273 < 0.5284)
+  - Augmentation quá mạnh, câu bị biến đổi nhiều -> mất coherence
+  - Đây là điểm bắt đầu diminishing returns (lợi suất giảm dần)
+
+Tại sao dữ liệu CTI cần alpha cao hơn paper gốc (0.10)?
+  a. Câu CTI thường dài, kỹ thuật, nhiều entity -> cần biến đổi nhiều hơn
+     để tạo diversity có ý nghĩa học máy (không chỉ 1-2 từ thay đổi)
+  b. Số lượng minority classes rất lớn (>100 classes với <30 mẫu)
+     -> Cần mức augmentation cao hơn để model nhận ra đủ patterns
+  c. Từ điển WordNet rộng và đa dạng nghĩa -> alpha cao hơn vẫn tạo
+     câu có nghĩa hợp lý, không phá vỡ semantic structure
+
+5.5 Alpha cho Cyber EDA — Tại sao 0.21 thay vì 0.29?
+------------------------------------------------------------
+Cyber EDA sử dụng alpha = 0.21 (thay vì alpha* = 0.29 của Generic EDA).
+
+Lý do:
+  - Cyber EDA áp dụng CẢ 4 phép toán TUẦN TỰ trong 1 lần gọi:
+    cyber_eda(text): SR -> RI -> RS -> RD
+  - Generic EDA chỉ áp dụng 1 trong 4 phép toán (ngẫu nhiên).
+  - Tổng "biến đổi tích lũy" của Cyber EDA lớn hơn ~4 lần.
+  - Dùng alpha = 0.21 cho Cyber EDA tương đương mức biến đổi tổng thể
+    tương tự Generic EDA với alpha = 0.29.
+
+  Code trong augmentation.py:
+    def cyber_eda(text, ..., alpha_sr=0.21, alpha_ri=0.21, alpha_rs=0.21, p_rd=0.21):
+
+
+6. CÁC SCENARIO THỰC NGHIỆM
+================================================================================
+
+Dự án định nghĩa 5 scenario theo bảng dưới:
+
+  Scenario   Mô tả                                     Aug Method   Stage   Alpha
+  ---------  ----------------------------------------  -----------  -----   -----
+  A0         Baseline, không augmentation              Không        1       -
+  B1         Cyber EDA one-stage                       CyberEDA     1       0.21
+  B2_E1      Cyber EDA two-stage + Minority-F2         CyberEDA     2       0.21
+  G0         Generic WordNet EDA one-stage             GenericEDA   1       0.29
+  G1         Generic WordNet EDA two-stage + Min-F2    GenericEDA   2       0.29
+
+Giải thích Two-stage Training (G1, B2_E1):
+  Stage 1: Huấn luyện với augmented data, threshold = global (tối ưu hóa Macro-F1)
+  Stage 2: Fine-tune bằng cách tìm threshold riêng cho mỗi minority label
+           dùng Minority-F2 criterion (recall-heavy F2-score)
+  -> Lý do dùng F2: Trong threat intelligence, bỏ sót (miss) một kỹ thuật
+     nguy hiểm tệ hơn nhiều so với false positive -> ưu tiên recall cao.
+
+
+7. TÁC ĐỘNG CỦA AUGMENTATION LÊN KẾT QUẢ
+================================================================================
+
+Macro-F1 theo scenario — CySecBERT, Dataset CTI-to-MITRE (188 labels):
+
+  A0  (No Augmentation)          -> Macro-F1 ~ 0.5378  [Baseline]
+  B1  (CyberEDA 1-stage)         -> Macro-F1 ~ 0.5700  [+3.2 diem]
+  B2_E1 (CyberEDA 2-stage)       -> Macro-F1 ~ 0.6261  [+8.8 diem]
+  G0  (Generic WordNet 1-stage)  -> Macro-F1 ~ 0.5900  [+5.2 diem]
+  G1  (Generic WordNet 2-stage)  -> Macro-F1 ~ 0.6395  [+10.2 diem] ★ BEST
+
+Nhận xét:
+  (1) Two-stage > One-stage: chenh lech ~4-5 diem -> stage 2 rat quan trong
+  (2) Generic EDA > Cyber EDA: G1 tot hon B2_E1 ~1.3 diem
+      Giai thich: WordNet cung cap semantic diversity tong quat hon,
+      giup mo hinh hoc duoc nhieu bieu dat khac nhau cua cung 1 khai niem.
+      Cyber EDA STIX-based bi gioi han boi so luong alias trong MITRE DB.
+  (3) Minority recall cai thien manh: CySecBERT G1 dat
+      Macro-Recall (minority) = 0.6976 (so voi ~0.51 o A0)
+      -> Augmentation hieu qua nhat voi cac ky thuat hiem gap.
+
+
+8. THAM CHIẾU
+================================================================================
+
+Paper gốc EDA:
+  Wei, J., & Zou, K. (2019).
+  "EDA: Easy Data Augmentation Techniques for Boosting Performance
+   on Text Classification Tasks."
+  Proceedings of EMNLP-IJCNLP 2019, pp. 6382–6388.
+  https://aclanthology.org/D19-1670/
+
+Nguồn dữ liệu STIX (Cyber EDA):
+  MITRE ATT&CK STIX Data:
+  https://github.com/mitre-attack/attack-stix-data
+
+Nguồn từ điển Generic EDA:
+  WordNet 3.1 (Princeton University Cognitive Science Laboratory)
+  NLTK Interface: nltk.corpus.wordnet
+  https://wordnet.princeton.edu/
+
+Files code dự án liên quan:
+  src/augmentation.py                    -- Cyber EDA pipeline
+  src/generic_eda.py                     -- Generic WordNet EDA pipeline
+  src/genericeda_ratio_ablation_study.py -- Ablation study cho alpha
+  results/genericeda_ratio_ablation/     -- Kết quả ablation
+
+
+================================================================================
+  Tong hop boi: AI Classification & Mapping CTI into MITRE ATT&CK Techniques
+  Ngay: 01/09/2026
+================================================================================

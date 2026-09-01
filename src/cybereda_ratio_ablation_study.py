@@ -219,7 +219,7 @@ def print_console_table(results):
 # Main Tuning Execution
 # ===========================================================================
 
-def run_ablation_study(target_dataset='cti_to_mitre'):
+def run_ablation_study(target_dataset='joint'):
     project_root = Path(__file__).resolve().parent.parent
     data_dir     = project_root / 'dataset' / 'processed' / target_dataset
     out_dir      = project_root / 'results' / 'cybereda_ratio_ablation'
@@ -396,8 +396,8 @@ def run_ablation_study(target_dataset='cti_to_mitre'):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Cyber EDA Ratio Tuning Experiment")
-    parser.add_argument('--target_dataset', type=str, default='cti_to_mitre',
+    parser.add_argument('--target_dataset', type=str, default='joint',
                         choices=['cti_to_mitre', 'joint', 'tram'],
-                        help='Dataset to run tuning on (default: cti_to_mitre)')
+                        help='Dataset to run tuning on (default: joint)')
     args = parser.parse_args()
     run_ablation_study(target_dataset=args.target_dataset)
