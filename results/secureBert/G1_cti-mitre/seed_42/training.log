@@ -8,143 +8,143 @@ MinorityF2=True
 ======================================================================
 STAGE 1 — GENERIC — EPOCH 1/6
 ======================================================================
-Train Loss: 1.880089
-Validation Micro F1: 46.91%
-Validation Macro F1: 21.73%
-Validation Macro Recall: 21.20%
+Train Loss: 1.887829
+Validation Micro F1: 41.07%
+Validation Macro F1: 14.60%
+Validation Macro Recall: 16.24%
 Best Epoch: 1
-Best Validation Macro F1 @0.5: 21.73%
+Best Validation Macro F1 @0.5: 14.60%
 Patience: 0/2
 ======================================================================
 
 ======================================================================
 STAGE 1 — GENERIC — EPOCH 2/6
 ======================================================================
-Train Loss: 0.410816
-Validation Micro F1: 64.74%
-Validation Macro F1: 47.28%
-Validation Macro Recall: 52.17%
+Train Loss: 0.474233
+Validation Micro F1: 65.53%
+Validation Macro F1: 46.92%
+Validation Macro Recall: 51.42%
 Best Epoch: 2
-Best Validation Macro F1 @0.5: 47.28%
+Best Validation Macro F1 @0.5: 46.92%
 Patience: 0/2
 ======================================================================
 
 ======================================================================
 STAGE 1 — GENERIC — EPOCH 3/6
 ======================================================================
-Train Loss: 0.171779
-Validation Micro F1: 69.36%
-Validation Macro F1: 56.03%
-Validation Macro Recall: 61.31%
+Train Loss: 0.216087
+Validation Micro F1: 70.54%
+Validation Macro F1: 56.30%
+Validation Macro Recall: 61.66%
 Best Epoch: 3
-Best Validation Macro F1 @0.5: 56.03%
+Best Validation Macro F1 @0.5: 56.30%
 Patience: 0/2
 ======================================================================
 
 ======================================================================
 STAGE 1 — GENERIC — EPOCH 4/6
 ======================================================================
-Train Loss: 0.073352
-Validation Micro F1: 73.45%
-Validation Macro F1: 59.08%
-Validation Macro Recall: 62.12%
+Train Loss: 0.101679
+Validation Micro F1: 74.10%
+Validation Macro F1: 57.87%
+Validation Macro Recall: 60.04%
 Best Epoch: 4
-Best Validation Macro F1 @0.5: 59.08%
+Best Validation Macro F1 @0.5: 57.87%
 Patience: 0/2
 ======================================================================
 
 ======================================================================
 STAGE 1 — GENERIC — EPOCH 5/6
 ======================================================================
-Train Loss: 0.030908
-Validation Micro F1: 74.83%
-Validation Macro F1: 59.10%
-Validation Macro Recall: 60.61%
+Train Loss: 0.046499
+Validation Micro F1: 75.35%
+Validation Macro F1: 59.07%
+Validation Macro Recall: 61.48%
 Best Epoch: 5
-Best Validation Macro F1 @0.5: 59.10%
+Best Validation Macro F1 @0.5: 59.07%
 Patience: 0/2
 ======================================================================
 
 ======================================================================
 STAGE 1 — GENERIC — EPOCH 6/6
 ======================================================================
-Train Loss: 0.016085
-Validation Micro F1: 75.09%
-Validation Macro F1: 59.78%
-Validation Macro Recall: 61.12%
-Best Epoch: 6
-Best Validation Macro F1 @0.5: 59.78%
-Patience: 0/2
+Train Loss: 0.025065
+Validation Micro F1: 75.36%
+Validation Macro F1: 58.77%
+Validation Macro Recall: 60.55%
+Best Epoch: 5
+Best Validation Macro F1 @0.5: 59.07%
+Patience: 1/2
 ======================================================================
 
 ======================================================================
 STAGE 2 — ORIGINAL ONLY — EPOCH 1/6
 ======================================================================
-Train Loss: 0.021151
-Validation Micro F1: 73.22%
-Validation Macro F1: 56.90%
-Validation Macro Recall: 58.46%
+Train Loss: 0.034811
+Validation Micro F1: 73.26%
+Validation Macro F1: 58.34%
+Validation Macro Recall: 60.22%
 Best Epoch: 1
-Best Validation Macro F1 @0.5: 56.90%
+Best Validation Macro F1 @0.5: 58.34%
 Patience: 0/2
 ======================================================================
 
 ======================================================================
 STAGE 2 — ORIGINAL ONLY — EPOCH 2/6
 ======================================================================
-Train Loss: 0.017824
-Validation Micro F1: 74.64%
-Validation Macro F1: 57.97%
-Validation Macro Recall: 59.14%
+Train Loss: 0.026490
+Validation Micro F1: 75.89%
+Validation Macro F1: 58.46%
+Validation Macro Recall: 59.62%
 Best Epoch: 2
-Best Validation Macro F1 @0.5: 57.97%
+Best Validation Macro F1 @0.5: 58.46%
 Patience: 0/2
 ======================================================================
 
 ======================================================================
 STAGE 2 — ORIGINAL ONLY — EPOCH 3/6
 ======================================================================
-Train Loss: 0.008479
-Validation Micro F1: 75.19%
-Validation Macro F1: 57.52%
-Validation Macro Recall: 57.54%
-Best Epoch: 2
-Best Validation Macro F1 @0.5: 57.97%
-Patience: 1/2
+Train Loss: 0.010979
+Validation Micro F1: 76.56%
+Validation Macro F1: 58.71%
+Validation Macro Recall: 59.06%
+Best Epoch: 3
+Best Validation Macro F1 @0.5: 58.71%
+Patience: 0/2
 ======================================================================
 
 ======================================================================
 STAGE 2 — ORIGINAL ONLY — EPOCH 4/6
 ======================================================================
-Train Loss: 0.003510
-Validation Micro F1: 76.08%
-Validation Macro F1: 58.97%
-Validation Macro Recall: 59.43%
+Train Loss: 0.004511
+Validation Micro F1: 77.48%
+Validation Macro F1: 61.03%
+Validation Macro Recall: 60.96%
 Best Epoch: 4
-Best Validation Macro F1 @0.5: 58.97%
+Best Validation Macro F1 @0.5: 61.03%
 Patience: 0/2
 ======================================================================
 
 ======================================================================
 STAGE 2 — ORIGINAL ONLY — EPOCH 5/6
 ======================================================================
-Train Loss: 0.001657
-Validation Micro F1: 76.33%
-Validation Macro F1: 59.76%
-Validation Macro Recall: 60.16%
-Best Epoch: 5
-Best Validation Macro F1 @0.5: 59.76%
-Patience: 0/2
+Train Loss: 0.002363
+Validation Micro F1: 77.33%
+Validation Macro F1: 59.96%
+Validation Macro Recall: 60.20%
+Best Epoch: 4
+Best Validation Macro F1 @0.5: 61.03%
+Patience: 1/2
 ======================================================================
 
 ======================================================================
 STAGE 2 — ORIGINAL ONLY — EPOCH 6/6
 ======================================================================
-Train Loss: 0.001206
-Validation Micro F1: 76.12%
-Validation Macro F1: 59.28%
-Validation Macro Recall: 59.19%
-Best Epoch: 5
-Best Validation Macro F1 @0.5: 59.76%
-Patience: 1/2
+Train Loss: 0.001644
+Validation Micro F1: 77.84%
+Validation Macro F1: 60.52%
+Validation Macro Recall: 60.47%
+Best Epoch: 4
+Best Validation Macro F1 @0.5: 61.03%
+Patience: 2/2
 ======================================================================
