@@ -1,2 +1,2 @@
 scenario,dataset_subset,training_seconds,inference_seconds,inference_ms_per_sample,total_params,trainable_params,device
-G1,tram,63.98556327819824,0.2599165439605713,0.18252566289365962,3231734,3231734,cuda
+G1,tram,65.5801784992218,0.2707695960998535,0.19014718827236904,3231734,3231734,cuda

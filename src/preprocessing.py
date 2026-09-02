@@ -271,7 +271,7 @@ if __name__ == '__main__':
     parser.add_argument('--train_size', type=float, default=0.70, help='Train set split ratio (default: 0.70)')
     parser.add_argument('--val_size', type=float, default=0.10, help='Validation set split ratio (default: 0.10)')
     parser.add_argument('--test_size', type=float, default=0.20, help='Test set split ratio (default: 0.20)')
-    parser.add_argument('--seed', type=int, default=42, help='Random seed for stratification')
+    parser.add_argument('--seed', '--random_state', dest='seed', type=int, default=42, help='Random seed for stratification (default: 42)')
     
     args = parser.parse_args()
     if args.target_dataset == 'all':
