@@ -1,0 +1,32 @@
+{
+  "scenario": "B1",
+  "scenario_title": "Cyber EDA one-stage",
+  "seed": 42,
+  "stage1_mode": "cyber",
+  "stage1_source_files": [
+    "train_augmented_eda.csv"
+  ],
+  "stage2": false,
+  "minority_f2": false,
+  "stage1_best_epoch": 6,
+  "stage1_best_macro_f1_at_05": 0.6015181233582194,
+  "stage2_best_epoch": null,
+  "stage2_best_macro_f1_at_05": null,
+  "global_threshold": 0.61,
+  "macro_optimal_threshold": 0.53,
+  "minority_threshold": null,
+  "validation_global": {
+    "micro_precision": 0.7787610619469026,
+    "micro_recall": 0.7474903474903475,
+    "micro_f1": 0.7628053585500394,
+    "macro_precision": 0.6418224673966225,
+    "macro_recall": 0.6004675001291655,
+    "macro_f1": 0.6007211586440627,
+    "weighted_f1": 0.7422969500673292,
+    "hamming_loss": 0.0024726854514088557,
+    "avg_predicted_labels": 0.9598455598455599
+  },
+  "validation_minority_f2": null,
+  "validation_minority_macro_f2": null,
+  "validation_minority_macro_recall": null
+}
