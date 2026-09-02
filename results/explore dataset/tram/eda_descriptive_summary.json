@@ -1,0 +1,20 @@
+{
+  "dataset_name": "TRAM",
+  "dataset_key": "tram",
+  "total_train_samples": 6803,
+  "total_test_samples": 1705,
+  "unique_active_labels": 50,
+  "sample_count_descriptive_stats": {
+    "mean": 151.2,
+    "std": 181.6136289051062,
+    "min": 9.0,
+    "25_percentile": 65.5,
+    "median_50_percentile": 94.5,
+    "75_percentile": 156.75,
+    "max": 1034.0
+  },
+  "recommended_target_count": {
+    "by_mean": 151,
+    "by_median": 94
+  }
+}

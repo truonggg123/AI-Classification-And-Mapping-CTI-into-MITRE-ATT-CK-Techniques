@@ -1,0 +1,2 @@
+scenario,dataset_subset,stage1_rows,stage2_rows,validation_rows,test_rows,vocab_size,num_labels
+B2_E1,joint,21941,14075,2038,4001,14166,188

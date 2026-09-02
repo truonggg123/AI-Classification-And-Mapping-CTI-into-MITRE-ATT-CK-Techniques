@@ -1,0 +1,33 @@
+{
+  "target_dataset": "tram",
+  "initial_samples": 8546,
+  "removed_outliers_count": 38,
+  "outlier_filter_rule": "Label_Count <= 3",
+  "final_valid_samples": 7249,
+  "train_samples": 5103,
+  "val_samples": 722,
+  "test_samples": 1424,
+  "train_ratio": 0.704,
+  "val_ratio": 0.0996,
+  "test_ratio": 0.1964,
+  "total_unique_target_labels": 50,
+  "train_label_coverage": 50,
+  "val_label_coverage": 50,
+  "test_label_coverage": 50,
+  "random_seed": 42,
+  "split_method": "MultilabelStratifiedShuffleSplit (70/10/20)",
+  "anonymized_entities": [
+    "CVE",
+    "IPV4",
+    "URL",
+    "FILE_PATH",
+    "HASH"
+  ],
+  "output_files": {
+    "processed_dataset": "dataset\\processed\\tram\\02_processed_cti_dataset.csv",
+    "train_set": "dataset\\processed\\tram\\train.csv",
+    "val_set": "dataset\\processed\\tram\\val.csv",
+    "test_set": "dataset\\processed\\tram\\test.csv",
+    "multilabel_binarizer": "dataset\\processed\\tram\\multilabel_binarizer.pkl"
+  }
+}

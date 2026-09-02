@@ -1,0 +1,20 @@
+{
+  "dataset_name": "Joint CTI-T-Mitre + TRAM Dataset",
+  "dataset_key": "joint",
+  "total_train_samples": 17161,
+  "total_test_samples": 4291,
+  "unique_active_labels": 188,
+  "sample_count_descriptive_stats": {
+    "mean": 95.25,
+    "std": 176.0109872907337,
+    "min": 3.0,
+    "25_percentile": 14.0,
+    "median_50_percentile": 28.5,
+    "75_percentile": 98.75,
+    "max": 1432.0
+  },
+  "recommended_target_count": {
+    "by_mean": 95,
+    "by_median": 28
+  }
+}

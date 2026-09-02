@@ -1,10 +1,10 @@
-models/
-*.joblib
-
-.idea/
-
+/dataset/processed/
+*.zip
 __pycache__/
-.ipynb_checkpoints/
+*.py[cod]
 
-dataset/processed/
-results/
+# PyTorch Model Checkpoints & Large Weights
+*.pt
+*.pth
+*.bin
+*.npz

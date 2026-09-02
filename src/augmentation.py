@@ -1,13 +1,16 @@
 """
-CTI Data Augmentation Module
-Implements Cyber EDA, Offline Back Translation (English -> French -> English),
-and Hybrid (Back Translation + Cyber EDA) augmentation.
-Balances the minority classes in train.csv to have at least 300 samples.
+CTI Data Augmentation Module (Optimized for Benchmarking)
+Implements Cyber EDA (Full & Atomic operations: SR, RI, RS, RD) 
+and Offline Back Translation (English -> French -> English).
+Balances minority classes in train.csv while protecting domain entities.
 
 Usage:
-    python src/augmentation.py --mode eda
-    python src/augmentation.py --mode bt
-    python src/augmentation.py --mode hybrid
+    python src/augmentation.py --mode sr        # Synonym Replacement only
+    python src/augmentation.py --mode ri        # Random Insertion only
+    python src/augmentation.py --mode rs        # Random Swap only
+    python src/augmentation.py --mode rd        # Random Deletion only
+    python src/augmentation.py --mode eda       # Full Cyber EDA (SR + RI + RS + RD)
+    python src/augmentation.py --mode bt        # Offline Back Translation
 """
 
 import argparse
@@ -21,68 +24,90 @@ import numpy as np
 from pathlib import Path
 from collections import Counter
 from tqdm import tqdm
-
 def build_cyber_knowledge_base(cache_dir="dataset/processed", force_download=False):
     """
-    Thu thập và xây dựng:
-    1. Protected List: Danh sách các thuật ngữ bảo vệ (Tools, Malware, Techniques & IDs).
-    2. Synonym Dictionary: Từ điển đồng nghĩa/biệt danh (Aliases) cho APT Groups, Malware & Tools.
-    
-    Tối ưu hóa:
-    - Loại bỏ thư viện pyattck, trích xuất toàn bộ từ MITRE STIX JSON gốc.
-    - Hỗ trợ lưu cache offline tự động để tăng tốc độ chạy và hoạt động không cần mạng.
-    - Giải quyết xung đột/ghi đè alias bằng Set Merging.
-    - Hỗ trợ tự động thêm mã kỹ thuật cha khi gặp sub-technique.
+    Extracts and builds:
+    1. Protected List: Technical entity tokens [CVE], [IPV4], etc. (preserves tokenizer integrity).
+    2. Synonym Dictionary: Domain aliases/synonyms for APT Groups, Malware & Tools.
     """
     cache_path = Path(cache_dir) / "enterprise-attack.json"
     url = "https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/enterprise-attack/enterprise-attack.json"
 
-    if not cache_path.exists() or force_download:
+    # Priority search locations for STIX JSON
+    potential_files = [
+        Path('dataset/processed/enterprise-attack.json'),
+        Path(cache_dir) / "enterprise-attack.json",
+        Path('dataset/enterprise-attack.json'),
+        Path('enterprise-attack.json'),
+        Path('/kaggle/input/enterprise-attack.json')
+    ]
+    
+    cache_path = None
+    if not force_download:
+        for p in potential_files:
+            if p.exists() and p.stat().st_size > 10000:
+                cache_path = p
+                print(f"[INFO] Found existing enterprise-attack.json at: {cache_path}")
+                break
+
+    if cache_path is None or force_download:
+        # Default destination is dataset/processed/enterprise-attack.json
+        target_dir = Path('dataset/processed')
+        is_writable = False
+        try:
+            target_dir.mkdir(parents=True, exist_ok=True)
+            test_file = target_dir / ".write_test"
+            test_file.touch()
+            test_file.unlink()
+            is_writable = True
+        except (OSError, PermissionError):
+            is_writable = False
+
+        if not is_writable:
+            target_dir = Path("/kaggle/working") if Path("/kaggle/working").exists() else Path(".")
+            target_dir.mkdir(parents=True, exist_ok=True)
+
+        cache_path = target_dir / "enterprise-attack.json"
+        temp_download_path = target_dir / "enterprise-attack.json.tmp"
+        
         print(f"[INFO] Downloading MITRE STIX JSON from GitHub ({url})...")
         try:
             req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-            with urllib.request.urlopen(req, timeout=30) as response:
+            with urllib.request.urlopen(req, timeout=60) as response:
                 cache_path.parent.mkdir(parents=True, exist_ok=True)
-                with open(cache_path, 'wb') as f:
+                with open(temp_download_path, 'wb') as f:
                     f.write(response.read())
-            print(f"[INFO] Download and cache saved to {cache_path}")
-        except Exception as e:
-            if cache_path.exists():
-                print(f"[WARNING] Failed to download new data ({e}). Using existing cache.")
+            # Atomic rename once download is 100% complete
+            if temp_download_path.exists() and temp_download_path.stat().st_size > 10000:
+                if cache_path.exists():
+                    cache_path.unlink()
+                temp_download_path.rename(cache_path)
+                print(f"[INFO] Download and cache saved to {cache_path}")
             else:
-                raise RuntimeError(f"Cannot download STIX JSON and no local cache found: {e}")
+                raise RuntimeError("Downloaded file is incomplete or corrupted.")
+        except Exception as e:
+            if temp_download_path.exists():
+                temp_download_path.unlink()
+            # If an existing file exists and has data, use it
+            valid_existing = [p for p in potential_files if p.exists() and p.stat().st_size > 10000]
+            if valid_existing:
+                cache_path = valid_existing[0]
+                print(f"[WARNING] Download failed ({e}). Falling back to existing cache at {cache_path}.")
+            else:
+                raise RuntimeError(f"Cannot download STIX JSON and no valid local cache found: {e}")
     else:
         print(f"[INFO] Using cached STIX JSON at: {cache_path}")
 
     with open(cache_path, 'r', encoding='utf-8') as f:
         stix_data = json.load(f)
 
-    protected_set = set()
+    protected_set = set(SPECIAL_TOKENS)
     synonym_raw = {}
 
-    common_system_terms = {
-        "powershell", "cmd.exe", "cmd", "bash", "registry", "dll", "exe",
-        "bypass", "privilege", "escalation", "port", "http", "https", "ssh",
-        "system32", "lsass.exe", "svchost.exe", "active directory"
-    }
-    protected_set.update(common_system_terms)
-
+    # Extract aliases/synonyms for APT Groups, Malware & Tools from STIX
     for obj in stix_data.get('objects', []):
         obj_type = obj.get('type')
         name = obj.get('name', '').strip().lower()
-
-        if obj_type in ['tool', 'malware', 'attack-pattern']:
-            if name:
-                protected_set.add(name)
-            
-            for ref in obj.get('external_references', []):
-                if ref.get('source_name') == 'mitre-attack':
-                    mitre_id = ref.get('external_id', '').strip().lower()
-                    if mitre_id:
-                        protected_set.add(mitre_id)
-                        if '.' in mitre_id:
-                            parent_id = mitre_id.split('.')[0]
-                            protected_set.add(parent_id)
 
         if obj_type in ['intrusion-set', 'malware', 'tool']:
             primary_name = name
@@ -103,7 +128,7 @@ def build_cyber_knowledge_base(cache_dir="dataset/processed", force_download=Fal
 
     synonym_dict = {k: sorted(list(v)) for k, v in synonym_raw.items()}
 
-    print(f"[INFO] Completed Protected List: {len(protected_set)} terms.")
+    print(f"[INFO] Completed Protected List: {len(protected_set)} tokens.")
     print(f"[INFO] Completed Synonym Dictionary: {len(synonym_dict)} entries.")
 
     return protected_set, synonym_dict
@@ -111,13 +136,13 @@ def build_cyber_knowledge_base(cache_dir="dataset/processed", force_download=Fal
 SPECIAL_TOKENS = ["[CVE]", "[URL]", "[FILE_PATH]", "[IPV4]", "[HASH]"]
 
 def is_special_token(word):
-    return word.strip().upper() in SPECIAL_TOKENS or (word.startswith('[') and word.endswith(']'))
+    # Automatically preserves any token in bracket format e.g. [CVE], [REGISTRY], [CUSTOM_TOKEN]
+    clean = word.strip().upper()
+    return clean in SPECIAL_TOKENS or (clean.startswith('[') and clean.endswith(']'))
 
-def is_protected(word, protected_set):
-    if is_special_token(word):
-        return True
-    clean_word = word.lower().strip(".,;:!?()\"'")
-    return clean_word in protected_set
+def is_protected(word, protected_set=None):
+    # Only protects technical entity placeholders, preserving tokenizer integrity (identical to Generic EDA)
+    return is_special_token(word)
 
 # --- Cyber EDA implementation ---
 
@@ -125,7 +150,6 @@ def synonym_replacement(words, n, synonym_dict):
     new_words = words.copy()
     sentence_words = set([w.lower().strip(".,;:!?()\"'") for w in new_words])
     
-    # Lọc trước các key có khả năng khớp (tiết kiệm thời gian chạy)
     candidate_keys = []
     for key in synonym_dict:
         key_words = key.split()
@@ -150,9 +174,22 @@ def synonym_replacement(words, n, synonym_dict):
                     if syns:
                         synonym = random.choice(syns)
                         syn_words = synonym.split()
+                        
+                        # Preserve capitalization of first word
                         if new_words[i] and new_words[i][0].isupper():
                             syn_words[0] = syn_words[0].capitalize()
                         
+                        # Preserve trailing punctuation from last replaced word if present
+                        last_orig_word = new_words[i+k-1]
+                        punct = ""
+                        for char in reversed(last_orig_word):
+                            if char in ".,;:!?":
+                                punct = char + punct
+                            else:
+                                break
+                        if punct:
+                            syn_words[-1] = syn_words[-1] + punct
+
                         new_words[i:i+k] = syn_words
                         num_replaced += 1
                         i += len(syn_words)
@@ -162,9 +199,17 @@ def synonym_replacement(words, n, synonym_dict):
             i += 1
     return new_words
 
-def random_deletion(words, p, protected_set):
+def random_deletion(words, p, protected_set, min_words=5):
+    """
+    Randomly deletes words with probability p, keeping protected entity tokens.
+    Guarantees the output retains at least min_words (or original length if shorter)
+    to prevent semantic collapse into 1-2 word fragments.
+    """
     if len(words) <= 1:
         return words
+    
+    target_min = min(len(words), min_words)
+    
     new_words = []
     for word in words:
         if is_protected(word, protected_set):
@@ -173,8 +218,14 @@ def random_deletion(words, p, protected_set):
         r = random.uniform(0, 1)
         if r > p:
             new_words.append(word)
-    if len(new_words) == 0:
-        return [random.choice(words)]
+            
+    # Guard against over-deletion: preserve at least target_min words
+    if len(new_words) < target_min:
+        chosen_indices = sorted(random.sample(range(len(words)), target_min))
+        protected_indices = {i for i, w in enumerate(words) if is_protected(w, protected_set)}
+        all_chosen = sorted(set(chosen_indices) | protected_indices)
+        new_words = [words[i] for i in all_chosen]
+        
     return new_words
 
 def random_swap(words, n, protected_set):
@@ -198,7 +249,17 @@ def swap_word(new_words, protected_set):
     if is_protected(new_words[random_idx_1], protected_set) or is_protected(new_words[random_idx_2], protected_set):
         return new_words
         
-    new_words[random_idx_1], new_words[random_idx_2] = new_words[random_idx_2], new_words[random_idx_1]
+    # Preserve trailing punctuation at the original position in sentence
+    def split_punct(w):
+        clean = w.rstrip(".,;:!?")
+        punct = w[len(clean):]
+        return clean, punct
+
+    w1_clean, w1_punct = split_punct(new_words[random_idx_1])
+    w2_clean, w2_punct = split_punct(new_words[random_idx_2])
+
+    new_words[random_idx_1] = w2_clean + w1_punct
+    new_words[random_idx_2] = w1_clean + w2_punct
     return new_words
 
 def random_insertion(words, n, synonym_dict):
@@ -212,7 +273,6 @@ def add_word(new_words, synonym_dict):
         return
     sentence_words = set([w.lower().strip(".,;:!?()\"'") for w in new_words])
     
-    # Lọc trước các key có khả năng khớp
     candidate_keys = []
     for key in synonym_dict:
         key_words = key.split()
@@ -243,7 +303,14 @@ def add_word(new_words, synonym_dict):
         for offset, w in enumerate(syn_words):
             new_words.insert(random_idx + offset, w)
 
-def cyber_eda(text, protected_set, synonym_dict, alpha_sr=0.1, alpha_ri=0.05, alpha_rs=0.05, p_rd=0.05):
+def cyber_eda(text, protected_set, synonym_dict, alpha_sr=0.21, alpha_ri=0.21, alpha_rs=0.21, p_rd=0.21):
+    """
+    Domain-Aware Cyber EDA pipeline (Optimal Uniform Alpha = 0.21):
+    - alpha_sr: Synonym Replacement ratio (0.21)
+    - alpha_ri: Random Insertion ratio (0.21)
+    - alpha_rs: Random Swap ratio (0.21)
+    - p_rd: Random Deletion probability (0.21)
+    """
     words = text.split()
     num_words = len(words)
     if num_words == 0:
@@ -260,154 +327,139 @@ def cyber_eda(text, protected_set, synonym_dict, alpha_sr=0.1, alpha_ri=0.05, al
 
     return " ".join(words)
 
+def single_eda(text, op, protected_set, synonym_dict, alpha_sr=0.21, alpha_ri=0.21, alpha_rs=0.21, p_rd=0.21):
+    """
+    Applies a single atomic EDA operation (SR, RI, RS, or RD) with optimal alpha=0.21.
+    """
+    words = text.split()
+    num_words = len(words)
+    if num_words == 0:
+        return text
+
+    if op in ['sr', 'synonym']:
+        n_sr = max(1, int(alpha_sr * num_words))
+        words = synonym_replacement(words, n_sr, synonym_dict)
+    elif op in ['ri', 'insert']:
+        n_ri = max(1, int(alpha_ri * num_words))
+        words = random_insertion(words, n_ri, synonym_dict)
+    elif op in ['rs', 'swap']:
+        n_rs = max(1, int(alpha_rs * num_words))
+        words = random_swap(words, n_rs, protected_set)
+    elif op in ['rd', 'delete']:
+        words = random_deletion(words, p_rd, protected_set)
+    else:
+        raise ValueError(f"Unknown single EDA operation: {op}")
+
+    return " ".join(words)
+
 
 # --- Back Translation implementation ---
 
 TOKEN_MAP = {
-    "[CVE]": "__CVE__",
-    "[URL]": "__URL__",
-    "[FILE_PATH]": "__FILE_PATH__",
-    "[IPV4]": "__IPV4__",
-    "[HASH]": "__HASH__"
+    "[CVE]": "__TOKEN_CVE__",
+    "[URL]": "__TOKEN_URL__",
+    "[FILE_PATH]": "__TOKEN_FILE_PATH__",
+    "[IPV4]": "__TOKEN_IPV4__",
+    "[HASH]": "__TOKEN_HASH__"
 }
 
 def mask_special_tokens(text):
-    for tok, mask in TOKEN_MAP.items():
-        text = text.replace(tok, mask)
-    return text
+    """Dynamically masks any bracketed token [XYZ] (e.g. [CVE], [URL], [FILE_PATH], [IPV4], [HASH], [REGISTRY]) into __TOKEN_XYZ__."""
+    def replace_bracket_token(match):
+        tok_name = match.group(1).upper()
+        return f"__TOKEN_{tok_name}__"
+    return re.sub(r'\[([A-Za-z0-9_]+)\]', replace_bracket_token, text)
 
 def unmask_special_tokens(text):
-    text = re.sub(r"__\s*CVE\s*__", " [CVE] ", text, flags=re.IGNORECASE)
-    text = re.sub(r"__\s*URL\s*__", " [URL] ", text, flags=re.IGNORECASE)
-    text = re.sub(r"__\s*FILE_PATH\s*__", " [FILE_PATH] ", text, flags=re.IGNORECASE)
-    text = re.sub(r"__\s*IPV4\s*__", " [IPV4] ", text, flags=re.IGNORECASE)
-    text = re.sub(r"__\s*HASH\s*__", " [HASH] ", text, flags=re.IGNORECASE)
+    """Dynamically restores __TOKEN_XYZ__ or variation back to original format [XYZ]."""
+    def restore_bracket_token(match):
+        tok_name = match.group(2).upper()
+        return f" [{tok_name}] "
+
+    # Dynamic match for any __TOKEN_XYZ__ or variation produced by translation models
+    text = re.sub(r"(__|_)\s*TOKEN_([A-Za-z0-9_]+)\s*(__|_)", restore_bracket_token, text, flags=re.IGNORECASE)
+
+    # Legacy/Fallback regex for raw __CVE__, __URL__, __FILE_PATH__, etc.
+    text = re.sub(r"(__|_)\s*(CVE|cve)\s*(__|_)", " [CVE] ", text)
+    text = re.sub(r"(__|_)\s*(URL|url)\s*(__|_)", " [URL] ", text)
+    text = re.sub(r"(__|_)\s*(FILE_PATH|file_path|chemin_de_fichier)\s*(__|_)", " [FILE_PATH] ", text, flags=re.IGNORECASE)
+    text = re.sub(r"(__|_)\s*(IPV4|ipv4|ip)\s*(__|_)", " [IPV4] ", text, flags=re.IGNORECASE)
+    text = re.sub(r"(__|_)\s*(HASH|hash)\s*(__|_)", " [HASH] ", text, flags=re.IGNORECASE)
     text = re.sub(r"\s+", " ", text).strip()
     return text
 
-class OfflineBackTranslator:
-    def __init__(self):
-        import torch
-        from transformers import MarianMTModel, MarianTokenizer
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        print(f"[INFO] Initializing translation models on device: {self.device}")
-        
-        self.en_fr_model_name = "Helsinki-NLP/opus-mt-en-fr"
-        self.fr_en_model_name = "Helsinki-NLP/opus-mt-fr-en"
-        
-        self.en_fr_tok = MarianTokenizer.from_pretrained(self.en_fr_model_name)
-        self.en_fr_model = MarianMTModel.from_pretrained(self.en_fr_model_name).to(self.device)
-        
-        self.fr_en_tok = MarianTokenizer.from_pretrained(self.fr_en_model_name)
-        self.fr_en_model = MarianMTModel.from_pretrained(self.fr_en_model_name).to(self.device)
-        
-        self.cache = {}
-
-    def translate_batch(self, texts):
-        # Mask special tokens
-        masked_texts = [mask_special_tokens(t) for t in texts]
-        
-        # Find unique texts not in cache
-        unique_masked = list(set([t for t in masked_texts if t not in self.cache]))
-        
-        if unique_masked:
-            print(f"[INFO] Translating {len(unique_masked)} unique segments...")
-            import torch
-            
-            # Translate to French (chunk size 32)
-            fr_texts = []
-            batch_size = 32
-            for i in range(0, len(unique_masked), batch_size):
-                batch = unique_masked[i:i+batch_size]
-                inputs = self.en_fr_tok(batch, return_tensors="pt", padding=True, truncation=True, max_length=256).to(self.device)
-                with torch.no_grad():
-                    outputs = self.en_fr_model.generate(**inputs, num_beams=1, max_new_tokens=256)
-                fr_texts.extend(self.en_fr_tok.batch_decode(outputs, skip_special_tokens=True))
-                
-            # Translate back to English
-            en_texts = []
-            for i in range(0, len(fr_texts), batch_size):
-                batch = fr_texts[i:i+batch_size]
-                inputs = self.fr_en_tok(batch, return_tensors="pt", padding=True, truncation=True, max_length=256).to(self.device)
-                with torch.no_grad():
-                    outputs = self.fr_en_model.generate(**inputs, num_beams=1, max_new_tokens=256)
-                en_texts.extend(self.fr_en_tok.batch_decode(outputs, skip_special_tokens=True))
-            
-            # Cache results
-            for original_masked, back_translated_masked in zip(unique_masked, en_texts):
-                self.cache[original_masked] = back_translated_masked
-
-        # Retrieve and unmask
-        results = []
-        for mt in masked_texts:
-            back_translated_masked = self.cache[mt]
-            results.append(unmask_special_tokens(back_translated_masked))
-            
-        return results
-
 # --- Main Pipeline ---
 
-def run_augmentation(mode='eda', train_file='dataset/processed/train_original_fixed.csv', target_count=300, save_csv=False):
-    train_path = Path(train_file)
-    df_train = pd.read_csv(train_path)
-    if 'is_augmented' not in df_train.columns:
-        df_train['is_augmented'] = 0
-    print(f"[INFO] Loaded training dataset with {len(df_train):,} samples.")
-    
-    # Khởi tạo và tải Cyber Knowledge Base từ STIX
-    protected_set, synonym_dict = build_cyber_knowledge_base(cache_dir=train_path.parent)
-    
-    if mode == 'hybrid':
-        bt_path = train_path.parent / "train_augmented_bt.csv"
-        if bt_path.exists():
-            print("[INFO] Found existing train_augmented_bt.csv. Using fast path for hybrid mode...")
-            df_bt = pd.read_csv(bt_path)
-            df_train_len = len(df_train)
-            df_augmented = df_bt.iloc[df_train_len:].copy().reset_index(drop=True)
-            
-            print("[INFO] Applying Cyber EDA on back-translated samples...")
-            tqdm.pandas(desc="Applying Cyber EDA")
-            df_augmented['Cleaned_Text'] = df_augmented['Cleaned_Text'].progress_apply(
-                lambda x: cyber_eda(x, protected_set, synonym_dict)
-            )
-            df_augmented['Cleaned_Text'] = df_augmented['Cleaned_Text'].apply(lambda x: re.sub(r'\s+', ' ', str(x)).strip())
-            
-            # Re-tokenize
-            df_augmented['Tokenized_Text'] = df_augmented['Cleaned_Text'].apply(
-                lambda x: " ".join(re.findall(r"[a-z0-9_\[\]]+(?:[./:-][a-z0-9_\[\]]+)*", str(x).lower()))
-            )
-            
-            df_new_train = pd.concat([df_train, df_augmented], ignore_index=True)
-            
-            # Recalculate label frequencies to verify boost
-            new_all_labels = [lbl for sublist in df_new_train['Labels'].apply(lambda x: str(x).split(',')) for lbl in sublist]
-            new_label_counts = Counter(new_all_labels)
-            new_minority_classes = {lbl: count for lbl, count in new_label_counts.items() if count < target_count}
-            
-            print(f"\n=== AUGMENTATION REPORT (HYBRID - FAST PATH) ===")
-            print(f"Original train size: {len(df_train):,} samples")
-            print(f"Augmented train size: {len(df_new_train):,} samples")
-            print(f"New minority classes (< {target_count}): {len(new_minority_classes)}")
-            
-            # Save output if requested
-            if save_csv:
-                output_path = train_path.parent / f"train_augmented_hybrid.csv"
-                df_new_train.to_csv(output_path, index=False, encoding='utf-8')
-                print(f"[SUCCESS] Saved augmented dataset to: {output_path}")
-            return df_new_train
-    
+def run_augmentation(mode='eda', train_file='dataset/processed/cti_to_mitre/train.csv', df_train=None, target_count=None, save_csv=False, cache_dir='dataset/processed', output_file=None, alpha_sr=0.21, alpha_ri=0.21, alpha_rs=0.21, p_rd=0.21, seed=42):
+    valid_modes = ['sr', 'synonym', 'ri', 'insert', 'rs', 'swap', 'rd', 'delete', 'eda', 'cyber_eda']
+    if mode not in valid_modes:
+        raise ValueError(f"Invalid mode '{mode}'. Choose from {valid_modes}")
+
+    # Fix Bug #2: Set random seed for full reproducibility
+    random.seed(seed)
+    np.random.seed(seed)
+
+    if df_train is None:
+        train_path = Path(train_file)
+        if not train_path.exists():
+            # Try resolving relative path if needed
+            possible_paths = [
+                train_path,
+                Path('dataset/processed/cti_to_mitre/train.csv'),
+                Path('dataset/processed/tram/train.csv'),
+                Path('dataset/processed/joint/train.csv')
+            ]
+            for p in possible_paths:
+                if p.exists():
+                    train_path = p
+                    break
+        df_train = pd.read_csv(train_path)
+        cache_path_dir = train_path.parent
+    else:
+        df_train = df_train.copy()
+        cache_path_dir = Path(cache_dir)
+        train_path = cache_path_dir / "train.csv"
+
     # Parse labels
     df_train['Label_List'] = df_train['Labels'].apply(lambda x: str(x).split(','))
     
-    # Calculate label frequencies
-    all_labels = [lbl for sublist in df_train['Label_List'] for lbl in sublist]
-    label_counts = Counter(all_labels)
-    print(f"[INFO] Total labels found: {len(label_counts)}")
+    # Track current dynamic label frequencies for Multi-Label Aware Greedy Sampling
+    dynamic_label_counts = Counter([lbl for sublist in df_train['Label_List'] for lbl in sublist])
+    print(f"[INFO] Total labels found: {len(dynamic_label_counts)}")
+
+    # Auto-resolve target_count based on empirical dataset MEAN if not explicitly specified
+    if target_count is None or target_count <= 0:
+        target_count = int(round(np.mean(list(dynamic_label_counts.values()))))
+        print(f"[INFO] Auto-resolved target_count to empirical dataset MEAN: {target_count} samples/class")
+    else:
+        print(f"[INFO] Using specified target_count: {target_count} samples/class")
+
+    if 'is_augmented' not in df_train.columns:
+        df_train['is_augmented'] = 0
+    print(f"[INFO] Loaded training dataset with {len(df_train):,} samples.")
+    print(f"[INFO] Cyber EDA Ratios: SR={alpha_sr}, RI={alpha_ri}, RS={alpha_rs}, RD={p_rd}")
     
-    minority_classes = {lbl: count for lbl, count in label_counts.items() if count < target_count}
-    print(f"[INFO] Classes requiring augmentation (< {target_count} samples): {len(minority_classes)}")
+    # Build Cyber Knowledge Base from STIX JSON
+    protected_set, synonym_dict = build_cyber_knowledge_base(cache_dir=cache_path_dir)
     
-    # Build a lookup table from label -> row indices
+    # Load validation and test text sets to strictly prevent data leakage during augmentation
+    forbidden_eval_texts = set()
+    for eval_file in ['val.csv', 'test.csv']:
+        eval_path = train_path.parent / eval_file
+        if eval_path.exists():
+            df_eval = pd.read_csv(eval_path)
+            if 'Cleaned_Text' in df_eval.columns:
+                for t in df_eval['Cleaned_Text'].dropna():
+                    norm_t = re.sub(r'\s+', ' ', str(t).lower()).strip()
+                    if norm_t:
+                        forbidden_eval_texts.add(norm_t)
+    if forbidden_eval_texts:
+        print(f"[INFO] Loaded {len(forbidden_eval_texts):,} validation/test texts into strict anti-leakage filter.")
+    
+    minority_classes = {lbl: dynamic_label_counts[lbl] for lbl in dynamic_label_counts if dynamic_label_counts[lbl] < target_count}
+    print(f"[INFO] Initial classes requiring augmentation (< {target_count} samples): {len(minority_classes)}")
+    
+    # Lookup table: Label -> list of row indices containing that label
     label_to_indices = {}
     for idx, row in df_train.iterrows():
         for lbl in row['Label_List']:
@@ -415,63 +467,48 @@ def run_augmentation(mode='eda', train_file='dataset/processed/train_original_fi
                 label_to_indices[lbl] = []
             label_to_indices[lbl].append(idx)
             
-    # Sample new samples to augment
-    new_rows = []
-    print("[INFO] Selecting samples for minority class boosting...")
-    
-    # We store which indices we select for augmentation so we can process them
+    # --- Multi-Label Aware Greedy Resampling ---
+    print("[INFO] Performing Multi-Label Aware Greedy Resampling...")
     indices_to_augment = []
-    indices_to_label = [] # Keep track of labels for augmented rows
     
-    for lbl, count in minority_classes.items():
-        needed = target_count - count
+    # Sort minority classes ascending by initial count
+    sorted_minority_labels = sorted(minority_classes.keys(), key=lambda l: dynamic_label_counts[l])
+    
+    for lbl in sorted_minority_labels:
         available_indices = label_to_indices[lbl]
-        
-        # Sample with replacement
-        sampled_indices = random.choices(available_indices, k=needed)
-        indices_to_augment.extend(sampled_indices)
-        
-    print(f"[INFO] Total samples selected for augmentation: {len(indices_to_augment):,}")
-    
-    # Perform translation first if needed
-    translator = None
-    if mode in ['bt', 'hybrid']:
-        print("[INFO] Initializing offline translator...")
-        translator = OfflineBackTranslator()
-        
-        # Gather unique texts to translate to avoid translating duplicates
-        unique_indices = list(set(indices_to_augment))
-        unique_texts = [df_train.iloc[idx]['Cleaned_Text'] for idx in unique_indices]
-        
-        # Batch translate all unique texts
-        translated_unique = []
-        batch_size = 128
-        for i in tqdm(range(0, len(unique_texts), batch_size), desc="Back Translation"):
-            batch = unique_texts[i:i+batch_size]
-            translated_batch = translator.translate_batch(batch)
-            translated_unique.extend(translated_batch)
+        while dynamic_label_counts[lbl] < target_count:
+            sampled_idx = random.choice(available_indices)
+            indices_to_augment.append(sampled_idx)
             
-        # Map back to original indices
-        text_map = {idx: trans for idx, trans in zip(unique_indices, translated_unique)}
-        
+            # Dynamically update counts for ALL labels present in the sampled row
+            for co_lbl in df_train.iloc[sampled_idx]['Label_List']:
+                dynamic_label_counts[co_lbl] += 1
+                
+    print(f"[INFO] Total samples selected for augmentation: {len(indices_to_augment):,}")
+            
     # Generate augmented rows
     augmented_records = []
-    for idx in tqdm(indices_to_augment, desc=f"Applying Augmentation ({mode})"):
+    for loop_i, idx in enumerate(tqdm(indices_to_augment, desc=f"Applying Augmentation ({mode})")):
         original_row = df_train.iloc[idx]
         original_text = original_row['Cleaned_Text']
         
-        if mode == 'eda':
-            augmented_text = cyber_eda(original_text, protected_set, synonym_dict)
-        elif mode == 'bt':
-            augmented_text = text_map[idx]
-        elif mode == 'hybrid':
-            translated_text = text_map[idx]
-            augmented_text = cyber_eda(translated_text, protected_set, synonym_dict)
-        else:
-            raise ValueError(f"Unknown mode: {mode}")
+        # Apply transformation with anti-leakage retry loop
+        augmented_text = original_text
+        for attempt in range(5):
+            if mode in ['eda', 'cyber_eda']:
+                candidate_text = cyber_eda(original_text, protected_set, synonym_dict, alpha_sr=alpha_sr, alpha_ri=alpha_ri, alpha_rs=alpha_rs, p_rd=p_rd)
+            elif mode in ['sr', 'synonym', 'ri', 'insert', 'rs', 'swap', 'rd', 'delete']:
+                candidate_text = single_eda(original_text, mode, protected_set, synonym_dict, alpha_sr=alpha_sr, alpha_ri=alpha_ri, alpha_rs=alpha_rs, p_rd=p_rd)
+            else:
+                raise ValueError(f"Unknown mode: {mode}")
+                
+            candidate_text = re.sub(r'\s+', ' ', candidate_text).strip()
+            norm_candidate = candidate_text.lower()
             
-        # Standardize whitespace & lower for tokenization
-        augmented_text = re.sub(r'\s+', ' ', augmented_text).strip()
+            # Ensure not empty and does not collide with validation or test sets
+            if candidate_text and norm_candidate not in forbidden_eval_texts:
+                augmented_text = candidate_text
+                break
         
         # Re-tokenize
         tokens = re.findall(r"[a-z0-9_\[\]]+(?:[./:-][a-z0-9_\[\]]+)*", augmented_text.lower())
@@ -491,30 +528,137 @@ def run_augmentation(mode='eda', train_file='dataset/processed/train_original_fi
     df_new_train = pd.concat([df_train.drop(columns=['Label_List']), df_augmented], ignore_index=True)
     
     # Recalculate label frequencies to verify boost
-    new_all_labels = [lbl for sublist in df_new_train['Labels'].apply(lambda x: str(x).split(',')) for lbl in sublist]
-    new_label_counts = Counter(new_all_labels)
-    new_minority_classes = {lbl: count for lbl, count in new_label_counts.items() if count < target_count}
+    final_all_labels = [lbl for sublist in df_new_train['Labels'].apply(lambda x: str(x).split(',')) for lbl in sublist]
+    final_label_counts = Counter(final_all_labels)
+    final_minority_classes = {lbl: count for lbl, count in final_label_counts.items() if count < target_count}
     
     print(f"\n=== AUGMENTATION REPORT ({mode.upper()}) ===")
     print(f"Original train size: {len(df_train):,} samples")
     print(f"Augmented train size: {len(df_new_train):,} samples")
     print(f"Original minority classes (< {target_count}): {len(minority_classes)}")
-    print(f"New minority classes (< {target_count}): {len(new_minority_classes)}")
+    print(f"Remaining minority classes (< {target_count}): {len(final_minority_classes)}")
     
     # Save output if requested
     if save_csv:
-        output_path = train_path.parent / f"train_augmented_{mode}.csv"
-        df_new_train.to_csv(output_path, index=False, encoding='utf-8')
-        print(f"[SUCCESS] Saved augmented dataset to: {output_path}")
+        output_filename = "train_augmented_eda.csv" if mode in ['eda', 'cyber_eda'] else f"train_augmented_{mode}.csv"
+        try:
+            output_path = train_path.parent / output_filename
+            df_new_train.to_csv(output_path, index=False, encoding='utf-8')
+            print(f"[SUCCESS] Saved augmented dataset to: {output_path}")
+        except Exception as e:
+            # Fallback to /kaggle/working/ if input directory is read-only
+            if Path('/kaggle/working').exists():
+                out_dir = Path(f"/kaggle/working/dataset/processed/{train_path.parent.name}")
+                out_dir.mkdir(parents=True, exist_ok=True)
+                output_path = out_dir / output_filename
+                df_new_train.to_csv(output_path, index=False, encoding='utf-8')
+                print(f"[SUCCESS] Saved augmented dataset (Kaggle working) to: {output_path}")
+            else:
+                print(f"[WARNING] Could not save CSV to disk ({e}). Returning augmented DataFrame in memory.")
     
     return df_new_train
 
+
+def run_all_benchmarks(
+    target_dataset='all',
+    mode='eda',
+    target_count=0,
+    alpha_sr=0.21,
+    alpha_ri=0.21,
+    alpha_rs=0.21,
+    p_rd=0.21,
+    seed=42,
+    save_csv=True
+):
+    """
+    Executes Cyber EDA augmentation across one or all 3 standard benchmarks ('cti_to_mitre', 'tram', 'joint').
+    """
+    if target_dataset == 'all':
+        benchmarks = ['cti_to_mitre', 'tram', 'joint']
+    elif target_dataset in ['joint', 'cti_to_mitre', 'tram']:
+        benchmarks = [target_dataset]
+    else:
+        raise ValueError(f"Unknown target_dataset: '{target_dataset}'. Choose from ['all', 'joint', 'cti_to_mitre', 'tram']")
+
+    print("=" * 80)
+    print(f"[START] RUNNING CYBER EDA AUGMENTATION PIPELINE")
+    print(f"Target Benchmarks: {benchmarks}")
+    print(f"Mode: {mode.upper()} | Ratios: SR={alpha_sr}, RI={alpha_ri}, RS={alpha_rs}, RD={p_rd} | Seed={seed}")
+    print("=" * 80)
+
+    for subset in benchmarks:
+        train_path = Path(f"dataset/processed/{subset}/train.csv")
+        if not train_path.exists():
+            print(f"[WARNING] Cannot find {train_path}. Skipping '{subset}' benchmark.")
+            continue
+        print(f"\n>>> Processing Benchmark: [{subset.upper()}] <<<")
+        run_augmentation(
+            mode=mode,
+            train_file=str(train_path),
+            target_count=target_count,
+            alpha_sr=alpha_sr,
+            alpha_ri=alpha_ri,
+            alpha_rs=alpha_rs,
+            p_rd=p_rd,
+            seed=seed,
+            save_csv=save_csv
+        )
+
+    print("\n" + "=" * 80)
+    print("[SUCCESS] COMPLETED CYBER EDA FOR ALL SPECIFIED BENCHMARKS!")
+    print("=" * 80)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="CTI Data Augmentation Pipeline")
-    parser.add_argument('--mode', type=str, default='eda', choices=['eda', 'bt', 'hybrid'], help='Augmentation mode')
-    parser.add_argument('--train_file', type=str, default='dataset/processed/train_original_fixed.csv', help='Path to input train.csv')
-    parser.add_argument('--target_count', type=int, default=300, help='Minimum sample count target per class')
-    parser.add_argument('--save_csv', action='store_true', help='Save augmented dataset to CSV file')
+    parser.add_argument(
+        '--target_dataset', 
+        type=str, 
+        default='all', 
+        choices=['all', 'joint', 'cti_to_mitre', 'tram'], 
+        help='Target dataset benchmark to run (default: all -> runs all 3 datasets)'
+    )
+    parser.add_argument(
+        '--mode', 
+        type=str, 
+        default='eda', 
+        choices=['sr', 'synonym', 'ri', 'insert', 'rs', 'swap', 'rd', 'delete', 'eda', 'cyber_eda'], 
+        help='Augmentation mode (default: eda)'
+    )
+    parser.add_argument('--train_file', type=str, default=None, help='Explicit path to input train.csv (overrides --target_dataset if provided)')
+    parser.add_argument('--target_count', type=int, default=0, help='Minimum sample count target per class (0 = Auto-resolve to dataset MEAN)')
+    parser.add_argument('--alpha_sr', type=float, default=0.21, help='Synonym Replacement ratio (default: 0.21)')
+    parser.add_argument('--alpha_ri', type=float, default=0.21, help='Random Insertion ratio (default: 0.21)')
+    parser.add_argument('--alpha_rs', type=float, default=0.21, help='Random Swap ratio (default: 0.21)')
+    parser.add_argument('--p_rd', type=float, default=0.21, help='Random Deletion probability (default: 0.21)')
+    parser.add_argument('--seed', type=int, default=42, help='Random seed for reproducibility (default: 42)')
+    parser.add_argument('--no_save', action='store_true', help='Do not save augmented dataset to CSV file (dry-run simulation)')
     args = parser.parse_args()
     
-    run_augmentation(mode=args.mode, train_file=args.train_file, target_count=args.target_count, save_csv=args.save_csv)
+    save_csv = not args.no_save
+
+    if args.train_file is not None:
+        run_augmentation(
+            mode=args.mode,
+            train_file=args.train_file,
+            target_count=args.target_count,
+            alpha_sr=args.alpha_sr,
+            alpha_ri=args.alpha_ri,
+            alpha_rs=args.alpha_rs,
+            p_rd=args.p_rd,
+            seed=args.seed,
+            save_csv=save_csv
+        )
+    else:
+        run_all_benchmarks(
+            target_dataset=args.target_dataset,
+            mode=args.mode,
+            target_count=args.target_count,
+            alpha_sr=args.alpha_sr,
+            alpha_ri=args.alpha_ri,
+            alpha_rs=args.alpha_rs,
+            p_rd=args.p_rd,
+            seed=args.seed,
+            save_csv=save_csv
+        )
+

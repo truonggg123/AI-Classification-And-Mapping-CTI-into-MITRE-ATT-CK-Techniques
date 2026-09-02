@@ -1,0 +1,2 @@
+scenario,dataset_subset,stage1_rows,stage2_rows,validation_rows,test_rows,vocab_size,num_labels
+G1,tram,6949,5103,722,1424,9171,50

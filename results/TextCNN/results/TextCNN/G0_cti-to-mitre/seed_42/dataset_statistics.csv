@@ -1,0 +1,2 @@
+scenario,dataset_subset,stage1_rows,stage2_rows,validation_rows,test_rows,vocab_size,num_labels
+G0,cti_to_mitre,13004,0,1295,2579,8998,188

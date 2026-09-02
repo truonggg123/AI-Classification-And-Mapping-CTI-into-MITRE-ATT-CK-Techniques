@@ -1,0 +1,140 @@
+================================================================================
+          HUONG DAN SU DUNG DATA PIPELINE (CTI-TO-MITRE, TRAM & JOINT)
+================================================================================
+
+Tài liệu này cung cấp chi tiết tên các tập dữ liệu thô (Raw Datasets), các lệnh
+thực thi mô đun trong `src/`, và TOÀN BỘ FILE ĐẦU RA (Outputs) sinh ra sau từng bước.
+
+================================================================================
+0. DANH SÁCH TẬP DỮ LIỆU THÔ BAN ĐẦU (RAW DATASETS IN dataset/raw/)
+================================================================================
+Tất cả dữ liệu gốc chưa qua xử lý nằm trong thư mục `dataset/raw/`:
+
+1. Tập CTI-to-MITRE Raw:
+   - File path: `dataset/raw/dataset.csv` (12,944 mẫu CTI narrative với nhãn MITRE ATT&CK)
+
+2. Tập TRAM Raw:
+   - File path: `dataset/raw/TRAM dataset/multi_label.json` (Mẫu multi-label)
+   - File path: `dataset/raw/TRAM dataset/single_label.json` (Mẫu single-label)
+   - Tổng cộng: 8,508 mẫu báo cáo mối đe dọa từ dự án TRAM.
+
+3. Tập Joint Raw:
+   - Kết hợp cả 2 nguồn: `dataset/raw/dataset.csv` VÀ `dataset/raw/TRAM dataset/*.json`
+   - Tổng cộng: 21,452 mẫu.
+
+================================================================================
+1. BƯỚC 1: CHUẨN HÓA & KHỬ TRÙNG LẶP DỮ LIỆU (src/merge_datasets.py)
+================================================================================
+Mục đích: Đọc các file dữ liệu thô ở Bước 0, khử trùng lặp văn bản, ẩn mã Txxxx
+để chống rò rỉ nhãn (Label Leakage), và xuất file CSV chuẩn 2 cột (Cleaned_Text, Labels).
+
+- Bước 1.1: Tạo tập CTI-to-MITRE
+    Command: python src/merge_datasets.py --target_dataset cti_to_mitre
+    Raw Inputs : dataset/raw/dataset.csv
+    EXACT OUTPUT: dataset/processed/cti_to_mitre/raw_merged.csv (12,944 mẫu)
+
+- Bước 1.2: Tạo tập TRAM
+    Command: python src/merge_datasets.py --target_dataset tram
+    Raw Inputs : dataset/raw/TRAM dataset/multi_label.json & single_label.json
+    EXACT OUTPUT: dataset/processed/tram/raw_merged.csv (8,508 mẫu)
+
+- Bước 1.3: Tạo tập Joint (Hợp nhất cả 2 nguồn)
+    Command: python src/merge_datasets.py --target_dataset joint
+    Raw Inputs : dataset/raw/dataset.csv + dataset/raw/TRAM dataset/*.json
+    EXACT OUTPUT: dataset/processed/joint/raw_merged.csv (21,452 mẫu)
+
+================================================================================
+2. BƯỚC 2: TIỀN XỬ LÝ, ẨN THỰC THỂ & CHIA 80/20 (src/preprocessing.py)
+================================================================================
+Mục đích: Ẩn các thực thể kỹ thuật ([CVE], [URL], [IPV4], [FILE_PATH], [HASH]),
+tạo bộ binarizer nhãn động (multilabel_binarizer.pkl), và chia 80% Train / 20% Test
+theo thuật toán Multilabel Stratified Split.
+
+- Bước 2.1: Tiền xử lý tập CTI-to-MITRE
+    Command: python src/preprocessing.py --target_dataset cti_to_mitre
+    Input: dataset/processed/cti_to_mitre/raw_merged.csv
+    EXACT OUTPUTS:
+      1. dataset/processed/cti_to_mitre/train.csv (10,345 mẫu - 80%)
+      2. dataset/processed/cti_to_mitre/test.csv (2,599 mẫu - 20%)
+      3. dataset/processed/cti_to_mitre/multilabel_binarizer.pkl (Binarizer 188 Active Labels)
+
+- Bước 2.2: Tiền xử lý tập TRAM
+    Command: python src/preprocessing.py --target_dataset tram
+    Input: dataset/processed/tram/raw_merged.csv
+    EXACT OUTPUTS:
+      1. dataset/processed/tram/train.csv (6,803 mẫu - 80%)
+      2. dataset/processed/tram/test.csv (1,705 mẫu - 20%)
+      3. dataset/processed/tram/multilabel_binarizer.pkl (Binarizer 50 Active Labels)
+
+- Bước 2.3: Tiền xử lý tập JOINT
+    Command: python src/preprocessing.py --target_dataset joint
+    Input: dataset/processed/joint/raw_merged.csv
+    EXACT OUTPUTS:
+      1. dataset/processed/joint/train.csv (17,161 mẫu - 80%)
+      2. dataset/processed/joint/test.csv (4,291 mẫu - 20%)
+      3. dataset/processed/joint/multilabel_binarizer.pkl (Binarizer 188 Active Labels)
+
+================================================================================
+3. BƯỚC 3: TĂNG CƯỜNG DỮ LIỆU MẪU HIẾM (src/augmentation.py)
+================================================================================
+Mục đích: Gia tăng số lượng mẫu cho các nhãn hiếm (minority classes) trên tập Train.
+Sử dụng thuật toán Multi-Label Aware Greedy Resampling và Tập Bảo vệ Từ vựng TF-IDF.
+
+Mốc Target Count tự động khớp theo Mean thực nghiệm:
+  * CTI-to-MITRE : MEAN = 55 mẫu/nhãn  (Cân bằng 135 nhãn hiếm < 55)
+  * TRAM         : MEAN = 151 mẫu/nhãn (Cân bằng 36 nhãn hiếm < 151)
+  * JOINT        : MEAN = 95 mẫu/nhãn  (Cân bằng 138 nhãn hiếm < 95)
+
+Các Chế Độ Augmentation (`--mode`):
+  - `eda` : Cyber EDA (Phương pháp đề xuất)
+  - `sr`  : Synonym Replacement
+  - `ri`  : Random Insertion
+  - `rs`  : Random Swap
+  - `rd`  : Random Deletion
+
+Lệnh Thực Thi & EXACT OUTPUTS:
+
+- Chạy Cyber EDA cho CTI-to-MITRE:
+    Command: python src/augmentation.py --train_file dataset/processed/cti_to_mitre/train.csv --mode eda --save_csv
+    Input : dataset/processed/cti_to_mitre/train.csv
+    EXACT OUTPUT: dataset/processed/cti_to_mitre/train_augmented_eda.csv (14,929 mẫu)
+
+- Chạy Cyber EDA cho TRAM:
+    Command: python src/augmentation.py --train_file dataset/processed/tram/train.csv --mode eda --save_csv
+    Input : dataset/processed/tram/train.csv
+    EXACT OUTPUT: dataset/processed/tram/train_augmented_eda.csv (8,981 mẫu)
+
+- Chạy Cyber EDA cho JOINT:
+    Command: python src/augmentation.py --train_file dataset/processed/joint/train.csv --mode eda --save_csv
+    Input : dataset/processed/joint/train.csv
+    EXACT OUTPUT: dataset/processed/joint/train_augmented_eda.csv (23,910 mẫu)
+
+- Chạy các biến đổi Atomic (`sr`, `ri`, `rs`, `rd`):
+    Command: python src/augmentation.py --train_file dataset/processed/cti_to_mitre/train.csv --mode sr --save_csv
+    EXACT OUTPUT: dataset/processed/cti_to_mitre/train_augmented_sr.csv
+
+================================================================================
+4. BƯỚC 4: THỰC NGIỆM BENCHMARK TRÊN NOTEBOOKS & OUTPUTS BÁO CÁO (Notebooks 03-07)
+================================================================================
+Sau khi chạy xong các bước trên, thực thi các Notebook trong `notebooks/`:
+
+- Notebook 03 (`notebooks/03_kaggle_baseline_pipeline.ipynb`):
+    Thực thi 4 Scenario (A, B, C, D) đối chứng các mô hình Baseline (Logistic Regression, Linear SVC).
+    
+    EXACT OUTPUTS IN results/baseline_results/:
+      1. results/baseline_results/scenario_A_cti_to_mitre.csv
+      2. results/baseline_results/scenario_A_cti_to_mitre.png
+      3. results/baseline_results/scenario_B_tram.csv
+      4. results/baseline_results/scenario_B_tram.png
+      5. results/baseline_results/scenario_C_cross_dataset.csv
+      6. results/baseline_results/scenario_C_cross_dataset.png
+      7. results/baseline_results/scenario_D_joint_dataset.csv
+      8. results/baseline_results/scenario_D_joint_dataset.png
+      9. results/baseline_results/master_table_all_scenarios_comparison.csv
+
+- Notebooks Deep Learning (04-07):
+    - `04_textcnn_experiment.ipynb`
+    - `05_modernbert_experiment.ipynb`
+    - `06_securebert_asl_experiment.ipynb`
+    - `07_biencoder_retrieval_experiment.ipynb`
+================================================================================
