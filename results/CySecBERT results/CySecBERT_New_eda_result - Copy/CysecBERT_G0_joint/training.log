@@ -1,0 +1,78 @@
+Scenario=G0
+Seed=42
+Stage1Mode=generic
+Stage1Files=['train_augmented_generic_eda.csv']
+Stage2=False
+MinorityF2=False
+
+======================================================================
+STAGE 1 — GENERIC — EPOCH 1/6
+======================================================================
+Train Loss: 1.137625
+Validation Micro F1: 61.67%
+Validation Macro F1: 40.11%
+Validation Macro Recall: 45.28%
+Best Epoch: 1
+Best Validation Macro F1 @0.5: 40.11%
+Patience: 0/2
+======================================================================
+
+======================================================================
+STAGE 1 — GENERIC — EPOCH 2/6
+======================================================================
+Train Loss: 0.329682
+Validation Micro F1: 68.94%
+Validation Macro F1: 54.54%
+Validation Macro Recall: 64.78%
+Best Epoch: 2
+Best Validation Macro F1 @0.5: 54.54%
+Patience: 0/2
+======================================================================
+
+======================================================================
+STAGE 1 — GENERIC — EPOCH 3/6
+======================================================================
+Train Loss: 0.179099
+Validation Micro F1: 73.60%
+Validation Macro F1: 60.56%
+Validation Macro Recall: 67.87%
+Best Epoch: 3
+Best Validation Macro F1 @0.5: 60.56%
+Patience: 0/2
+======================================================================
+
+======================================================================
+STAGE 1 — GENERIC — EPOCH 4/6
+======================================================================
+Train Loss: 0.105985
+Validation Micro F1: 73.93%
+Validation Macro F1: 59.48%
+Validation Macro Recall: 65.71%
+Best Epoch: 3
+Best Validation Macro F1 @0.5: 60.56%
+Patience: 1/2
+======================================================================
+
+======================================================================
+STAGE 1 — GENERIC — EPOCH 5/6
+======================================================================
+Train Loss: 0.066057
+Validation Micro F1: 75.82%
+Validation Macro F1: 60.82%
+Validation Macro Recall: 66.94%
+Best Epoch: 5
+Best Validation Macro F1 @0.5: 60.82%
+Patience: 0/2
+======================================================================
+
+======================================================================
+STAGE 1 — GENERIC — EPOCH 6/6
+======================================================================
+Train Loss: 0.044548
+Validation Micro F1: 76.49%
+Validation Macro F1: 62.04%
+Validation Macro Recall: 67.14%
+Best Epoch: 6
+Best Validation Macro F1 @0.5: 62.04%
+Patience: 0/2
+======================================================================
