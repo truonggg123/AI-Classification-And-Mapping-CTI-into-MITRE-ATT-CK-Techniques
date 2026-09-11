@@ -1,0 +1,32 @@
+{
+  "scenario": "A0",
+  "scenario_title": "Original-only one-stage baseline",
+  "seed": 42,
+  "stage1_mode": "original",
+  "stage1_source_files": [
+    "train.csv"
+  ],
+  "stage2": false,
+  "minority_f2": false,
+  "stage1_best_epoch": 5,
+  "stage1_best_macro_f1_at_05": 0.7322949118070895,
+  "stage2_best_epoch": null,
+  "stage2_best_macro_f1_at_05": null,
+  "global_threshold": 0.6,
+  "macro_optimal_threshold": 0.57,
+  "minority_threshold": null,
+  "validation_global": {
+    "micro_precision": 0.8427835051546392,
+    "micro_recall": 0.7965895249695494,
+    "micro_f1": 0.8190356919223544,
+    "macro_precision": 0.8395872472942643,
+    "macro_recall": 0.7260581134847002,
+    "macro_f1": 0.753334904842009,
+    "weighted_f1": 0.8120865344597427,
+    "hamming_loss": 0.008005540166204986,
+    "avg_predicted_labels": 1.074792243767313
+  },
+  "validation_minority_f2": null,
+  "validation_minority_macro_f2": null,
+  "validation_minority_macro_recall": null
+}
