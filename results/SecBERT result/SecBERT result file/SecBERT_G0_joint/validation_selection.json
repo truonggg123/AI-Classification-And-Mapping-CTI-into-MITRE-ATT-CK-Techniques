@@ -1,0 +1,32 @@
+{
+  "scenario": "G0",
+  "scenario_title": "Generic WordNet EDA one-stage control",
+  "seed": 42,
+  "stage1_mode": "generic",
+  "stage1_source_files": [
+    "train_augmented_generic_eda.csv"
+  ],
+  "stage2": false,
+  "minority_f2": false,
+  "stage1_best_epoch": 6,
+  "stage1_best_macro_f1_at_05": 0.5637372549478352,
+  "stage2_best_epoch": null,
+  "stage2_best_macro_f1_at_05": null,
+  "global_threshold": 0.6,
+  "macro_optimal_threshold": 0.51,
+  "minority_threshold": null,
+  "validation_global": {
+    "micro_precision": 0.7685738684884714,
+    "micro_recall": 0.694980694980695,
+    "micro_f1": 0.7299270072992701,
+    "macro_precision": 0.6003491404592644,
+    "macro_recall": 0.5280996584694648,
+    "macro_f1": 0.5420843906704765,
+    "weighted_f1": 0.7087711018827703,
+    "hamming_loss": 0.002735562310030395,
+    "avg_predicted_labels": 0.9042471042471042
+  },
+  "validation_minority_f2": null,
+  "validation_minority_macro_f2": null,
+  "validation_minority_macro_recall": null
+}
