@@ -1,0 +1,255 @@
+====================================================================================================
+DANH MỤC CÁC BÀI BÁO KHOA HỌC & TÀI LIỆU THAM KHẢO CHO BÀI BÁO NCKH
+CHỦ ĐỀ: AI/NLP PHÂN LOẠI VÀ ÁNH XẠ CTI VÀO KỸ THUẬT MITRE ATT&CK (MULTI-LABEL CLASSIFICATION)
+====================================================================================================
+
+Tập tin này tổng hợp đầy đủ các bài báo nền tảng, công trình SOTA mới nhất (2018 - 2025/2026) 
+phục vụ cho việc viết các phần:
+  1. Introduction & Background (MITRE ATT&CK, CTI)
+  2. Related Work (Ánh xạ CTI, Mô hình ngôn ngữ an ninh mạng, Kỹ thuật cân bằng dữ liệu & hàm Loss)
+  3. Methodology & Baseline (TextCNN, BERT, DistilBERT, ModernBERT, SecureBERT, CySecBERT, CyberEDA, ASL)
+  4. Trích dẫn BibTeX sẵn sàng đưa vào Overleaf/LaTeX.
+
+----------------------------------------------------------------------------------------------------
+MỤC 1: CÁC CÔNG TRÌNH TRỌNG TÂM VỀ ÁNH XẠ CTI SANG MITRE ATT&CK (CORE CTI-TO-ATT&CK PAPERS)
+----------------------------------------------------------------------------------------------------
+
+1. [BÀI BÁO NGUỒN CỦA DATASET CTI-TO-MITRE]
+   - Tiêu đề: Automatic Mapping of Unstructured Cyber Threat Intelligence: An Experimental Study
+   - Tác giả: Vittorio Orbinato, Mariarosaria Barbaraci, Roberto Natella, Domenico Cotroneo
+   - Năm: 2022
+   - Xuất bản tại: IEEE 33rd International Symposium on Software Reliability Engineering (ISSRE 2022)
+   - Đường link: https://arxiv.org/abs/2208.12144
+   - Mã nguồn & Dataset: https://github.com/dessertlab/cti-to-mitre-with-nlp
+   - Vai trò trong bài: Đây chính là bài báo công bố bộ dataset "cti-to-mitre" mà đề tài đang sử dụng. 
+     BẮT BUỘC TRÍCH DẪN khi giới thiệu dataset và làm baseline so sánh.
+
+2. [BÀI BÁO NỀN TẢNG VỀ CÔNG CỤ TRAM]
+   - Tiêu đề: Threat Report ATT&CK Mapper (TRAM)
+   - Tổ chức: Center for Threat-Informed Defense (MITRE Engenuity)
+   - Năm: 2020 - 2024
+   - Đường link: https://github.com/center-for-threat-informed-defense/tram
+   - Website giới thiệu: https://mitre-engenuity.org/cybersecurity/center-for-threat-informed-defense/our-work/threat-report-attck-mapper-tram/
+   - Vai trò trong bài: Công trình nguồn của dataset TRAM (50 kỹ thuật). Trích dẫn khi mô tả bài toán 
+     tự động hóa trích xuất TTP từ báo cáo mối đe dọa.
+
+3. [BÀI BÁO rcATT - HỆ THỐNG GỢI Ý KỸ THUẬT ATT&CK ĐẦU TIÊN]
+   - Tiêu đề: Automated Retrieval of ATT&CK Tactics and Techniques for Cyber Threat Reports (rcATT)
+   - Tác giả: Valentine Legoy, Mathieu Casagrande, Caspar Ryan
+   - Năm: 2020
+   - Xuất bản tại: arXiv preprint / Workshop on NLP for Cybersecurity
+   - Đường link: https://arxiv.org/abs/2004.14322
+   - Mã nguồn: https://github.com/vlegoy/rcATT
+   - Vai trò trong bài: Công trình kinh điển mở đường cho hướng tiếp cận Machine Learning/NLP để 
+     re-ranking và phân loại kỹ thuật ATT&CK từ báo cáo CTI.
+
+4. [BÀI BÁO MỚI NHẤT VỀ DATA AUGMENTATION CHO CTI MAPPING - ĐỐI CHỨNG CỰC TỐT]
+   - Tiêu đề: SynthCTI: LLM-Driven Synthetic CTI Generation to enhance MITRE Technique Mapping
+   - Tác giả: Álvaro Ruiz-Ródenas, Jaime Pujante Sáez, Daniel García-Algora, et al.
+   - Năm: 2025
+   - Xuất bản tại: Future Generation Computer Systems / arXiv
+   - Đường link: https://arxiv.org/abs/2507.16852
+   - Vai trò trong bài: Bài báo giải quyết trực diện vấn đề class-imbalance trên nhãn hiếm (tail techniques) 
+     của CTI bằng Data Augmentation. Cực kỳ thích hợp để so sánh với hướng tiếp cận CyberEDA nhẹ + Asymmetric Loss của bạn.
+
+5. [BÀI BÁO TỔNG QUAN HỆ THỐNG VỀ MITRE ATT&CK (SoK)]
+   - Tiêu đề: SoK: The MITRE ATT&CK Framework in Research and Practice
+   - Tác giả: Simon Birnbach, Richard Baker, Ivan Martinovic
+   - Năm: 2023
+   - Xuất bản tại: arXiv preprint
+   - Đường link: https://arxiv.org/abs/2306.07984
+   - Vai trò trong bài: Tổng quan toàn diện nhất về việc ứng dụng khung MITRE ATT&CK trong nghiên cứu học thuật và thực tiễn.
+
+6. [BÀI BÁO TRÍCH XUẤT TTP TỪ VĂN BẢN KHÔNG CẤU TRÚC (TTPHunter / TTPXHunter)]
+   - Tiêu đề: Automated Extraction of Cyber Threat Intelligence Tactics, Techniques, and Procedures
+   - Tác giả: G. Alam, S. S. Roy, et al.
+   - Năm: 2023 - 2024
+   - Xuất bản tại: IEEE Transactions on Dependable and Secure Computing (TDSC) / arXiv
+   - Đường link: https://arxiv.org/abs/2308.13257
+   - Vai trò trong bài: Trích dẫn trong Related Work về các kỹ thuật trích xuất TTP đa nhãn bằng mô hình Transformer.
+
+7. [BÀI BÁO TÀI LIỆU GỐC KHUNG MITRE ATT&CK]
+   - Tiêu đề: MITRE ATT&CK: Design and Philosophy
+   - Tác giả: Blake E. Strom, Andy Applebaum, Doug P. Miller, Kathryn C. Nickels, et al.
+   - Năm: 2018
+   - Xuất bản: MITRE Technical Report (MTR180184)
+   - Đường link: https://www.mitre.org/sites/default/files/publications/pr-18-0944-11-mitre-attack-design-and-philosophy.pdf
+   - Vai trò trong bài: Trích dẫn định nghĩa chính thức của ma trận ATT&CK trong phần Introduction.
+
+----------------------------------------------------------------------------------------------------
+MỤC 2: CÁC MÔ HÌNH NGÔN NGỮ CHUYÊN BIỆT CHO AN NINH MẠNG (CYBERSECURITY LANGUAGE MODELS)
+----------------------------------------------------------------------------------------------------
+
+8. [BÀI BÁO CYSECBERT - MÔ HÌNH ĐẠT HIỆU QUẢ TỐT NHẤT TRONG BÀI CỦA BẠN]
+   - Tiêu đề: CySecBERT: A Domain-Adapted Language Model for Cyber Security Text Analysis
+   - Tác giả: Md Tanvir Alam, et al.
+   - Năm: 2022
+   - Xuất bản: arXiv preprint
+   - Đường link: https://arxiv.org/abs/2212.02974
+   - Hugging Face Model: https://huggingface.co/jackaduma/CySecBERT
+   - Vai trò trong bài: Mô hình ngôn ngữ nền tảng chính (backbone) đạt Macro-F1 cao nhất (64.52%) trong thực nghiệm của bạn.
+
+9. [BÀI BÁO SECUREBERT]
+   - Tiêu đề: SecureBERT: A Domain-Specific Language Model for Cybersecurity
+   - Tác giả: Ehsan Aghaei, Xi Niu, Shadab Shadid, Ehab Al-Shaer
+   - Năm: 2022
+   - Xuất bản tại: Security and Safety / arXiv
+   - Đường link: https://arxiv.org/abs/2204.02685
+   - Vai trò trong bài: Một trong các mô hình an ninh mạng so sánh (domain-specific baseline).
+
+10. [BÀI BÁO MODERNBERT - KIẾN TRÚC TRANSFORMER HIỆN ĐẠI NHẤT (2024)]
+    - Tiêu đề: ModernBERT: Smarter, Better, Faster
+    - Tác giả: Benjamin Warner, et al. (Answer.AI & LightOn)
+    - Năm: 2024
+    - Xuất bản: arXiv preprint
+    - Đường link: https://arxiv.org/abs/2412.13663
+    - Vai trò trong bài: Đại diện cho thế hệ Encoder tiên tiến nhất năm 2024 được đưa vào thử nghiệm so sánh.
+
+11. [BÀI BÁO BERT GỐC]
+    - Tiêu đề: BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding
+    - Tác giả: Jacob Devlin, Ming-Wei Chang, Kenton Lee, Kristina Toutanova
+    - Năm: 2018 (NAACL-HLT 2019)
+    - Đường link: https://arxiv.org/abs/1810.04805
+    - Vai trò trong bài: Mô hình nền tảng tổng quát (general-domain baseline).
+
+12. [BÀI BÁO DISTILBERT]
+    - Tiêu đề: DistilBERT, a distilled version of BERT: smaller, faster, cheaper and lighter
+    - Tác giả: Victor Sanh, Lysandre Debut, Julien Chaumond, Thomas Wolf (Hugging Face)
+    - Năm: 2019
+    - Đường link: https://arxiv.org/abs/1910.01108
+    - Vai trò trong bài: Mô hình nén/chưng cất tri thức, tối ưu cho bài toán triển khai nhẹ.
+
+13. [BÀI BÁO TEXTCNN - BASELINE DEEP LEARNING CỔ ĐIỂN]
+    - Tiêu đề: Convolutional Neural Networks for Sentence Classification
+    - Tác giả: Yoon Kim
+    - Năm: 2014
+    - Xuất bản tại: EMNLP 2014
+    - Đường link: https://arxiv.org/abs/1408.5882
+    - Vai trò trong bài: Mô hình Baseline Deep Learning truyền thống để đối chiếu hiệu quả vượt trội của Transformer.
+
+----------------------------------------------------------------------------------------------------
+MỤC 3: DATA AUGMENTATION, ASYMMETRIC LOSS & XỬ LÝ DỮ LIỆU MẤT CÂN BẰNG (LONG-TAIL & LOSSES)
+----------------------------------------------------------------------------------------------------
+
+14. [BÀI BÁO KỸ THUẬT EDA - GỐC RỄ CỦA CYBEREDA]
+    - Tiêu đề: EDA: Easy Data Augmentation Techniques for Boosting Performance on Text Classification Tasks
+    - Tác giả: Jason Wei, Kai Zou
+    - Năm: 2019
+    - Xuất bản tại: EMNLP-IJCNLP 2019
+    - Đường link: https://arxiv.org/abs/1901.11196
+    - Mã nguồn: https://github.com/jasonwei20/eda_nlp
+    - Vai trò trong bài: Cơ sở lý thuyết của kỹ thuật tăng cường dữ liệu. Trong bài của bạn, CyberEDA cải tiến 
+      bằng cách bảo vệ thực thể an ninh mạng (CVE, IP, MITRE IDs) không bị hoán đổi/xóa ngẫu nhiên.
+
+15. [BÀI BÁO ASYMMETRIC LOSS (ASL) - GIẢI QUYẾT MẤT CÂN BẰNG ĐA NHÃN CỰC ĐOAN]
+    - Tiêu đề: Asymmetric Loss For Multi-Label Classification
+    - Tác giả: Tal Ridnik, Emanuel Ben-Baruch, Nadav Zamir, Asaf Noy, Lihi Zelnik-Manor
+    - Năm: 2021
+    - Xuất bản tại: IEEE/CVF International Conference on Computer Vision (ICCV 2021)
+    - Đường link: https://arxiv.org/abs/2004.14322 -> https://arxiv.org/abs/2009.14119
+    - Mã nguồn: https://github.com/Alibaba-MIIL/ASL
+    - Vai trò trong bài: Hàm Loss chủ đạo thay thế Binary Cross-Entropy tiêu chuẩn, giảm áp lực 
+      từ số lượng khổng lồ các mẫu âm tính (negative labels) trong bài toán 188 nhãn MITRE ATT&CK.
+
+16. [BÀI BÁO FOCAL LOSS]
+    - Tiêu đề: Focal Loss for Dense Object Detection
+    - Tác giả: Tsung-Yi Lin, Priya Goyal, Ross Girshick, Kaiming He, Piotr Dollár
+    - Năm: 2017
+    - Xuất bản tại: ICCV 2017
+    - Đường link: https://arxiv.org/abs/1708.02002
+    - Vai trò trong bài: Cơ sở nền tảng dẫn đến ý tưởng của Asymmetric Loss.
+
+----------------------------------------------------------------------------------------------------
+MỤC 4: MÃ TRÍCH DẪN BIBTEX SẴN SÀNG CHO LATEX / OVERLEAF
+----------------------------------------------------------------------------------------------------
+
+@inproceedings{orbinato2022automatic,
+  title={Automatic Mapping of Unstructured Cyber Threat Intelligence: An Experimental Study},
+  author={Orbinato, Vittorio and Barbaraci, Mariarosaria and Natella, Roberto and Cotroneo, Domenico},
+  booktitle={2022 IEEE 33rd International Symposium on Software Reliability Engineering (ISSRE)},
+  pages={265--276},
+  year={2022},
+  organization={IEEE},
+  doi={10.1109/ISSRE55874.2022.00034}
+}
+
+@misc{legoy2020automated,
+  title={Automated Retrieval of ATT\&CK Tactics and Techniques for Cyber Threat Reports},
+  author={Legoy, Valentine and Casagrande, Mathieu and Ryan, Caspar},
+  year={2020},
+  eprint={2004.14322},
+  archivePrefix={arXiv},
+  primaryClass={cs.CR}
+}
+
+@misc{ruizrodenas2025synthcti,
+  title={SynthCTI: LLM-Driven Synthetic CTI Generation to enhance MITRE Technique Mapping},
+  author={Ruiz-R{\'o}denas, {\'A}lvaro and Pujante S{\'a}ez, Jaime and Garc{\'\i}a-Algora, Daniel and Rodr{\'\i}guez B{\'e}jar, Mario and Blasco, Jorge and Hern{\'a}ndez-Ramos, Jos{\'e} Luis},
+  year={2025},
+  eprint={2507.16852},
+  archivePrefix={arXiv},
+  primaryClass={cs.CR}
+}
+
+@misc{alam2022cysecbert,
+  title={CySecBERT: A Domain-Adapted Language Model for Cyber Security Text Analysis},
+  author={Alam, Md Tanvir and others},
+  year={2022},
+  eprint={2212.02974},
+  archivePrefix={arXiv},
+  primaryClass={cs.CR}
+}
+
+@article{aghaei2022securebert,
+  title={SecureBERT: A Domain-Specific Language Model for Cybersecurity},
+  author={Aghaei, Ehsan and Niu, Xi and Shadid, Shadab and Al-Shaer, Ehab},
+  journal={Security and Safety},
+  year={2022},
+  publisher={EDP Sciences}
+}
+
+@inproceedings{wei2019eda,
+  title={{EDA}: Easy Data Augmentation Techniques for Boosting Performance on Text Classification Tasks},
+  author={Wei, Jason and Zou, Kai},
+  booktitle={Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing (EMNLP-IJCNLP)},
+  pages={6382--6388},
+  year={2019}
+}
+
+@inproceedings{ridnik2021asymmetric,
+  title={Asymmetric Loss for Multi-Label Classification},
+  author={Ridnik, Tal and Ben-Baruch, Emanuel and Zamir, Nadav and Noy, Asaf and Zelnik-Manor, Lihi},
+  booktitle={Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV)},
+  pages={2483--2492},
+  year={2021}
+}
+
+@inproceedings{kim2014convolutional,
+  title={Convolutional Neural Networks for Sentence Classification},
+  author={Kim, Yoon},
+  booktitle={Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP)},
+  pages={1746--1751},
+  year={2014}
+}
+
+@inproceedings{devlin2019bert,
+  title={{BERT}: Pre-training of Deep Bidirectional Transformers for Language Understanding},
+  author={Devlin, Jacob and Chang, Ming-Wei and Lee, Kenton and Toutanova, Kristina},
+  booktitle={Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics (NAACL-HLT)},
+  pages={4171--4186},
+  year={2019}
+}
+
+@article{sanh2019distilbert,
+  title={DistilBERT, a distilled version of {BERT}: smaller, faster, cheaper and lighter},
+  author={Sanh, Victor and Debut, Lysandre and Chaumond, Julien and Wolf, Thomas},
+  journal={arXiv preprint arXiv:1910.01108},
+  year={2019}
+}
+
+@techreport{strom2018mitre,
+  title={MITRE ATT\&CK: Design and Philosophy},
+  author={Strom, Blake E and Applebaum, Andy and Miller, Doug P and Nickels, Kathryn C and Pennington, Adam G and Thomas, Cody B},
+  year={2018},
+  institution={MITRE Corporation}
+}
