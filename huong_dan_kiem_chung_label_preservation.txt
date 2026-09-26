@@ -1,0 +1,249 @@
+====================================================================================================
+HƯỚNG DẪN KIỂM CHỨNG GIẢ ĐỊNH LABEL PRESERVATION CỦA CYBEREDA
+y(x) = y(Augment(x))
+====================================================================================================
+Ngày soạn: 22/09/2026
+Mục đích: Chứng minh rằng sau khi áp dụng CyberEDA, nhãn ATT&CK ban đầu vẫn còn hợp lệ.
+          Đây là một yêu cầu cơ bản (fundamental assumption) của mọi phương pháp Data Augmentation
+          trong bài toán Text Classification.
+
+====================================================================================================
+PHẦN 1: BỐI CẢNH VÀ LÝ DO CẦN KIỂM CHỨNG
+====================================================================================================
+
+Giả định nền tảng của EDA trong classification:
+    y(x) = y(Augment(x))
+    → Nghĩa là: Sau khi augmentation, nhãn ATT&CK của câu PHẢI không thay đổi.
+
+Ví dụ nguy hiểm với Random Deletion (RD):
+    Câu gốc:        "The malware executes PowerShell commands to download additional payloads."
+    Nhãn gốc:        T1059.001 (PowerShell)
+    Sau RD xóa "PowerShell":
+    Câu augmented:  "The malware executes commands to download additional payloads."
+    Nhãn vẫn gán:   T1059.001 ← SAI! Câu mới không đủ indicator để xác định PowerShell.
+
+Ví dụ an toàn với Synonym Replacement (SR) bằng alias:
+    Câu gốc:        "APT28 used credential harvesting tools against government targets."
+    Sau SR:         "Fancy Bear used credential harvesting tools against government targets."
+    Nhãn vẫn đúng:  Không đổi — chỉ thay tên alias của cùng một threat actor.
+
+====================================================================================================
+PHẦN 2: QUY TRÌNH THỰC HIỆN TỪNG BƯỚC
+====================================================================================================
+
+BƯỚC 1: SINH FILE CSV ĐỂ ĐÁNH GIÁ
+------------------------------------
+
+Mục tiêu: Tạo file chứa 200 cặp (câu gốc, câu augmented) cùng nhãn ATT&CK.
+Chạy script Python sau từ thư mục gốc của dự án:
+
+-------- [CODE: generate_evaluation_samples.py] --------
+
+import pandas as pd
+import random
+import re
+from pathlib import Path
+from src.cyber_eda import build_cyber_knowledge_base, cyber_eda, single_eda
+
+# ---- Cấu hình ----
+DATASET     = 'joint'           # Chọn: 'joint', 'cti_to_mitre', 'tram'
+N_SAMPLES   = 200               # Số lượng mẫu cần đánh giá
+SEED        = 42
+ALPHA       = 0.21              # Alpha mặc định
+
+random.seed(SEED)
+
+# ---- Load dữ liệu ----
+train_path = Path(f'dataset/processed/{DATASET}/train.csv')
+df = pd.read_csv(train_path)
+
+# Chỉ lấy các câu gốc (không phải câu đã augmented)
+if 'is_augmented' in df.columns:
+    df_orig = df[df['is_augmented'] == 0].copy()
+else:
+    df_orig = df.copy()
+
+# Sample ngẫu nhiên 200 câu
+df_sample = df_orig.sample(min(N_SAMPLES, len(df_orig)), random_state=SEED).reset_index(drop=True)
+
+# ---- Build Cyber Knowledge Base ----
+cache_dir = Path('dataset/processed')
+protected_set, synonym_dict = build_cyber_knowledge_base(cache_dir=cache_dir)
+
+# ---- Sinh augmented samples cho từng operation ----
+records = []
+for _, row in df_sample.iterrows():
+    orig_text = str(row['Cleaned_Text'])
+    labels    = str(row['Labels'])
+
+    # Sinh 4 biến thể tương ứng 4 operations
+    aug_sr  = single_eda(orig_text, 'sr', protected_set, synonym_dict, alpha_sr=ALPHA)
+    aug_ri  = single_eda(orig_text, 'ri', protected_set, synonym_dict, alpha_ri=ALPHA)
+    aug_rs  = single_eda(orig_text, 'rs', protected_set, synonym_dict, alpha_rs=ALPHA)
+    aug_rd  = single_eda(orig_text, 'rd', protected_set, synonym_dict, p_rd=ALPHA)
+    aug_full = cyber_eda(orig_text, protected_set, synonym_dict,
+                         alpha_sr=ALPHA, alpha_ri=ALPHA, alpha_rs=ALPHA, p_rd=ALPHA)
+
+    for op_name, aug_text in [('SR', aug_sr), ('RI', aug_ri),
+                               ('RS', aug_rs), ('RD', aug_rd), ('Full EDA', aug_full)]:
+        records.append({
+            'Original_Text'              : orig_text,
+            'Augmented_Text'             : aug_text,
+            'Labels'                     : labels,
+            'Operation'                  : op_name,
+            'Identical_to_Original'      : (orig_text.strip() == aug_text.strip()),
+            # --- Các cột để điền tay ---
+            'Semantic_Preserved (Y/P/N)' : '',   # Y=Yes, P=Partial, N=No
+            'Grammatically_OK (Y/N)'     : '',   # Y=Câu đọc được tự nhiên, N=Ngô nghê
+            'Label_Still_Valid (Y/N/?)'  : '',   # Y=Nhãn vẫn đúng, N=Nhãn sai, ?=Không chắc
+            'Notes'                      : '',   # Ghi chú thêm nếu cần
+        })
+
+df_eval = pd.DataFrame(records)
+
+# Lưu file
+out_path = Path(f'evaluation_semantic_preservation_{DATASET}.csv')
+df_eval.to_csv(out_path, index=False, encoding='utf-8-sig')  # utf-8-sig để Excel đọc được tiếng Việt
+print(f"[DONE] Saved {len(df_eval)} rows to: {out_path}")
+print(f"       ({N_SAMPLES} original sentences × 5 operations = {N_SAMPLES*5} rows)")
+print(f"       Rows where augmentation made NO change: {df_eval['Identical_to_Original'].sum()}")
+
+-------- [KẾT THÚC CODE] --------
+
+Chạy lệnh:
+    python generate_evaluation_samples.py
+
+Output: File 'evaluation_semantic_preservation_joint.csv' trong thư mục gốc dự án.
+
+
+BƯỚC 2: ĐÁNH GIÁ THỦ CÔNG (ANNOTATION)
+-----------------------------------------
+
+a) Mở file CSV bằng Microsoft Excel hoặc Google Sheets.
+
+b) Với mỗi dòng, đọc câu gốc (cột Original_Text) và câu augmented (cột Augmented_Text),
+   sau đó điền vào 3 cột:
+
+   Cột 1: Semantic_Preserved (Y/P/N)
+   ──────────────────────────────────
+   Y (Yes)     → Câu augmented giữ nguyên hoàn toàn ý nghĩa của câu gốc.
+                 Ví dụ: "APT28" → "Fancy Bear" (chỉ đổi tên alias, nghĩa không đổi)
+   P (Partial) → Câu augmented thay đổi một phần nghĩa nhưng không sai hoàn toàn.
+                 Ví dụ: Câu bị xóa mất một vài từ không quan trọng, ý chính vẫn còn.
+   N (No)      → Câu augmented mất đi nghĩa quan trọng hoặc mang nghĩa khác.
+                 Ví dụ: Xóa mất "PowerShell" → không còn rõ technique nào được dùng.
+
+   Cột 2: Grammatically_OK (Y/N)
+   ──────────────────────────────
+   Y → Câu đọc tự nhiên, có thể xuất hiện trong văn bản CTI thực tế.
+   N → Câu ngô nghê, từ ngữ đặt lộn vị trí, hoặc không thể hiểu được.
+
+   Cột 3: Label_Still_Valid (Y/N/?)
+   ──────────────────────────────────
+   Y → Nhìn vào câu augmented, nhãn ATT&CK trong cột Labels vẫn đúng.
+   N → Câu augmented không còn mô tả technique trong nhãn nữa (nhãn bị sai).
+   ? → Người đánh giá không chắc chắn.
+
+c) Lưu ý đặc biệt khi đánh giá:
+   - Nếu cột 'Identical_to_Original' = TRUE → SR/RI không tìm thấy alias nào,
+     câu không đổi → KHÔNG cần đánh giá dòng này (skip hoặc đánh Y/Y/Y tự động).
+   - Ưu tiên đánh giá kỹ các dòng có Operation = 'RD' và 'RS' vì đây là 2 phép
+     có nguy cơ làm hỏng semantic cao nhất theo nhận xét của người hướng dẫn.
+   - Chú ý các câu có nhãn là các technique "indicator-sensitive" như:
+       T1059.001 (PowerShell), T1078 (Valid Accounts), T1110 (Brute Force),
+       T1003 (Credential Dumping) — những kỹ thuật phụ thuộc vào từ khóa cụ thể.
+
+
+BƯỚC 3: TỔNG HỢP KẾT QUẢ
+----------------------------
+
+Sau khi điền xong, chạy script tổng hợp:
+
+-------- [CODE: summarize_annotation.py] --------
+
+import pandas as pd
+
+df = pd.read_csv('evaluation_semantic_preservation_joint.csv')
+
+# Chỉ tính trên các dòng đã được đánh giá (loại bỏ dòng Identical=True)
+df_eval = df[df['Identical_to_Original'] == False].copy()
+
+print(f"Total rows evaluated: {len(df_eval)}")
+print()
+
+for op in ['SR', 'RI', 'RS', 'RD', 'Full EDA']:
+    sub = df_eval[df_eval['Operation'] == op]
+    if len(sub) == 0:
+        continue
+    sem_ok   = (sub['Semantic_Preserved (Y/P/N)'].isin(['Y', 'P'])).sum()
+    gram_ok  = (sub['Grammatically_OK (Y/N)'] == 'Y').sum()
+    lbl_ok   = (sub['Label_Still_Valid (Y/N/?)'] == 'Y').sum()
+    n = len(sub)
+    print(f"  [{op}]")
+    print(f"    Semantic Preservation : {sem_ok}/{n} = {sem_ok/n*100:.1f}%")
+    print(f"    Grammatical Acceptability: {gram_ok}/{n} = {gram_ok/n*100:.1f}%")
+    print(f"    Label Preservation    : {lbl_ok}/{n} = {lbl_ok/n*100:.1f}%")
+    print()
+
+-------- [KẾT THÚC CODE] --------
+
+
+BƯỚC 4 (TÙY CHỌN): TÍNH INTER-ANNOTATOR AGREEMENT
+-----------------------------------------------------
+
+Nếu có 2+ annotators cùng đánh giá một tập mẫu (khuyến khích nhưng không bắt buộc):
+
+-------- [CODE: inter_annotator_agreement.py] --------
+
+from sklearn.metrics import cohen_kappa_score
+
+# Ví dụ: annotator_1 và annotator_2 đều đánh giá cột Label_Still_Valid
+# Quy ước: Y=1, N=0, ?=2
+def encode(series):
+    return series.map({'Y': 1, 'N': 0, '?': 2}).fillna(2).astype(int)
+
+a1 = encode(df_annotator1['Label_Still_Valid (Y/N/?)'])
+a2 = encode(df_annotator2['Label_Still_Valid (Y/N/?)'])
+
+kappa = cohen_kappa_score(a1, a2)
+print(f"Cohen's Kappa (Label Preservation): {kappa:.3f}")
+# Diễn giải: κ < 0.4 = kém | 0.4-0.6 = trung bình | 0.6-0.8 = tốt | > 0.8 = rất tốt
+
+-------- [KẾT THÚC CODE] --------
+
+====================================================================================================
+PHẦN 3: CÁCH BÁO CÁO KẾT QUẢ TRONG BÀI BÁO
+====================================================================================================
+
+Mẫu câu cho phần Methodology hoặc Appendix:
+
+  "To verify the label-preserving assumption of CyberEDA (i.e., y(x) = y(Augment(x))),
+  we randomly sampled 200 original training sentences and generated augmented variants
+  using each of the four EDA operations (SR, RI, RS, RD) independently.
+  Three criteria were manually evaluated: (1) semantic preservation, (2) grammatical
+  acceptability, and (3) label validity.
+  Results show that Synonym Replacement (SR) achieves the highest label preservation
+  rate of XX.X%, while Random Deletion (RD) shows the lowest at XX.X%, primarily due
+  to deletion of technique-identifying keywords (e.g., 'PowerShell', 'credential').
+  Overall, Full CyberEDA maintains a label preservation rate of XX.X%, supporting
+  the validity of the augmentation assumption."
+
+====================================================================================================
+PHẦN 4: KẾT QUẢ KỲ VỌNG VÀ Ý NGHĨA
+====================================================================================================
+
+Kết quả kỳ vọng:
+  - SR (Synonym Replacement):   Label Preservation ~97-100% (alias thay thế an toàn)
+  - RI (Random Insertion):       Label Preservation ~95-99% (chỉ thêm từ, không xóa)
+  - RS (Random Swap):            Label Preservation ~85-95% (đổi vị trí từ, có thể ảnh hưởng)
+  - RD (Random Deletion):        Label Preservation ~75-90% (rủi ro cao nhất)
+  - Full CyberEDA:               Label Preservation ~88-95% (tổng hợp)
+
+Ý nghĩa với bài báo:
+  - Nếu SR và RI có label preservation cao → củng cố luận điểm alias-based augmentation an toàn.
+  - Nếu RD có label preservation thấp hơn → giải thích tại sao ablation study cho thấy
+    Full EDA đôi khi không tốt hơn SR+RI alone.
+  - Kết quả này kết nối trực tiếp với Ablation Study (Task 6) để giải thích
+    tại sao một số operations không đem lại lợi ích.
+
+====================================================================================================

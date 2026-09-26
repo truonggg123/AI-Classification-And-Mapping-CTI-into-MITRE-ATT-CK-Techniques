@@ -1,0 +1,46 @@
+BÁO CÁO THỰC NGHIỆM: ĐÁNH GIÁ HIỆU QUẢ CỦA DATA AUGMENTATION (EDA) TRONG BÀI TOÁN PHÂN LOẠI CTI SANG MITRE ATT&CK
+
+1. Mục đích và Thiết kế Thực nghiệm
+Mục tiêu cốt lõi của thực nghiệm này là đánh giá mức độ hiệu quả của phương pháp Tăng cường dữ liệu văn bản (Easy Data Augmentation - EDA) trong việc giảm thiểu tình trạng mất cân bằng dữ liệu (Class Imbalance) và cải thiện khả năng phân loại ở các nhãn hiếm (Tail classes) của bài toán ánh xạ văn bản CTI sang MITRE ATT&CK.
+
+Phương pháp tiếp cận:
+- Thực nghiệm áp dụng 2 biến thể EDA: GenericEDA (dùng từ điển WordNet phổ quát) và CyberEDA (dùng từ điển đồng nghĩa chuyên ngành trích xuất từ chuẩn STIX/MITRE).
+- Quá trình thực nghiệm được chia làm 2 giai đoạn (Ablation Studies):
+  + Giai đoạn 1 (Ratio Tuning): Khảo sát tỷ lệ can thiệp (alpha) từ 0.02 đến 0.30 nhằm tìm ra ngưỡng tăng cường dữ liệu phù hợp, cân bằng giữa việc tạo nhiễu và bảo toàn ngữ nghĩa gốc.
+  + Giai đoạn 2 (Operation Ablation): Cố định mức alpha tối ưu, thử nghiệm độc lập 4 thao tác cấu thành EDA gồm: Synonym Replacement (SR), Random Insertion (RI), Random Swap (RS), và Random Deletion (RD).
+  
+Mô hình và Chỉ số đánh giá:
+- Sử dụng mô hình Proxy `nreimers/MiniLM-L6-H384-uncased` kết hợp cơ chế Mean Pooling, giúp đẩy nhanh tốc độ thực nghiệm trong khi vẫn duy trì năng lực trích xuất đặc trưng tốt cho văn bản dài.
+- Sử dụng chỉ số Macro-F1 làm thước đo chính và theo dõi số lượng nhãn bị dự đoán sai phần lớn (Zero-F1 classes). Quá trình đối chiếu cấu hình tối ưu được thực hiện trên tập Validation để hạn chế Data Leakage, sau đó ghi nhận kết quả khái quát hóa trên tập Test.
+
+2. Kết quả Thực nghiệm
+
+2.1. Giai đoạn 1: Tinh chỉnh cường độ can thiệp (Ratio Tuning)
+- Kết quả Baseline (không dùng EDA) cho thấy mô hình chịu ảnh hưởng đáng kể bởi sự mất cân bằng dữ liệu: Test Macro-F1 đạt 0.3911, với 53/188 nhãn có F1 bằng 0.
+- Khi áp dụng EDA, hiệu năng được cải thiện rõ rệt và có xu hướng theo phân bố hình chuông: Hiệu năng tăng khi alpha đi từ 0.02 đến 0.10, và bắt đầu suy giảm khi alpha vượt quá 0.20 do cấu trúc ngữ pháp bị nhiễu quá mức.
+- Mức alpha tối ưu ghi nhận trên tập Validation là alpha = 0.10 cho cả hai phương pháp. Tại mức này, Test Macro-F1 đạt ~0.54 (cải thiện hơn 15% so với Baseline).
+
+[Figure: figure_01_macro_f1_comparison.png]
+[Figure: figure_02_4tier_breakdown.png]
+
+2.2. Giai đoạn 2: Đánh giá độc lập các thao tác (Operation Ablation)
+- Tại mức alpha = 0.10, các thao tác EDA đơn lẻ đều giúp Test Macro-F1 vượt mức 0.54 và giảm số lượng nhãn Zero-F1 xuống còn 11-13 nhãn.
+- Trên tập Test, các thao tác đơn lẻ thường có xu hướng nhỉnh hơn cấu hình kết hợp (Full Pipeline). Tuy nhiên, trên tập Validation, Cyber_Full lại là cấu hình đạt điểm số Macro-F1 cao nhất (0.5482) và số lượng nhãn Zero-F1 thấp nhất (24 nhãn).
+- Phân tích sâu hơn cho thấy: Khi hoạt động độc lập, Cyber_SR và Cyber_RI cho điểm số Validation thấp hơn Cyber_RS và Cyber_RD. Tuy nhiên, Generic_Full lại ghi nhận sự sụt giảm đáng kể so với cấu hình đơn lẻ Generic_SR.
+
+[Figure: fig1_operation_ablation_macrof1_joint.png]
+[Figure: fig3_rare_class_f1_joint.png]
+[Figure: fig4_zerof1_comparison_joint.png]
+
+3. Nhận xét và Kết luận
+
+- Vai trò của EDA trong bài toán CTI: Thực nghiệm cho thấy EDA là một bước tiền xử lý (preprocessing) mang lại giá trị cao cho bài toán Mapping CTI. Thông qua việc tạo ra các nhiễu tích cực, EDA giúp mô hình khái quát hóa tốt hơn, hỗ trợ nhận diện khoảng 40 kỹ thuật tấn công hiếm gặp (Tail classes) và cải thiện đáng kể chỉ số Macro-F1.
+
+- Tính chất "Can thiệp có chọn lọc" của CyberEDA: Việc Cyber_SR và Cyber_RI có điểm số đơn lẻ thấp hơn xuất phát từ đặc tính can thiệp bảo thủ (conservative augmentation). Từ điển STIX có quy mô nhỏ, nên hai thao tác này chỉ thay đổi từ vựng khi gặp đúng thuật ngữ, dẫn đến lượng nhiễu tạo ra chưa đủ lớn để tối ưu hóa việc chống overfitting. Tuy nhiên, chính sự "thận trọng" này lại là chìa khóa thành công khi kết hợp vào Full Pipeline.
+
+- Lựa chọn cấu hình (Full Operations) cho mô hình chính: Để triển khai huấn luyện các kiến trúc Deep Learning phức tạp hơn ở giai đoạn sau, cấu hình Full Operations (với alpha=0.10) được đề xuất sử dụng cho cả hai phương pháp EDA. Lựa chọn này dựa trên các cơ sở:
+  1) Đồng nhất biến số thực nghiệm (Controlled Variables): Đảm bảo các mô hình đều chịu cùng một mức độ can thiệp cấu trúc, giúp kết quả đối chiếu giữa từ điển STIX và WordNet mang tính khách quan.
+  2) Tận dụng sự cộng hưởng: Bù đắp sự thiếu hụt và điểm mạnh của từng operations riêng lẻ (SR, RI, RS, RD) từ đó mở rộng tối đa sự đa dạng dữ liệu.
+  3) Kết quả của cấu hình Full Operations không chênh lệch quá nhiều so với từng phương pháp riêng lẻ (chỉ khoảng xấp xỉ +-2%). Ngoài ra chỉ số Zero-F1 trên tập Val của Full Operations đang là tốt nhất trên cả hai phương pháp, lần lượt là 24 (CyberEDA) và 29 (GenericEDA).
+
+=> Kết luận chung: Sự kết hợp giữa các thao tác xáo trộn cấu trúc và thay thế từ vựng (Full Operations) cho thấy tiềm năng lớn nhất trong việc giải quyết triệt để tình trạng nhãn mù (Zero-F1). Cấu hình này sẽ được tiêu chuẩn hóa thành Data Pipeline để áp dụng cho các bước huấn luyện mô hình phức tạp tiếp theo.

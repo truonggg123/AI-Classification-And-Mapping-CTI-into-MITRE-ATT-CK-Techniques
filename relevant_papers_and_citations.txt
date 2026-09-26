@@ -43,14 +43,6 @@ MỤC 1: CÁC CÔNG TRÌNH TRỌNG TÂM VỀ ÁNH XẠ CTI SANG MITRE ATT&CK (CO
    - Vai trò trong bài: Công trình kinh điển mở đường cho hướng tiếp cận Machine Learning/NLP để 
      re-ranking và phân loại kỹ thuật ATT&CK từ báo cáo CTI.
 
-4. [BÀI BÁO MỚI NHẤT VỀ DATA AUGMENTATION CHO CTI MAPPING - ĐỐI CHỨNG CỰC TỐT]
-   - Tiêu đề: SynthCTI: LLM-Driven Synthetic CTI Generation to enhance MITRE Technique Mapping
-   - Tác giả: Álvaro Ruiz-Ródenas, Jaime Pujante Sáez, Daniel García-Algora, et al.
-   - Năm: 2025
-   - Xuất bản tại: Future Generation Computer Systems / arXiv
-   - Đường link: https://arxiv.org/abs/2507.16852
-   - Vai trò trong bài: Bài báo giải quyết trực diện vấn đề class-imbalance trên nhãn hiếm (tail techniques) 
-     của CTI bằng Data Augmentation. Cực kỳ thích hợp để so sánh với hướng tiếp cận CyberEDA nhẹ + Asymmetric Loss của bạn.
 
 5. [BÀI BÁO TỔNG QUAN HỆ THỐNG VỀ MITRE ATT&CK (SoK)]
    - Tiêu đề: SoK: The MITRE ATT&CK Framework in Research and Practice
@@ -76,11 +68,86 @@ MỤC 1: CÁC CÔNG TRÌNH TRỌNG TÂM VỀ ÁNH XẠ CTI SANG MITRE ATT&CK (CO
    - Đường link: https://www.mitre.org/sites/default/files/publications/pr-18-0944-11-mitre-attack-design-and-philosophy.pdf
    - Vai trò trong bài: Trích dẫn định nghĩa chính thức của ma trận ATT&CK trong phần Introduction.
 
+
 ----------------------------------------------------------------------------------------------------
-MỤC 2: CÁC MÔ HÌNH NGÔN NGỮ CHUYÊN BIỆT CHO AN NINH MẠNG (CYBERSECURITY LANGUAGE MODELS)
+MỤC 2: CÁC BÀI BÁO LIÊN QUAN ĐỂ SO SÁNH KẾT QUẢ VÀ VIẾT RELATED WORK
 ----------------------------------------------------------------------------------------------------
 
-8. [BÀI BÁO CYSECBERT - MÔ HÌNH ĐẠT HIỆU QUẢ TỐT NHẤT TRONG BÀI CỦA BẠN]
+19. [BÀI BÁO SỬ DỤNG MÔ HÌNH LAI MODERNBERT & BERTOPIC]
+    - Tiêu đề: A Study on Improving the Automatic Classification Performance of Cybersecurity MITRE ATT&CK Tactics Using NLP-Based ModernBERT and BERTopic Models
+    - Tác giả: Jaehwan Baek, Jeonghoon O, Seungwoo Jeong, Wooju Kim
+    - Năm: 2025
+    - Đường link: https://doi.org/10.3390/electronics14220000
+    - Tóm tắt nội dung chính:
+      * Mục tiêu: Tự động hóa ánh xạ các báo cáo CTI phi cấu trúc vào 12 chiến thuật (Tactics) của MITRE ATT&CK.
+      * Dataset & Tỉ lệ chia dataset: Sử dụng bộ dữ liệu rcATT (1,490 báo cáo). Tỉ lệ chia thường không cố định hoặc dùng 70:30 theo các nghiên cứu tương đương trong nhóm này.
+      * Phương pháp: Xây dựng và so sánh 5 mô hình phân loại lai kết hợp các đặc trưng thống kê (TF-IDF), ngữ cảnh (ModernBERT) và ngữ nghĩa chủ đề (BERTopic).
+      * Kết quả sơ bộ: Mô hình TF-IDF + ModernBERT đạt Micro-Precision 72.25% (tăng 10.07% so với baseline). Mô hình TF-IDF + BERTopic đạt Micro-F0.5 là 67.14% và Macro-F0.5 là 63.20%, giúp cân bằng tốt giữa các lớp phổ biến và hiếm.
+      * Hạn chế: Sự cải thiện độ chính xác (Precision) đi kèm với giảm độ phủ (Recall), làm hạn chế khả năng phát hiện một số chiến thuật hiếm nếu không tối ưu ngưỡng.
+
+20. [BÀI BÁO TỔNG HỢP KIẾN THỨC VỀ TRÍCH XUẤT TTP TỪ CTI (SoK)]
+    - Tiêu đề: SoK: Automated TTP Extraction from CTI Reports – Are We There Yet?
+    - Tác giả: Carl von Ossietzky Univ., Politecnico di Milano, Univ. of Twente, v.v.
+    - Năm: 2025
+    - Đường link: https://www.usenix.org/conference/usenixsecurity25/presentation/sok-ttp
+    - Tóm tắt nội dung chính:
+      * Mục tiêu: Cung cấp Hệ thống hóa Kiến thức (SoK) chuyên sâu về trích xuất TTP từ báo cáo CTI.
+      * Dataset & Tỉ lệ chia dataset: Đánh giá trên nhiều bộ dataset chuẩn qua các task NER, Classification và Generation (ví dụ TRAM2). Tỉ lệ chia chuẩn được đề xuất là 80:20 (Train:Test) trên toàn bộ báo cáo để giữ vững toàn bộ ngữ cảnh.
+      * Phương pháp: Phân tích và đánh giá hơn 40 phương pháp NLP từ nhận dạng thực thể (NER), mô hình nhúng (Embeddings) đến mô hình ngôn ngữ lớn (LLM) tạo sinh.
+      * Kết quả sơ bộ: Chỉ ra rằng các giải pháp hiện tại khó so sánh do thiết lập thử nghiệm khác nhau. Nghiên cứu đã tạo ra một framework chuẩn hóa để so sánh tương đối giữa các phương pháp.
+      * Hạn chế: Đánh giá hiệu năng tuyệt đối vẫn còn khó khăn do thiếu hụt bộ dữ liệu chất lượng cao, đồng nhất và tính mơ hồ trong ontologies của TTP.
+
+21. [BÀI BÁO PHÂN LOẠI TTP TỰ ĐỘNG SỬ DỤNG NLP TIÊN TIẾN]
+    - Tiêu đề: Automated MITRE ATT&CK Technique Classification Using OSINT and Advanced NLP
+    - Tác giả: Ramesh Kumar Sharma, Dharmendra Kumar Singh, Rajesh P. Barnwal
+    - Năm: 2026
+    - Đường link: http://www.mirlabs.org/ijcisim/regular_papers_2026/IJCISIM_18.pdf
+    - Tóm tắt nội dung chính:
+      * Mục tiêu: Tự động ánh xạ dữ liệu tình báo nguồn mở (OSINT) phi cấu trúc thành các kỹ thuật MITRE ATT&CK.
+      * Dataset & Tỉ lệ chia dataset: Dữ liệu đe dọa khai thác từ OSINT. Tỉ lệ chia dataset là 70:15:15 (70% Train, 15% Validation, 15% Test) thông qua phương pháp phân tầng (stratified split).
+      * Phương pháp: Sử dụng pipeline học máy đa giai đoạn: tiền xử lý OSINT, trích xuất hành vi, học biểu diễn ngữ nghĩa bằng Transformer và phân loại đa nhãn (Multi-label classification).
+      * Kết quả sơ bộ: Vượt trội so với các phương pháp dựa trên từ khóa hoặc ML truyền thống, duy trì độ chính xác cao ngay cả với mô tả mối đe dọa không rõ ràng.
+      * Hạn chế: Việc phân loại và gán nhãn cho các kỹ thuật hiếm (low-density ATT&CK categories) vẫn là thách thức, đặc biệt khi dữ liệu OSINT chứa nhiều nhiễu.
+
+22. [BÀI BÁO MỚI NHẤT VỀ DATA AUGMENTATION CHO CTI MAPPING - ĐỐI CHỨNG CỰC TỐT]
+    - Tiêu đề: SynthCTI: LLM-Driven Synthetic CTI Generation to enhance MITRE Technique Mapping
+    - Tác giả: Álvaro Ruiz-Ródenas, Jaime Pujante Sáez, Daniel García-Algora, et al.
+    - Năm: 2025
+    - Đường link: https://arxiv.org/abs/2507.16852
+    - Tóm tắt nội dung chính:
+      * Mục tiêu: Giải quyết trực diện vấn đề class-imbalance trên nhãn hiếm (tail techniques) của CTI bằng Data Augmentation. Cực kỳ thích hợp để so sánh với hướng tiếp cận CyberEDA nhẹ + Asymmetric Loss.
+      * Dataset & Tỉ lệ chia dataset: Sử dụng bộ dữ liệu CTI tiêu chuẩn. (Không cung cấp chi tiết cụ thể trong phần tổng hợp trước, thường phân chia 80:20 hoặc cross-validation).
+      * Phương pháp: Tạo dữ liệu tổng hợp bằng LLM để tăng cường tập huấn luyện.
+
+23. [BÀI BÁO ÁNH XẠ ATT&CK BẰNG MÔ HÌNH LAI BERT-TEXTCNN]
+    - Tiêu đề: Research on Discovery and Mapping of ATT&CK Tactics and Techniques by Cyber Threat Intelligence Based on BERT-TextCNN
+    - Tác giả: Shuqin Zhang, Dedong Li, Jun Li
+    - Năm: 2026
+    - Đường link: https://doi.org/10.1109/ACCESS.2026.3533818 / https://www.researchgate.net/publication/388383286
+    - Tóm tắt nội dung chính:
+      * Mục tiêu: Tự động hóa phát hiện, trích xuất và ánh xạ các Chiến thuật (Tactics) và Kỹ thuật (Techniques) MITRE ATT&CK từ các báo cáo CTI văn bản phi cấu trúc, giảm thiểu gánh nặng phân tích thủ công của chuyên gia/chuyên viên SOC.
+      * Dataset & Tỉ lệ chia dataset: Tập dữ liệu CTI benchmark gồm 26,602 mẫu (dẫn chiếu từ TRAM / ATT&CK corpus chuẩn). Tỉ lệ chia dataset: Chia theo tỉ lệ 8:1:1 (80% Training set, 10% Validation set, 10% Test set).
+      * Phương pháp: Kiến trúc lai kết hợp BERT và TextCNN: BERT đóng vai trò trích xuất vector đặc trưng ngữ cảnh ngữ nghĩa toàn cục; TextCNN nhận ma trận đầu ra từ BERT và sử dụng các bộ lọc tích chập 1D để trích xuất các đặc trưng n-gram cục bộ. Có sử dụng Cơ chế phân loại đa tầng kết hợp Module hiệu chỉnh kết quả.
+      * Kết quả sơ bộ: Vượt trội hơn đáng kể so với các baseline máy học truyền thống (TF-IDF + ML) và deep learning đơn lẻ; trên tập kiểm thử đạt Accuracy 93.59% và Macro-F1 93.78%.
+      * Hạn chế: Giới hạn độ dài ngữ cảnh phân tích (<= 512 tokens), chưa giải quyết triệt để bài toán phân loại đa nhãn cực đoan (Extreme Multi-Label) trên toàn bộ ma trận ATT&CK (>200 kỹ thuật), và chưa tích hợp kỹ thuật tăng cường dữ liệu chuyên biệt để cải thiện các nhãn hiếm (long-tail).
+
+24. [BÀI BÁO PHƯƠNG PHÁP HUẤN LUYỆN 2 GIAI ĐOẠN (TWO-STAGE) TRÊN TẬP TRAM]
+    - Tiêu đề: Cyber-Attack Technique Classification Using Two-Stage Trained Large Language Models
+    - Tác giả: Weiqiu You, Youngja Park
+    - Năm: 2024
+    - Đường link: https://arxiv.org/abs/2411.18755
+    - Tóm tắt nội dung chính:
+      * Mục tiêu: Giải quyết bài toán thiếu hụt dữ liệu (low-resource) và mất cân bằng nhãn cực đoan khi phân loại kỹ thuật MITRE ATT&CK từ câu báo cáo CTI; đề xuất quy trình tận dụng dữ liệu phụ trợ mà không bị suy thoái hiệu năng do lệch phân phối.
+      * Dataset & Tỉ lệ chia dataset: Bộ dữ liệu TRAM (Threat Report ATT&CK Mapper) đã được tiền xử lý khử trùng lặp và lọc các lớp có ít nhất 3 mẫu, thu về 73 classes và 1,491 câu CTI. Tỉ lệ chia dataset: Chia theo tỉ lệ 2:1:1 (khoảng 50% Train - 754 câu, 25% Validation - 368 câu, 25% Test - 369 câu; đặc biệt 14 lớp hiếm nhất có đúng 3 mẫu được phân bổ đều 1 train, 1 val, 1 test).
+      * Phương pháp: Huấn luyện 2 giai đoạn (Two-Stage Training Pipeline): Stage 1 (Augmented Training) kết hợp Dữ liệu phụ trợ; Stage 2 (Clean Fine-Tuning) tiếp tục tinh chỉnh mô hình chỉ trên tập dữ liệu chính.
+      * Kết quả sơ bộ: Quy trình Two-Stage Training giúp tăng vọt Macro-F1 từ 5 đến 9 điểm phần trăm trên các mô hình Transformer so với baseline huấn luyện thông thường 1 giai đoạn, trong khi Micro-F1 vẫn duy trì mức cạnh tranh cao.
+      * Hạn chế: Mới chỉ đánh giá ở cấp độ câu đơn (sentence-level) với bài toán phân loại đơn nhãn (single-label); phụ thuộc vào chất lượng mô tả có sẵn trong cơ sở tri thức ATT&CK; quy mô thực nghiệm mới dừng lại ở 73 classes.
+
+----------------------------------------------------------------------------------------------------
+MỤC 3: CÁC MÔ HÌNH NGÔN NGỮ CHUYÊN BIỆT CHO AN NINH MẠNG (CYBERSECURITY LANGUAGE MODELS)
+----------------------------------------------------------------------------------------------------
+
+10. [BÀI BÁO CYSECBERT - MÔ HÌNH ĐẠT HIỆU QUẢ TỐT NHẤT TRONG BÀI CỦA BẠN]
    - Tiêu đề: CySecBERT: A Domain-Adapted Language Model for Cyber Security Text Analysis
    - Tác giả: Md Tanvir Alam, et al.
    - Năm: 2022
@@ -89,7 +156,7 @@ MỤC 2: CÁC MÔ HÌNH NGÔN NGỮ CHUYÊN BIỆT CHO AN NINH MẠNG (CYBERSECU
    - Hugging Face Model: https://huggingface.co/jackaduma/CySecBERT
    - Vai trò trong bài: Mô hình ngôn ngữ nền tảng chính (backbone) đạt Macro-F1 cao nhất (64.52%) trong thực nghiệm của bạn.
 
-9. [BÀI BÁO SECUREBERT]
+11. [BÀI BÁO SECUREBERT]
    - Tiêu đề: SecureBERT: A Domain-Specific Language Model for Cybersecurity
    - Tác giả: Ehsan Aghaei, Xi Niu, Shadab Shadid, Ehab Al-Shaer
    - Năm: 2022
@@ -97,7 +164,7 @@ MỤC 2: CÁC MÔ HÌNH NGÔN NGỮ CHUYÊN BIỆT CHO AN NINH MẠNG (CYBERSECU
    - Đường link: https://arxiv.org/abs/2204.02685
    - Vai trò trong bài: Một trong các mô hình an ninh mạng so sánh (domain-specific baseline).
 
-10. [BÀI BÁO MODERNBERT - KIẾN TRÚC TRANSFORMER HIỆN ĐẠI NHẤT (2024)]
+12. [BÀI BÁO MODERNBERT - KIẾN TRÚC TRANSFORMER HIỆN ĐẠI NHẤT (2024)]
     - Tiêu đề: ModernBERT: Smarter, Better, Faster
     - Tác giả: Benjamin Warner, et al. (Answer.AI & LightOn)
     - Năm: 2024
@@ -105,21 +172,21 @@ MỤC 2: CÁC MÔ HÌNH NGÔN NGỮ CHUYÊN BIỆT CHO AN NINH MẠNG (CYBERSECU
     - Đường link: https://arxiv.org/abs/2412.13663
     - Vai trò trong bài: Đại diện cho thế hệ Encoder tiên tiến nhất năm 2024 được đưa vào thử nghiệm so sánh.
 
-11. [BÀI BÁO BERT GỐC]
+13. [BÀI BÁO BERT GỐC]
     - Tiêu đề: BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding
     - Tác giả: Jacob Devlin, Ming-Wei Chang, Kenton Lee, Kristina Toutanova
     - Năm: 2018 (NAACL-HLT 2019)
     - Đường link: https://arxiv.org/abs/1810.04805
     - Vai trò trong bài: Mô hình nền tảng tổng quát (general-domain baseline).
 
-12. [BÀI BÁO DISTILBERT]
+14. [BÀI BÁO DISTILBERT]
     - Tiêu đề: DistilBERT, a distilled version of BERT: smaller, faster, cheaper and lighter
     - Tác giả: Victor Sanh, Lysandre Debut, Julien Chaumond, Thomas Wolf (Hugging Face)
     - Năm: 2019
     - Đường link: https://arxiv.org/abs/1910.01108
     - Vai trò trong bài: Mô hình nén/chưng cất tri thức, tối ưu cho bài toán triển khai nhẹ.
 
-13. [BÀI BÁO TEXTCNN - BASELINE DEEP LEARNING CỔ ĐIỂN]
+15. [BÀI BÁO TEXTCNN - BASELINE DEEP LEARNING CỔ ĐIỂN]
     - Tiêu đề: Convolutional Neural Networks for Sentence Classification
     - Tác giả: Yoon Kim
     - Năm: 2014
@@ -128,10 +195,10 @@ MỤC 2: CÁC MÔ HÌNH NGÔN NGỮ CHUYÊN BIỆT CHO AN NINH MẠNG (CYBERSECU
     - Vai trò trong bài: Mô hình Baseline Deep Learning truyền thống để đối chiếu hiệu quả vượt trội của Transformer.
 
 ----------------------------------------------------------------------------------------------------
-MỤC 3: DATA AUGMENTATION, ASYMMETRIC LOSS & XỬ LÝ DỮ LIỆU MẤT CÂN BẰNG (LONG-TAIL & LOSSES)
+MỤC 4: DATA AUGMENTATION, ASYMMETRIC LOSS & XỬ LÝ DỮ LIỆU MẤT CÂN BẰNG (LONG-TAIL & LOSSES)
 ----------------------------------------------------------------------------------------------------
 
-14. [BÀI BÁO KỸ THUẬT EDA - GỐC RỄ CỦA CYBEREDA]
+16. [BÀI BÁO KỸ THUẬT EDA - GỐC RỄ CỦA CYBEREDA]
     - Tiêu đề: EDA: Easy Data Augmentation Techniques for Boosting Performance on Text Classification Tasks
     - Tác giả: Jason Wei, Kai Zou
     - Năm: 2019
@@ -141,7 +208,7 @@ MỤC 3: DATA AUGMENTATION, ASYMMETRIC LOSS & XỬ LÝ DỮ LIỆU MẤT CÂN B�
     - Vai trò trong bài: Cơ sở lý thuyết của kỹ thuật tăng cường dữ liệu. Trong bài của bạn, CyberEDA cải tiến 
       bằng cách bảo vệ thực thể an ninh mạng (CVE, IP, MITRE IDs) không bị hoán đổi/xóa ngẫu nhiên.
 
-15. [BÀI BÁO ASYMMETRIC LOSS (ASL) - GIẢI QUYẾT MẤT CÂN BẰNG ĐA NHÃN CỰC ĐOAN]
+17. [BÀI BÁO ASYMMETRIC LOSS (ASL) - GIẢI QUYẾT MẤT CÂN BẰNG ĐA NHÃN CỰC ĐOAN]
     - Tiêu đề: Asymmetric Loss For Multi-Label Classification
     - Tác giả: Tal Ridnik, Emanuel Ben-Baruch, Nadav Zamir, Asaf Noy, Lihi Zelnik-Manor
     - Năm: 2021
@@ -151,7 +218,7 @@ MỤC 3: DATA AUGMENTATION, ASYMMETRIC LOSS & XỬ LÝ DỮ LIỆU MẤT CÂN B�
     - Vai trò trong bài: Hàm Loss chủ đạo thay thế Binary Cross-Entropy tiêu chuẩn, giảm áp lực 
       từ số lượng khổng lồ các mẫu âm tính (negative labels) trong bài toán 188 nhãn MITRE ATT&CK.
 
-16. [BÀI BÁO FOCAL LOSS]
+18. [BÀI BÁO FOCAL LOSS]
     - Tiêu đề: Focal Loss for Dense Object Detection
     - Tác giả: Tsung-Yi Lin, Priya Goyal, Ross Girshick, Kaiming He, Piotr Dollár
     - Năm: 2017
@@ -160,7 +227,7 @@ MỤC 3: DATA AUGMENTATION, ASYMMETRIC LOSS & XỬ LÝ DỮ LIỆU MẤT CÂN B�
     - Vai trò trong bài: Cơ sở nền tảng dẫn đến ý tưởng của Asymmetric Loss.
 
 ----------------------------------------------------------------------------------------------------
-MỤC 4: MÃ TRÍCH DẪN BIBTEX SẴN SÀNG CHO LATEX / OVERLEAF
+MỤC 5: MÃ TRÍCH DẪN BIBTEX SẴN SÀNG CHO LATEX / OVERLEAF
 ----------------------------------------------------------------------------------------------------
 
 @inproceedings{orbinato2022automatic,
@@ -253,3 +320,24 @@ MỤC 4: MÃ TRÍCH DẪN BIBTEX SẴN SÀNG CHO LATEX / OVERLEAF
   year={2018},
   institution={MITRE Corporation}
 }
+
+@article{zhang2026research,
+  title={Research on Discovery and Mapping of ATT\&CK Tactics and Techniques by Cyber Threat Intelligence Based on BERT-TextCNN},
+  author={Zhang, Shuqin and Li, Dedong and Li, Jun},
+  journal={IEEE Access},
+  volume={14},
+  pages={5984--5992},
+  year={2026},
+  publisher={IEEE},
+  doi={10.1109/ACCESS.2026.3533818}
+}
+
+@misc{you2024cyberattack,
+  title={Cyber-Attack Technique Classification Using Two-Stage Trained Large Language Models},
+  author={You, Weiqiu and Park, Youngja},
+  year={2024},
+  eprint={2411.18755},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG}
+}
+

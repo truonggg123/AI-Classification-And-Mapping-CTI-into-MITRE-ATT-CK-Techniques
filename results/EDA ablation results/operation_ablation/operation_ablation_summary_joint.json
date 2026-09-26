@@ -1,0 +1,73 @@
+{
+  "proxy_model": "nreimers/MiniLM-L6-H384-uncased",
+  "dataset": "joint",
+  "seed": 42,
+  "optimal_alpha_cyber": 0.1,
+  "optimal_alpha_generic": 0.1,
+  "baseline_val_macro_f1": 0.371,
+  "baseline_test_macro_f1": 0.3911,
+  "best_cyber_config": {
+    "id": "Cyber_Full",
+    "val_macro_f1": 0.5474,
+    "test_macro_f1": 0.5499,
+    "delta_val": 0.1764
+  },
+  "best_generic_config": {
+    "id": "Generic_SR",
+    "val_macro_f1": 0.5364,
+    "test_macro_f1": 0.5665,
+    "delta_val": 0.1655
+  },
+  "operation_ranking_by_delta_val": [
+    {
+      "id": "Cyber_Full",
+      "group": "CyberEDA",
+      "delta_val": 0.1764
+    },
+    {
+      "id": "Cyber_RS",
+      "group": "CyberEDA",
+      "delta_val": 0.1664
+    },
+    {
+      "id": "Generic_SR",
+      "group": "GenericEDA",
+      "delta_val": 0.1655
+    },
+    {
+      "id": "Generic_RS",
+      "group": "GenericEDA",
+      "delta_val": 0.1642
+    },
+    {
+      "id": "Cyber_RD",
+      "group": "CyberEDA",
+      "delta_val": 0.1587
+    },
+    {
+      "id": "Cyber_SR",
+      "group": "CyberEDA",
+      "delta_val": 0.1563
+    },
+    {
+      "id": "Generic_Full",
+      "group": "GenericEDA",
+      "delta_val": 0.1525
+    },
+    {
+      "id": "Cyber_RI",
+      "group": "CyberEDA",
+      "delta_val": 0.1511
+    },
+    {
+      "id": "Generic_RD",
+      "group": "GenericEDA",
+      "delta_val": 0.1504
+    },
+    {
+      "id": "Generic_RI",
+      "group": "GenericEDA",
+      "delta_val": 0.147
+    }
+  ]
+}
