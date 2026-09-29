@@ -6,7 +6,7 @@
     "title": "Generic WordNet EDA one-stage control",
     "stage1_mode": "generic",
     "stage2": false,
-    "minority_f2": false
+    "minority_f2": true
   },
   "training_config": {
     "seed": 42,
