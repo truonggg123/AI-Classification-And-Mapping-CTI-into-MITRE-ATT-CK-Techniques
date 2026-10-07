@@ -1,0 +1,33 @@
+{
+  "scenario": "A0",
+  "scenario_title": "Original-only one-stage baseline",
+  "dataset": "tram",
+  "seed": 42,
+  "stage1_mode": "original",
+  "stage1_source_files": [
+    "train.csv"
+  ],
+  "stage2": false,
+  "minority_f2": false,
+  "stage1_best_epoch": 6,
+  "stage1_best_macro_f1_at_05": 0.7695968242817294,
+  "stage2_best_epoch": null,
+  "stage2_best_macro_f1_at_05": null,
+  "global_threshold": 0.61,
+  "macro_optimal_threshold": 0.59,
+  "minority_threshold": null,
+  "validation_global": {
+    "micro_precision": 0.862796833773087,
+    "micro_recall": 0.7965895249695494,
+    "micro_f1": 0.8283723875870804,
+    "macro_precision": 0.8840815330624328,
+    "macro_recall": 0.7163381626346664,
+    "macro_f1": 0.7676919552238854,
+    "weighted_f1": 0.8222582151565365,
+    "hamming_loss": 0.007506925207756233,
+    "avg_predicted_labels": 1.0498614958448753
+  },
+  "validation_minority_f2": null,
+  "validation_minority_macro_f2": null,
+  "validation_minority_macro_recall": null
+}
