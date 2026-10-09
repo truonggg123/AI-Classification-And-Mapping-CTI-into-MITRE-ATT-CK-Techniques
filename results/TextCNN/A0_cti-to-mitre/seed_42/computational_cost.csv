@@ -1,0 +1,2 @@
+scenario,dataset_subset,training_seconds,inference_seconds,inference_ms_per_sample,total_params,trainable_params,device
+A0,cti_to_mitre,66.70044803619385,0.49729061126708984,0.19282303655179908,3232964,3232964,cuda

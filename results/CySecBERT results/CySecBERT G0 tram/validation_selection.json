@@ -1,0 +1,42 @@
+{
+  "scenario": "G0",
+  "scenario_title": "Generic WordNet EDA one-stage control",
+  "seed": 42,
+  "stage1_mode": "generic",
+  "stage1_source_files": [
+    "train_augmented_generic_eda.csv"
+  ],
+  "stage2": false,
+  "minority_f2": true,
+  "stage1_best_epoch": 6,
+  "stage1_best_macro_f1_at_05": 0.8036395173911606,
+  "stage2_best_epoch": null,
+  "stage2_best_macro_f1_at_05": null,
+  "global_threshold": 0.61,
+  "macro_optimal_threshold": 0.61,
+  "minority_threshold": 0.38,
+  "validation_global": {
+    "micro_precision": 0.8705302096177558,
+    "micro_recall": 0.8599269183922046,
+    "micro_f1": 0.8651960784313726,
+    "macro_precision": 0.8608332915495386,
+    "macro_recall": 0.8156154203997141,
+    "macro_f1": 0.8238039135328016,
+    "weighted_f1": 0.8631896443562042,
+    "hamming_loss": 0.006094182825484765,
+    "avg_predicted_labels": 1.1232686980609419
+  },
+  "validation_minority_f2": {
+    "micro_precision": 0.8696186961869619,
+    "micro_recall": 0.8611449451887941,
+    "micro_f1": 0.8653610771113831,
+    "macro_precision": 0.8574999582162053,
+    "macro_recall": 0.8222820870663808,
+    "macro_f1": 0.8271372468661348,
+    "weighted_f1": 0.8639610613273775,
+    "hamming_loss": 0.006094182825484765,
+    "avg_predicted_labels": 1.126038781163435
+  },
+  "validation_minority_macro_f2": 0.761904761904762,
+  "validation_minority_macro_recall": 0.7916666666666666
+}

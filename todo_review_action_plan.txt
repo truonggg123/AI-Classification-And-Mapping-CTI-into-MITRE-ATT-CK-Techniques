@@ -196,7 +196,7 @@ PHẦN 2: CÁC TASK CẦN CHẠY THỰC NGHIỆM
       2. Xuất ra file CSV: [Original_Text | Augmented_Text | Labels | Operation_Applied]
       3. Nhóm tự review thủ công.
   - Ưu tiên: CAO (có thể làm song song, không phụ thuộc Task khác)
-  - Status: [ ] Chưa làm
+  - Status: [] Chưa làm
 
   [TASK 5] - Đánh giá Semantic/Label Preservation
   ---------------------------------------------------------------------------
@@ -235,7 +235,7 @@ PHẦN 2: CÁC TASK CẦN CHẠY THỰC NGHIỆM
       - Ghi lại training time cho từng lần chạy để tính Training Overhead (Task 9).
   - Ưu tiên: RẤT CAO (task trung tâm, nhiều task khác phụ thuộc vào kết quả này)
   - Phụ thuộc: Task 1, Task 2, Task 6
-  - Status: [ ] Chưa làm
+  - Status: [x] Đã hoàn thành (105/105 runs hoàn tất trên cả 7 mô hình: BERT, CySecBERT, DistilBERT, ModernBERT, SecBERT, SecureBERT, TextCNN trên 3 datasets CTI-to-MITRE, Joint, TRAM)
 
   [TASK 8] - Chạy DistilBERT B1/G0 trên 5 Seeds để kiểm định Statistical Stability (Thông tin 11)
   ---------------------------------------------------------------------------
@@ -334,14 +334,14 @@ BẢNG TỔNG HỢP NHANH
   -------------|------|-----------------------------------------|---------|----------
   CHUẨN BỊ    |  1   | Thêm Minority-F2 cho B1, G0             | XONG    | -
   CHUẨN BỊ    |  2   | Thêm metrics vào notebook               | XONG    | -
-  CHUẨN BỊ    |  4   | Script lấy 200 mẫu đánh giá ngữ nghĩa  | CAO     | -
-  EDA THỬ     |  5   | Đánh giá thủ công 200 mẫu               | TB      | Task 4
+  CHUẨN BỊ    |  4   | Script lấy mẫu đánh giá ngữ nghĩa       |   CAO   | -
+  EDA THỬ     |  5   | Đánh giá thủ công mẫu ngữ nghĩa         | CAO     | Task 4 (Đang chờ gắn nhãn)
   EDA THỬ     |  6   | Ablation SR/RI/RS/RD + chọn alpha       | XONG    | -
-  CHÍNH        |  7   | Chạy lại 5×7 thực nghiệm chính          | RẤT CAO | 1,2,6
-  CHÍNH        |  8   | DistilBERT 5 seeds (stability check)    | TB      | Task 7
+  CHÍNH        |  7   | Chạy lại 5×7 thực nghiệm chính          | XONG    | 1,2,6
+  CHÍNH        |  8   | DistilBERT 5 seeds (stability check)    | CAO     | Task 7 (Có thể làm ngay)
   TỔNG HỢP    |  3   | Đồng nhất dùng test_minority_f2         | TB      | Task 7
   TỔNG HỢP    |  9   | Bảng Training Overhead + Efficiency     | TB      | Task 7
-  TỔNG HỢP    | 10   | Per-class ΔF1 analysis + biểu đồ       | TB      | (có thể làm ngay)
+  TỔNG HỢP    | 10   | Per-class ΔF1 analysis + biểu đồ       | TB      | Task 7 (Có thể làm ngay)
   VIẾT BÁO    | 11   | Discussion: CyberEDA vs Generic EDA     | TB      | -
   VIẾT BÁO    | 12   | Justify Macro-F1 là primary metric      | THẤP    | -
 
