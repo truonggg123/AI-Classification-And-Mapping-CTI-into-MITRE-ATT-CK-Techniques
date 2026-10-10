@@ -1,249 +1,184 @@
 ====================================================================================================
-HƯỚNG DẪN KIỂM CHỨNG GIẢ ĐỊNH LABEL PRESERVATION CỦA CYBEREDA
-y(x) = y(Augment(x))
+HƯỚNG DẪN KIỂM CHỨNG GIẢ ĐỊNH LABEL PRESERVATION (CYBEREDA vs GENERIC EDA)
+Kiểm định giả định nền tảng: y(x) = y(Augment(x))
+Quy trình phối hợp nhóm 5 thành viên trên Google Sheets
 ====================================================================================================
-Ngày soạn: 22/09/2026
-Mục đích: Chứng minh rằng sau khi áp dụng CyberEDA, nhãn ATT&CK ban đầu vẫn còn hợp lệ.
-          Đây là một yêu cầu cơ bản (fundamental assumption) của mọi phương pháp Data Augmentation
-          trong bài toán Text Classification.
-
-====================================================================================================
-PHẦN 1: BỐI CẢNH VÀ LÝ DO CẦN KIỂM CHỨNG
-====================================================================================================
-
-Giả định nền tảng của EDA trong classification:
-    y(x) = y(Augment(x))
-    → Nghĩa là: Sau khi augmentation, nhãn ATT&CK của câu PHẢI không thay đổi.
-
-Ví dụ nguy hiểm với Random Deletion (RD):
-    Câu gốc:        "The malware executes PowerShell commands to download additional payloads."
-    Nhãn gốc:        T1059.001 (PowerShell)
-    Sau RD xóa "PowerShell":
-    Câu augmented:  "The malware executes commands to download additional payloads."
-    Nhãn vẫn gán:   T1059.001 ← SAI! Câu mới không đủ indicator để xác định PowerShell.
-
-Ví dụ an toàn với Synonym Replacement (SR) bằng alias:
-    Câu gốc:        "APT28 used credential harvesting tools against government targets."
-    Sau SR:         "Fancy Bear used credential harvesting tools against government targets."
-    Nhãn vẫn đúng:  Không đổi — chỉ thay tên alias của cùng một threat actor.
+Cập nhật: 10/10/2026
+Mục đích:
+  1. Kiểm chứng giả định bảo toàn nhãn: Sau khi áp dụng Data Augmentation, câu sinh ra
+     có còn mang đúng kỹ thuật MITRE ATT&CK ban đầu không: y(x) = y(Augment(x))?
+  2. So sánh khách quan, công bằng giữa CyberEDA (ontology + alias) và Generic EDA (WordNet).
+  3. Trả lời trực tiếp phản biện của Reviewer:
+     - Phép xóa từ Random Deletion (RD) có vô tình xóa mất các từ khóa/indicator then chốt không?
+     - CyberEDA có bảo toàn nhãn tốt hơn Generic EDA không?
+     - Mức độ chấp nhận được về ngữ nghĩa (Semantic) và ngữ pháp (Grammar) là bao nhiêu %?
 
 ====================================================================================================
-PHẦN 2: QUY TRÌNH THỰC HIỆN TỪNG BƯỚC
+PHẦN 1: CẤU TRÚC THƯ MỤC VÀ DỮ LIỆU
 ====================================================================================================
 
-BƯỚC 1: SINH FILE CSV ĐỂ ĐÁNH GIÁ
-------------------------------------
+Toàn bộ code và dữ liệu đánh giá được lưu trong thư mục: `analysis/label_preservation/`
 
-Mục tiêu: Tạo file chứa 200 cặp (câu gốc, câu augmented) cùng nhãn ATT&CK.
-Chạy script Python sau từ thư mục gốc của dự án:
+analysis/
+└── label_preservation/
+    ├── extract_label_preservation_samples.py   # Script trích xuất 100 mẫu ngẫu nhiên từ tập train
+    ├── eval_label_preservation_cyber.csv       # 100 mẫu CyberEDA (dùng import lên Google Sheets)
+    ├── eval_label_preservation_generic.csv     # 100 mẫu Generic EDA (dùng import lên Google Sheets)
+    └── analyze_preservation_results.py         # Script tính Cohen's Kappa và tỷ lệ bảo toàn nhãn
 
--------- [CODE: generate_evaluation_samples.py] --------
-
-import pandas as pd
-import random
-import re
-from pathlib import Path
-from src.cyber_eda import build_cyber_knowledge_base, cyber_eda, single_eda
-
-# ---- Cấu hình ----
-DATASET     = 'joint'           # Chọn: 'joint', 'cti_to_mitre', 'tram'
-N_SAMPLES   = 200               # Số lượng mẫu cần đánh giá
-SEED        = 42
-ALPHA       = 0.21              # Alpha mặc định
-
-random.seed(SEED)
-
-# ---- Load dữ liệu ----
-train_path = Path(f'dataset/processed/{DATASET}/train.csv')
-df = pd.read_csv(train_path)
-
-# Chỉ lấy các câu gốc (không phải câu đã augmented)
-if 'is_augmented' in df.columns:
-    df_orig = df[df['is_augmented'] == 0].copy()
-else:
-    df_orig = df.copy()
-
-# Sample ngẫu nhiên 200 câu
-df_sample = df_orig.sample(min(N_SAMPLES, len(df_orig)), random_state=SEED).reset_index(drop=True)
-
-# ---- Build Cyber Knowledge Base ----
-cache_dir = Path('dataset/processed')
-protected_set, synonym_dict = build_cyber_knowledge_base(cache_dir=cache_dir)
-
-# ---- Sinh augmented samples cho từng operation ----
-records = []
-for _, row in df_sample.iterrows():
-    orig_text = str(row['Cleaned_Text'])
-    labels    = str(row['Labels'])
-
-    # Sinh 4 biến thể tương ứng 4 operations
-    aug_sr  = single_eda(orig_text, 'sr', protected_set, synonym_dict, alpha_sr=ALPHA)
-    aug_ri  = single_eda(orig_text, 'ri', protected_set, synonym_dict, alpha_ri=ALPHA)
-    aug_rs  = single_eda(orig_text, 'rs', protected_set, synonym_dict, alpha_rs=ALPHA)
-    aug_rd  = single_eda(orig_text, 'rd', protected_set, synonym_dict, p_rd=ALPHA)
-    aug_full = cyber_eda(orig_text, protected_set, synonym_dict,
-                         alpha_sr=ALPHA, alpha_ri=ALPHA, alpha_rs=ALPHA, p_rd=ALPHA)
-
-    for op_name, aug_text in [('SR', aug_sr), ('RI', aug_ri),
-                               ('RS', aug_rs), ('RD', aug_rd), ('Full EDA', aug_full)]:
-        records.append({
-            'Original_Text'              : orig_text,
-            'Augmented_Text'             : aug_text,
-            'Labels'                     : labels,
-            'Operation'                  : op_name,
-            'Identical_to_Original'      : (orig_text.strip() == aug_text.strip()),
-            # --- Các cột để điền tay ---
-            'Semantic_Preserved (Y/P/N)' : '',   # Y=Yes, P=Partial, N=No
-            'Grammatically_OK (Y/N)'     : '',   # Y=Câu đọc được tự nhiên, N=Ngô nghê
-            'Label_Still_Valid (Y/N/?)'  : '',   # Y=Nhãn vẫn đúng, N=Nhãn sai, ?=Không chắc
-            'Notes'                      : '',   # Ghi chú thêm nếu cần
-        })
-
-df_eval = pd.DataFrame(records)
-
-# Lưu file
-out_path = Path(f'evaluation_semantic_preservation_{DATASET}.csv')
-df_eval.to_csv(out_path, index=False, encoding='utf-8-sig')  # utf-8-sig để Excel đọc được tiếng Việt
-print(f"[DONE] Saved {len(df_eval)} rows to: {out_path}")
-print(f"       ({N_SAMPLES} original sentences × 5 operations = {N_SAMPLES*5} rows)")
-print(f"       Rows where augmentation made NO change: {df_eval['Identical_to_Original'].sum()}")
-
--------- [KẾT THÚC CODE] --------
-
-Chạy lệnh:
-    python generate_evaluation_samples.py
-
-Output: File 'evaluation_semantic_preservation_joint.csv' trong thư mục gốc dự án.
-
-
-BƯỚC 2: ĐÁNH GIÁ THỦ CÔNG (ANNOTATION)
------------------------------------------
-
-a) Mở file CSV bằng Microsoft Excel hoặc Google Sheets.
-
-b) Với mỗi dòng, đọc câu gốc (cột Original_Text) và câu augmented (cột Augmented_Text),
-   sau đó điền vào 3 cột:
-
-   Cột 1: Semantic_Preserved (Y/P/N)
-   ──────────────────────────────────
-   Y (Yes)     → Câu augmented giữ nguyên hoàn toàn ý nghĩa của câu gốc.
-                 Ví dụ: "APT28" → "Fancy Bear" (chỉ đổi tên alias, nghĩa không đổi)
-   P (Partial) → Câu augmented thay đổi một phần nghĩa nhưng không sai hoàn toàn.
-                 Ví dụ: Câu bị xóa mất một vài từ không quan trọng, ý chính vẫn còn.
-   N (No)      → Câu augmented mất đi nghĩa quan trọng hoặc mang nghĩa khác.
-                 Ví dụ: Xóa mất "PowerShell" → không còn rõ technique nào được dùng.
-
-   Cột 2: Grammatically_OK (Y/N)
-   ──────────────────────────────
-   Y → Câu đọc tự nhiên, có thể xuất hiện trong văn bản CTI thực tế.
-   N → Câu ngô nghê, từ ngữ đặt lộn vị trí, hoặc không thể hiểu được.
-
-   Cột 3: Label_Still_Valid (Y/N/?)
-   ──────────────────────────────────
-   Y → Nhìn vào câu augmented, nhãn ATT&CK trong cột Labels vẫn đúng.
-   N → Câu augmented không còn mô tả technique trong nhãn nữa (nhãn bị sai).
-   ? → Người đánh giá không chắc chắn.
-
-c) Lưu ý đặc biệt khi đánh giá:
-   - Nếu cột 'Identical_to_Original' = TRUE → SR/RI không tìm thấy alias nào,
-     câu không đổi → KHÔNG cần đánh giá dòng này (skip hoặc đánh Y/Y/Y tự động).
-   - Ưu tiên đánh giá kỹ các dòng có Operation = 'RD' và 'RS' vì đây là 2 phép
-     có nguy cơ làm hỏng semantic cao nhất theo nhận xét của người hướng dẫn.
-   - Chú ý các câu có nhãn là các technique "indicator-sensitive" như:
-       T1059.001 (PowerShell), T1078 (Valid Accounts), T1110 (Brute Force),
-       T1003 (Credential Dumping) — những kỹ thuật phụ thuộc vào từ khóa cụ thể.
-
-
-BƯỚC 3: TỔNG HỢP KẾT QUẢ
-----------------------------
-
-Sau khi điền xong, chạy script tổng hợp:
-
--------- [CODE: summarize_annotation.py] --------
-
-import pandas as pd
-
-df = pd.read_csv('evaluation_semantic_preservation_joint.csv')
-
-# Chỉ tính trên các dòng đã được đánh giá (loại bỏ dòng Identical=True)
-df_eval = df[df['Identical_to_Original'] == False].copy()
-
-print(f"Total rows evaluated: {len(df_eval)}")
-print()
-
-for op in ['SR', 'RI', 'RS', 'RD', 'Full EDA']:
-    sub = df_eval[df_eval['Operation'] == op]
-    if len(sub) == 0:
-        continue
-    sem_ok   = (sub['Semantic_Preserved (Y/P/N)'].isin(['Y', 'P'])).sum()
-    gram_ok  = (sub['Grammatically_OK (Y/N)'] == 'Y').sum()
-    lbl_ok   = (sub['Label_Still_Valid (Y/N/?)'] == 'Y').sum()
-    n = len(sub)
-    print(f"  [{op}]")
-    print(f"    Semantic Preservation : {sem_ok}/{n} = {sem_ok/n*100:.1f}%")
-    print(f"    Grammatical Acceptability: {gram_ok}/{n} = {gram_ok/n*100:.1f}%")
-    print(f"    Label Preservation    : {lbl_ok}/{n} = {lbl_ok/n*100:.1f}%")
-    print()
-
--------- [KẾT THÚC CODE] --------
-
-
-BƯỚC 4 (TÙY CHỌN): TÍNH INTER-ANNOTATOR AGREEMENT
------------------------------------------------------
-
-Nếu có 2+ annotators cùng đánh giá một tập mẫu (khuyến khích nhưng không bắt buộc):
-
--------- [CODE: inter_annotator_agreement.py] --------
-
-from sklearn.metrics import cohen_kappa_score
-
-# Ví dụ: annotator_1 và annotator_2 đều đánh giá cột Label_Still_Valid
-# Quy ước: Y=1, N=0, ?=2
-def encode(series):
-    return series.map({'Y': 1, 'N': 0, '?': 2}).fillna(2).astype(int)
-
-a1 = encode(df_annotator1['Label_Still_Valid (Y/N/?)'])
-a2 = encode(df_annotator2['Label_Still_Valid (Y/N/?)'])
-
-kappa = cohen_kappa_score(a1, a2)
-print(f"Cohen's Kappa (Label Preservation): {kappa:.3f}")
-# Diễn giải: κ < 0.4 = kém | 0.4-0.6 = trung bình | 0.6-0.8 = tốt | > 0.8 = rất tốt
-
--------- [KẾT THÚC CODE] --------
+LƯU Ý VỀ GITHUB:
+- Hai file `.csv` thô đã được cấu hình trong `.gitignore` nên SẼ KHÔNG ĐƯỢC PUSH LÊN GITHUB,
+  tránh gây xung đột và làm nặng repository.
+- Nhóm sẽ làm việc chung trên một file Google Sheets duy nhất.
 
 ====================================================================================================
-PHẦN 3: CÁCH BÁO CÁO KẾT QUẢ TRONG BÀI BÁO
+PHẦN 2: PHÂN CÔNG NHIỆM VỤ CHO 5 THÀNH VIÊN
 ====================================================================================================
 
-Mẫu câu cho phần Methodology hoặc Appendix:
+Để phục vụ bài báo khoa học, toàn bộ tên cột và mã định danh người chấm được chuẩn hóa bằng tiếng Anh.
+Phân công nhiệm vụ cụ thể cho từng thành viên như sau:
 
-  "To verify the label-preserving assumption of CyberEDA (i.e., y(x) = y(Augment(x))),
-  we randomly sampled 200 original training sentences and generated augmented variants
-  using each of the four EDA operations (SR, RI, RS, RD) independently.
-  Three criteria were manually evaluated: (1) semantic preservation, (2) grammatical
-  acceptability, and (3) label validity.
-  Results show that Synonym Replacement (SR) achieves the highest label preservation
-  rate of XX.X%, while Random Deletion (RD) shows the lowest at XX.X%, primarily due
-  to deletion of technique-identifying keywords (e.g., 'PowerShell', 'credential').
-  Overall, Full CyberEDA maintains a label preservation rate of XX.X%, supporting
-  the validity of the augmentation assumption."
++---------------+--------------------------+------------------------------------------------------+
+| Thành viên    | Vai trò & Dữ liệu chấm   | Các cột phụ trách trên Google Sheets                 |
++---------------+--------------------------+------------------------------------------------------+
+| Thành viên 1  | Annotator 1              | - Label_Preserved_Annotator_1 (Y/N)                  |
+|               | Chấm 100 mẫu CyberEDA    | - Semantic_Preserved_Annotator_1 (Y/P/N)             |
+|               | (Tab: CyberEDA)          | - Grammar_OK_Annotator_1 (Y/N)                       |
++---------------+--------------------------+------------------------------------------------------+
+| Thành viên 2  | Annotator 2              | - Label_Preserved_Annotator_2 (Y/N)                  |
+|               | Chấm 100 mẫu CyberEDA    | - Semantic_Preserved_Annotator_2 (Y/P/N)             |
+|               | (Tab: CyberEDA)          | - Grammar_OK_Annotator_2 (Y/N)                       |
++---------------+--------------------------+------------------------------------------------------+
+| Thành viên 3  | Annotator 3              | - Label_Preserved_Annotator_3 (Y/N)                  |
+|               | Chấm 100 mẫu GenericEDA  | - Semantic_Preserved_Annotator_3 (Y/P/N)             |
+|               | (Tab: GenericEDA)        | - Grammar_OK_Annotator_3 (Y/N)                       |
++---------------+--------------------------+------------------------------------------------------+
+| Thành viên 4  | Annotator 4              | - Label_Preserved_Annotator_4 (Y/N)                  |
+|               | Chấm 100 mẫu GenericEDA  | - Semantic_Preserved_Annotator_4 (Y/P/N)             |
+|               | (Tab: GenericEDA)        | - Grammar_OK_Annotator_4 (Y/N)                       |
++---------------+--------------------------+------------------------------------------------------+
+| Thành viên 5  | Arbiter / Lead Analyst   | - Final_Consensus_Label (Y/N) (Chốt kết quả cuối)    |
+| (Trưởng nhóm /| Giám sát cả 2 Tab        | - Notes_Arbiter (Ghi chú lý do giải quyết ca lệch)   |
+| Phân tích)    |                          | - Chạy script tính Cohen's Kappa, tổng hợp số liệu   |
++---------------+--------------------------+------------------------------------------------------+
+
+Ý NGHĨA KHOA HỌC:
+- Mỗi phương pháp đều có ĐÚNG 2 NGƯỜI CHẤM ĐỘC LẬP (Ann1 & Ann2 cho Cyber; Ann3 & Ann4 cho Generic).
+- Đảm bảo tính được 2 chỉ số Cohen's Kappa (κ) riêng biệt để báo cáo độ tin cậy trong bài báo.
+- Thành viên 5 đóng vai trò trọng tài (Arbiter) phân xử khách quan khi 2 người bất đồng ý kiến.
 
 ====================================================================================================
-PHẦN 4: KẾT QUẢ KỲ VỌNG VÀ Ý NGHĨA
+PHẦN 3: HƯỚNG DẪN THIẾT LẬP VÀ LÀM VIỆC TRÊN GOOGLE SHEETS
 ====================================================================================================
 
-Kết quả kỳ vọng:
-  - SR (Synonym Replacement):   Label Preservation ~97-100% (alias thay thế an toàn)
-  - RI (Random Insertion):       Label Preservation ~95-99% (chỉ thêm từ, không xóa)
-  - RS (Random Swap):            Label Preservation ~85-95% (đổi vị trí từ, có thể ảnh hưởng)
-  - RD (Random Deletion):        Label Preservation ~75-90% (rủi ro cao nhất)
-  - Full CyberEDA:               Label Preservation ~88-95% (tổng hợp)
+BƯỚC 1: TẠO GOOGLE SHEETS
+1. Tạo 1 file Google Sheets mới, đặt tên: `[CTI-MITRE] Label Preservation Human Audit`.
+2. Tạo 2 Tab (trang tính):
+   - Tab 1: `CyberEDA` (File -> Import -> tải lên file `eval_label_preservation_cyber.csv`).
+   - Tab 2: `GenericEDA` (File -> Import -> tải lên file `eval_label_preservation_generic.csv`).
+3. Thiết lập Dropdown (Data Validation) để các thành viên chọn nhanh, tránh gõ sai:
+   - Các cột `Label_Preserved_*`: Chọn Data -> Data validation -> List of items: `Y, N`
+   - Các cột `Semantic_Preserved_*`: Chọn Data -> Data validation -> List of items: `Y, P, N`
+   - Các cột `Grammar_OK_*`: Chọn Data -> Data validation -> List of items: `Y, N`
 
-Ý nghĩa với bài báo:
-  - Nếu SR và RI có label preservation cao → củng cố luận điểm alias-based augmentation an toàn.
-  - Nếu RD có label preservation thấp hơn → giải thích tại sao ablation study cho thấy
-    Full EDA đôi khi không tốt hơn SR+RI alone.
-  - Kết quả này kết nối trực tiếp với Ablation Study (Task 6) để giải thích
-    tại sao một số operations không đem lại lợi ích.
+BƯỚC 2: CÁC THÀNH VIÊN TIẾN HÀNH CHẤM (THÀNH VIÊN 1, 2, 3, 4)
+- QUY TẮC BẮT BUỘC: ĐÁNH GIÁ ĐỘC LẬP. Tuyệt đối không nhìn hoặc trao đổi trước kết quả chấm của nhau.
+- Các bước xem xét mỗi dòng:
+  1. Đọc câu gốc (`Original_Text`) và xem nhãn ATT&CK kỹ thuật (`Labels`).
+  2. Đọc câu đã tăng cường (`Augmented_Text`).
+  3. Liếc nhanh cột `Words_Removed_RD` để biết những từ nào đã bị xóa mất, và cột `Words_Added_Replaced`
+     để biết từ nào được thay mới/thêm vào.
+  4. Điền 3 cột theo vai trò của mình:
+     - `Label_Preserved` (Y/N) [QUAN TRỌNG NHẤT]:
+       * Y (Yes): Đọc câu augmented, nhãn MITRE ATT&CK vẫn hoàn toàn chính xác và suy luận ra được.
+       * N (No) : Câu augmented đã mất từ khóa/indicator then chốt, không còn cơ sở để gán nhãn đó nữa.
+     - `Semantic_Preserved` (Y/P/N):
+       * Y (Yes)     : Nghĩa câu giữ nguyên vẹn.
+       * P (Partial) : Mất một phần thông tin phụ, nhưng ý chính của hành vi tấn công vẫn còn.
+       * N (No)      : Nghĩa bị đảo lộn, sai lệch hoàn toàn hoặc câu vô nghĩa.
+     - `Grammar_OK` (Y/N):
+       * Y (Yes): Câu tự nhiên, đúng ngữ pháp tiếng Anh an ninh mạng.
+       * N (No) : Câu lộn xộn, sai ngữ pháp nghiêm trọng, ngô nghê.
 
+BƯỚC 3: PHÂN XỬ VÀ CHỐT KẾT QUẢ CUỐI CÙNG (THÀNH VIÊN 5 - ARBITER)
+Sau khi 4 thành viên đã hoàn thành chấm:
+1. Đối với các dòng mà cả 2 người CÙNG ĐỒNG Ý:
+   - Cả 2 cùng chọn `Y` -> Điền `Y` vào `Final_Consensus_Label`.
+   - Cả 2 cùng chọn `N` -> Điền `N` vào `Final_Consensus_Label`.
+2. Đối với các dòng BẤT ĐỒNG Ý KIẾN (một người chọn `Y`, người kia chọn `N`):
+   - Thành viên 5 tra cứu tài liệu MITRE ATT&CK chính thức của technique đó.
+   - Thành viên 5 tự ra quyết định chốt `Y` hoặc `N` vào `Final_Consensus_Label`.
+   - Ghi lý do ngắn gọn vào cột `Notes_Arbiter` (ví dụ: "Mất chữ PowerShell nhưng còn cmd execution, nhãn T1059 vẫn thỏa mãn").
+
+BƯỚC 4: XUẤT KẾT QUẢ VÀ CHẠY SCRIPT TÍNH TOÁN (THÀNH VIÊN 5)
+1. Trên Google Sheets, xuất 2 Tab thành file CSV (File -> Download -> Comma Separated Values .csv).
+2. Lưu đè vào 2 file trong project:
+   - `analysis/label_preservation/eval_label_preservation_cyber.csv`
+   - `analysis/label_preservation/eval_label_preservation_generic.csv`
+3. Mở terminal tại thư mục gốc của project và chạy lệnh:
+   ```bash
+   python analysis/label_preservation/analyze_preservation_results.py
+   ```
+4. Script sẽ tự động tính và hiển thị:
+   - Độ đồng thuận thực tế (Observed Agreement %) và chỉ số **Cohen's Kappa ($\kappa$)** cho CyberEDA (Ann1 vs Ann2).
+   - Độ đồng thuận thực tế (Observed Agreement %) và chỉ số **Cohen's Kappa ($\kappa$)** cho GenericEDA (Ann3 vs Ann4).
+   - Tỷ lệ bảo toàn nhãn chính thức **Label Preservation Rate (%)** từ cột `Final_Consensus_Label`.
+   - Tỷ lệ các ca mất nhãn xuất phát từ việc xóa từ của Random Deletion (`Words_Removed_RD`).
+
+====================================================================================================
+PHẦN 4: VÍ DỤ MINH HỌA TIÊU CHÍ ĐÁNH GIÁ (TRÍCH TỪ 100 MẪU THỰC TẾ)
+====================================================================================================
+
+Ví dụ 1: Thay thế Alias an toàn (CyberEDA)
+- Original:             "Bad Rabbit spread through watering holes on popular sites..." (Nhãn: T1189)
+- Words_Added_Replaced: 'Win32/diskcoder.d'
+- Augmented:            "Win32/diskcoder.d spread through a holes bad popular sites..."
+- Giải thích:           "Bad Rabbit" được thay bằng alias chính xác "Win32/diskcoder.d". Hành vi tấn công
+                        qua watering hole vẫn nguyên vẹn.
+- Đánh giá:             Label_Preserved = Y, Semantic_Preserved = Y, Grammar_OK = Y.
+
+Ví dụ 2: Nguy cơ từ Random Deletion - Bị xóa mất từ khóa kỹ thuật
+- Original:             "Adversaries enumerate may objects in cloud storage infrastructure." (Nhãn: T1619 - Cloud Storage Discovery)
+- Words_Removed_RD:     'cloud'
+- Augmented:            "Adversaries enumerate may objects in storage infrastructure."
+- Giải thích:           Từ "cloud" đã bị xóa. Câu mới chỉ còn nói về "storage infrastructure" chung chung,
+                        không còn đủ bằng chứng để xác định đây là môi trường Đám mây (Cloud) để gán mã T1619.
+- Đánh giá:             Label_Preserved = N, Semantic_Preserved = P, Grammar_OK = Y.
+
+Ví dụ 3: Thay thế từ đồng nghĩa thông thường (Generic WordNet EDA)
+- Original:             "Adversaries may dump credentials from SAM database." (Nhãn: T1003)
+- Augmented:            "Opponents may dump credentials from SAM database."
+- Giải thích:           "Adversaries" được đổi thành "Opponents" (vẫn chấp nhận được trong ngữ cảnh này).
+                        Kỹ thuật dump credentials từ SAM vẫn nguyên vẹn.
+- Đánh giá:             Label_Preserved = Y, Semantic_Preserved = Y, Grammar_OK = Y.
+
+====================================================================================================
+PHẦN 5: MẪU TRÌNH BÀY BẢNG BIỂU VÀ ĐOẠN VĂN TRONG BÀI BÁO (TIẾNG ANH HỌC THUẬT)
+====================================================================================================
+
+1. BẢNG THỐNG KÊ KẾT QUẢ (TABLE FOR PAPER):
+
++---------------+-------------+------------------+------------------+------------------+
+| Augmentation  | Sample Size | Label Preserved  | Semantic OK      | Inter-Annotator  |
+| Method        | (N)         | (Consensus %)    | (Y + Partial %)  | Kappa (κ)        |
++---------------+-------------+------------------+------------------+------------------+
+| CyberEDA      | 100         | [XX.X]%          | [XX.X]%          | [0.XX] (Subst.)  |
+| Generic EDA   | 100         | [YY.Y]%          | [YY.Y]%          | [0.YY] (Subst.)  |
++---------------+-------------+------------------+------------------+------------------+
+
+2. ĐOẠN VĂN MẪU BÁO CÁO TRONG BÀI BÁO (ACADEMIC WRITEUP):
+"To validate the fundamental data augmentation assumption y(x) = y(Augment(x)), we conducted
+a double-blind human audit on 200 randomly sampled augmented instances (100 from CyberEDA
+and 100 from Generic EDA) extracted directly from the joint training set. Two evaluators
+were independently assigned to each augmentation variant to assess label validity, semantic
+preservation, and grammatical acceptability. The inter-annotator agreement demonstrated
+substantial consensus with Cohen's Kappa scores of κ = [0.XX] for CyberEDA and κ = [0.YY]
+for Generic EDA. Disagreements were adjudicated by an independent third evaluator to establish
+the final consensus.
+
+The results demonstrate that CyberEDA maintained a label preservation rate of [XX.X]%, compared to
+[YY.Y]% for Generic EDA. Error inspection revealed that the majority of label drift cases
+were caused by Random Deletion (RD) inadvertently omitting technique-discriminative tokens
+(e.g., specific protocols or tool names). These findings validate the superiority of domain-guided
+perturbations in preserving semantic fidelity within cybersecurity texts."
 ====================================================================================================

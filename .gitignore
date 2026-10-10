@@ -8,3 +8,6 @@ __pycache__/
 *.pth
 *.bin
 *.npz
+
+# Manual evaluation raw sheets (managed via Google Sheets)
+analysis/label_preservation/*.csv
