@@ -1,0 +1,23 @@
+{
+  "seed": 2026,
+  "scenario": "G0",
+  "scenario_title": "Generic WordNet EDA one-stage control",
+  "dataset": "cti_to_mitre",
+  "global_threshold": 0.6,
+  "minority_threshold": 0.37,
+  "macro_f1": 0.6085893999074548,
+  "micro_f1": 0.7594731509625127,
+  "weighted_f1": 0.7447199608052447,
+  "minority_f2": 0.5203550535572063,
+  "minority_recall": 0.625686274509804,
+  "zero_f1_count": 26,
+  "rare_f1": 0.5218932286956119,
+  "medium_f1": 0.6724933782209757,
+  "freq_f1": 0.8187773755078877,
+  "hit_at_3": 0.8825126017836371,
+  "hit_at_5": 0.9174098487785963,
+  "mrr": 0.8257836944121367,
+  "map": 0.8256740473705393,
+  "training_seconds": 400.41746830940247,
+  "peak_vram_mb": 2635.7294921875
+}

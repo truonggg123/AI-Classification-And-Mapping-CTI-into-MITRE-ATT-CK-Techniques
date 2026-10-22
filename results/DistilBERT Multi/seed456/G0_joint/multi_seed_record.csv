@@ -1,0 +1,2 @@
+seed,scenario,scenario_title,dataset,global_threshold,minority_threshold,macro_f1,micro_f1,weighted_f1,minority_f2,minority_recall,zero_f1_count,rare_f1,medium_f1,freq_f1,hit_at_3,hit_at_5,mrr,map,training_seconds,peak_vram_mb
+456,G0,Generic WordNet EDA one-stage control,joint,0.66,0.4,0.6372154875690134,0.7774555541545832,0.767344320119155,0.6421674525235889,0.7275,17,0.5762688770264527,0.6329883082592547,0.8016707662140442,0.9060234941264684,0.9345163709072731,0.8506520594197579,0.8461315320842453,746.126743555069,4620.19140625
