@@ -11,3 +11,8 @@ __pycache__/
 *.venv
 # Manual evaluation raw sheets (managed via Google Sheets)
 analysis/label_preservation/*.csv
+
+# Project documentation & tracking notes
+Bao_Cao_Thuc_Nghiem_EDA.txt
+relevant_papers_and_citations.txt
+todo_review_action_plan.txt
