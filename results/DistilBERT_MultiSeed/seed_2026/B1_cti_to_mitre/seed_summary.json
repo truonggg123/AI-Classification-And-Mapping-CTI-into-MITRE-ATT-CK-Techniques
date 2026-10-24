@@ -1,0 +1,23 @@
+{
+  "seed": 2026,
+  "scenario": "B1",
+  "scenario_title": "Cyber EDA one-stage",
+  "dataset": "cti_to_mitre",
+  "global_threshold": 0.61,
+  "minority_threshold": 0.39,
+  "macro_f1": 0.5991765064702331,
+  "micro_f1": 0.7600492206726825,
+  "weighted_f1": 0.7442200307844554,
+  "minority_f2": 0.5403543753984347,
+  "minority_recall": 0.6154901960784314,
+  "zero_f1_count": 26,
+  "rare_f1": 0.5071477942454635,
+  "medium_f1": 0.6715706666283353,
+  "freq_f1": 0.8130048282157873,
+  "hit_at_3": 0.8852268321054673,
+  "hit_at_5": 0.918573090345095,
+  "mrr": 0.8254892217844833,
+  "map": 0.8253140721851124,
+  "training_seconds": 393.33255910873413,
+  "peak_vram_mb": 2636.7841796875
+}

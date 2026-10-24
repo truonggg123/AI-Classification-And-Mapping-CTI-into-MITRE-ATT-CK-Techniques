@@ -6,7 +6,7 @@
     "title": "Cyber EDA one-stage",
     "stage1_mode": "cyber",
     "stage2": false,
-    "minority_f2": false
+    "minority_f2": true
   },
   "training_config": {
     "seed": 42,

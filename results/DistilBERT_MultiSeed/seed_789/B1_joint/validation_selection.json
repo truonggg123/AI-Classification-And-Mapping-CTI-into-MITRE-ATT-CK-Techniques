@@ -1,0 +1,42 @@
+{
+  "scenario": "B1",
+  "scenario_title": "Cyber EDA one-stage",
+  "seed": 789,
+  "stage1_mode": "cyber",
+  "stage1_source_files": [
+    "train_augmented_eda.csv"
+  ],
+  "stage2": false,
+  "minority_f2": true,
+  "stage1_best_epoch": 6,
+  "stage1_best_macro_f1_at_05": 0.6068878096775379,
+  "stage2_best_epoch": null,
+  "stage2_best_macro_f1_at_05": null,
+  "global_threshold": 0.68,
+  "macro_optimal_threshold": 0.54,
+  "minority_threshold": 0.37,
+  "validation_global": {
+    "micro_precision": 0.8356531049250535,
+    "micro_recall": 0.7380614657210401,
+    "micro_f1": 0.7838312829525483,
+    "macro_precision": 0.6563762515688513,
+    "macro_recall": 0.5304193033276163,
+    "macro_f1": 0.5682372297132152,
+    "weighted_f1": 0.7676044113965608,
+    "hamming_loss": 0.002247196876370242,
+    "avg_predicted_labels": 0.9165848871442591
+  },
+  "validation_minority_f2": {
+    "micro_precision": 0.7865612648221344,
+    "micro_recall": 0.7527186761229314,
+    "micro_f1": 0.7692679391157284,
+    "macro_precision": 0.6288559881443325,
+    "macro_recall": 0.6314831331148504,
+    "macro_f1": 0.5877787697334786,
+    "weighted_f1": 0.7692513775116119,
+    "hamming_loss": 0.0024925354435930093,
+    "avg_predicted_labels": 0.9931305201177625
+  },
+  "validation_minority_macro_f2": 0.5187861357124127,
+  "validation_minority_macro_recall": 0.6208333333333333
+}

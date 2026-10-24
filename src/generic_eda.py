@@ -415,10 +415,10 @@ def run_generic_eda_for_benchmark(
 def run_all_generic_benchmarks(
     target_dataset='all',
     target_count=0,
-    alpha_sr=0.13,
-    alpha_ri=0.13,
-    alpha_rs=0.13,
-    p_rd=0.13,
+    alpha_sr=0.10,
+    alpha_ri=0.10,
+    alpha_rs=0.10,
+    p_rd=0.10,
     seed=42,
     save_csv=True,
     output_filename="train_augmented_generic_eda.csv"
@@ -463,10 +463,10 @@ if __name__ == '__main__':
     )
     parser.add_argument('--train_file', type=str, default=None, help='Explicit path to input train.csv')
     parser.add_argument('--target_count', type=int, default=0, help='Minimum sample count target per class (0 = Auto-resolve to MEAN)')
-    parser.add_argument('--alpha_sr', type=float, default=0.13, help='Synonym Replacement ratio (default: 0.13)')
-    parser.add_argument('--alpha_ri', type=float, default=0.13, help='Random Insertion ratio (default: 0.13)')
-    parser.add_argument('--alpha_rs', type=float, default=0.13, help='Random Swap ratio (default: 0.13)')
-    parser.add_argument('--p_rd', type=float, default=0.13, help='Random Deletion probability (default: 0.13)')
+    parser.add_argument('--alpha_sr', type=float, default=0.10, help='Synonym Replacement ratio (default: 0.10)')
+    parser.add_argument('--alpha_ri', type=float, default=0.10, help='Random Insertion ratio (default: 0.10)')
+    parser.add_argument('--alpha_rs', type=float, default=0.10, help='Random Swap ratio (default: 0.10)')
+    parser.add_argument('--p_rd', type=float, default=0.10, help='Random Deletion probability (default: 0.10)')
     parser.add_argument('--seed', type=int, default=42, help='Random seed (default: 42)')
     parser.add_argument('--output_filename', type=str, default="train_augmented_generic_eda.csv", help='Output CSV filename')
     parser.add_argument('--no_save', action='store_true', help='Dry-run mode without saving CSV to disk')

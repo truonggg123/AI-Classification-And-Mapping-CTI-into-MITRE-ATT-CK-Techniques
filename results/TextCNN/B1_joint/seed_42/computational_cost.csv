@@ -1,0 +1,2 @@
+scenario,dataset_subset,training_seconds,inference_seconds,inference_ms_per_sample,total_params,trainable_params,device
+B1,joint,117.8381040096283,0.6945116519927979,0.1735845168689822,4783364,4783364,cuda

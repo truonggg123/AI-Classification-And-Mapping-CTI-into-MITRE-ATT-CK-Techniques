@@ -1,0 +1,7 @@
+dataset,scenario,scenario_title,macro_f1_mean,macro_f1_std,macro_f1_min,macro_f1_max,macro_f1_ci95,macro_f1_cv_pct,macro_recall_mean,macro_recall_std,macro_prec_mean,macro_prec_std,micro_f1_mean,micro_f1_std,zero_f1_mean,zero_f1_std,train_time_mean,train_time_std,paired_t_stat,paired_p_value
+CTI-MITRE,G0,GenericEDA (G0),58.51,0.96,57.5,60.01,1.19,1.63,63.98,2.08,60.43,1.79,72.45,0.66,14.8,3.3,401.5,7.6,,
+CTI-MITRE,B1,CyberEDA (B1),59.06,3.85,52.32,61.79,4.78,6.52,64.22,0.93,61.54,4.45,72.62,3.02,14.2,1.1,409.1,17.2,0.334,0.7553
+Joint,G0,GenericEDA (G0),62.73,1.09,61.14,64.02,1.35,1.73,67.61,0.68,64.42,2.3,76.58,0.32,10.2,1.5,687.7,43.3,,
+Joint,B1,CyberEDA (B1),61.85,2.08,58.53,63.47,2.58,3.36,68.35,1.91,63.31,3.34,76.48,0.67,9.4,1.1,661.3,2.9,-0.774,0.4823
+TRAM,G0,GenericEDA (G0),81.17,0.73,80.56,82.3,0.91,0.9,78.61,1.47,85.67,2.37,82.76,0.61,0.0,0.0,261.8,8.9,,
+TRAM,B1,CyberEDA (B1),81.12,1.18,79.5,82.43,1.46,1.45,79.72,2.88,84.35,1.96,82.83,0.55,0.2,0.4,262.7,3.1,-0.095,0.9285

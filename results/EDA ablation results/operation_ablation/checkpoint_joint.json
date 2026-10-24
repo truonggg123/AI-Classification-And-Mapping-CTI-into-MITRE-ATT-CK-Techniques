@@ -1,0 +1,838 @@
+[
+  {
+    "config_id": "A0",
+    "label": "Baseline",
+    "group": "Baseline",
+    "eda_type": "none",
+    "alpha_sr": 0.0,
+    "alpha_ri": 0.0,
+    "alpha_rs": 0.0,
+    "alpha_rd": 0.0,
+    "n_augmented_added": 0,
+    "elapsed_seconds": 205.7,
+    "val_metrics": {
+      "Macro_Precision": 0.35067502609695134,
+      "Macro_Recall": 0.4274410619663708,
+      "Macro_F1": 0.37098611979430823,
+      "Micro_F1": 0.6651518281346829,
+      "Micro_Precision": 0.5906089508437271,
+      "Micro_Recall": 0.7612293144208038
+    },
+    "val_tier_summary": {
+      "Major (100-499)": {
+        "num_labels": 33,
+        "precision": 0.5994541624902994,
+        "recall": 0.8239844898040626,
+        "f1_score": 0.6888972401829737,
+        "zero_f1_count": 0
+      },
+      "Medium (30-99)": {
+        "num_labels": 51,
+        "precision": 0.47111597503145947,
+        "recall": 0.623304364480835,
+        "f1_score": 0.5182206270436044,
+        "zero_f1_count": 2
+      },
+      "Tail (<30)": {
+        "num_labels": 99,
+        "precision": 0.1864117364117364,
+        "recall": 0.17087542087542085,
+        "f1_score": 0.16730968246119762,
+        "zero_f1_count": 69
+      }
+    },
+    "num_zero_f1_val": 71,
+    "test_metrics": {
+      "Macro_Precision": 0.4303185894464524,
+      "Macro_Recall": 0.432309073654609,
+      "Macro_F1": 0.39113175981417775,
+      "Micro_F1": 0.6560016729401924,
+      "Micro_Precision": 0.586464759768181,
+      "Micro_Recall": 0.7442467378410439
+    },
+    "test_tier_summary": {
+      "Major (100-499)": {
+        "num_labels": 33,
+        "precision": 0.5935608083578772,
+        "recall": 0.8189555541417717,
+        "f1_score": 0.6849889266347251,
+        "zero_f1_count": 0
+      },
+      "Medium (30-99)": {
+        "num_labels": 51,
+        "precision": 0.46545401062015024,
+        "recall": 0.5503570978957977,
+        "f1_score": 0.45996963306532734,
+        "zero_f1_count": 1
+      },
+      "Tail (<30)": {
+        "num_labels": 99,
+        "precision": 0.342444844717572,
+        "recall": 0.2219095719095719,
+        "f1_score": 0.23786782254458072,
+        "zero_f1_count": 52
+      }
+    },
+    "num_zero_f1_test": 53
+  },
+  {
+    "config_id": "Cyber_SR",
+    "label": "Cyber SR (a=0.1)",
+    "group": "CyberEDA",
+    "eda_type": "cyber",
+    "alpha_sr": 0.1,
+    "alpha_ri": 0.0,
+    "alpha_rs": 0.0,
+    "alpha_rd": 0.0,
+    "n_augmented_added": 7882,
+    "elapsed_seconds": 303.9,
+    "val_metrics": {
+      "Macro_Precision": 0.4741739185637576,
+      "Macro_Recall": 0.6371623884394789,
+      "Macro_F1": 0.527320894780654,
+      "Micro_F1": 0.6871646718943458,
+      "Micro_Precision": 0.6096667887220798,
+      "Micro_Recall": 0.7872340425531915
+    },
+    "val_tier_summary": {
+      "Major (100-499)": {
+        "num_labels": 33,
+        "precision": 0.6403031102953222,
+        "recall": 0.8002251614445203,
+        "f1_score": 0.7082024517794848,
+        "zero_f1_count": 0
+      },
+      "Medium (30-99)": {
+        "num_labels": 51,
+        "precision": 0.5192865564486913,
+        "recall": 0.6873279226220405,
+        "f1_score": 0.5796341020677813,
+        "zero_f1_count": 0
+      },
+      "Tail (<30)": {
+        "num_labels": 99,
+        "precision": 0.3818061568061568,
+        "recall": 0.5446127946127947,
+        "f1_score": 0.425908434999344,
+        "zero_f1_count": 30
+      }
+    },
+    "num_zero_f1_val": 30,
+    "test_metrics": {
+      "Macro_Precision": 0.504349422857044,
+      "Macro_Recall": 0.6797066858475879,
+      "Macro_F1": 0.5656099556724967,
+      "Micro_F1": 0.6867307891198676,
+      "Micro_Precision": 0.6087275394206088,
+      "Micro_Recall": 0.7876631079478055
+    },
+    "test_tier_summary": {
+      "Major (100-499)": {
+        "num_labels": 33,
+        "precision": 0.6411956386082752,
+        "recall": 0.8075448187593399,
+        "f1_score": 0.7128190872433847,
+        "zero_f1_count": 0
+      },
+      "Medium (30-99)": {
+        "num_labels": 51,
+        "precision": 0.4890978514986114,
+        "recall": 0.6662069125691417,
+        "f1_score": 0.5565596007448937,
+        "zero_f1_count": 0
+      },
+      "Tail (<30)": {
+        "num_labels": 99,
+        "precision": 0.45501153384621945,
+        "recall": 0.6354617604617604,
+        "f1_score": 0.5100446740765084,
+        "zero_f1_count": 12
+      }
+    },
+    "num_zero_f1_test": 12
+  },
+  {
+    "config_id": "Cyber_RI",
+    "label": "Cyber RI (a=0.1)",
+    "group": "CyberEDA",
+    "eda_type": "cyber",
+    "alpha_sr": 0.0,
+    "alpha_ri": 0.1,
+    "alpha_rs": 0.0,
+    "alpha_rd": 0.0,
+    "n_augmented_added": 7882,
+    "elapsed_seconds": 309.2,
+    "val_metrics": {
+      "Macro_Precision": 0.47092267970015383,
+      "Macro_Recall": 0.6271095882378839,
+      "Macro_F1": 0.5221338426476796,
+      "Micro_F1": 0.6862182116488925,
+      "Micro_Precision": 0.6059398768562115,
+      "Micro_Recall": 0.791016548463357
+    },
+    "val_tier_summary": {
+      "Major (100-499)": {
+        "num_labels": 33,
+        "precision": 0.6476293277370929,
+        "recall": 0.8154015362335154,
+        "f1_score": 0.7181749805721966,
+        "zero_f1_count": 0
+      },
+      "Medium (30-99)": {
+        "num_labels": 51,
+        "precision": 0.5014554676932045,
+        "recall": 0.6733784733784733,
+        "f1_score": 0.5616446740743093,
+        "zero_f1_count": 0
+      },
+      "Tail (<30)": {
+        "num_labels": 99,
+        "precision": 0.38277216610549947,
+        "recall": 0.5277777777777778,
+        "f1_score": 0.4222943722943723,
+        "zero_f1_count": 32
+      }
+    },
+    "num_zero_f1_val": 32,
+    "test_metrics": {
+      "Macro_Precision": 0.5071210718414848,
+      "Macro_Recall": 0.6809474977518378,
+      "Macro_F1": 0.5659178978899904,
+      "Micro_F1": 0.6870418172431595,
+      "Micro_Precision": 0.6082266910420475,
+      "Micro_Recall": 0.7893238434163701
+    },
+    "test_tier_summary": {
+      "Major (100-499)": {
+        "num_labels": 33,
+        "precision": 0.6403469810555864,
+        "recall": 0.8028977967185451,
+        "f1_score": 0.7100849161193774,
+        "zero_f1_count": 0
+      },
+      "Medium (30-99)": {
+        "num_labels": 51,
+        "precision": 0.5057259282127248,
+        "recall": 0.6769315754764671,
+        "f1_score": 0.5684073000921185,
+        "zero_f1_count": 0
+      },
+      "Tail (<30)": {
+        "num_labels": 99,
+        "precision": 0.45210189346951707,
+        "recall": 0.6337421837421837,
+        "f1_score": 0.5054591713152209,
+        "zero_f1_count": 12
+      }
+    },
+    "num_zero_f1_test": 12
+  },
+  {
+    "config_id": "Cyber_RS",
+    "label": "Cyber RS (a=0.1)",
+    "group": "CyberEDA",
+    "eda_type": "cyber",
+    "alpha_sr": 0.0,
+    "alpha_ri": 0.0,
+    "alpha_rs": 0.1,
+    "alpha_rd": 0.0,
+    "n_augmented_added": 7882,
+    "elapsed_seconds": 301.0,
+    "val_metrics": {
+      "Macro_Precision": 0.47830769365749937,
+      "Macro_Recall": 0.6569066701883498,
+      "Macro_F1": 0.5374244040513184,
+      "Micro_F1": 0.6858542559706062,
+      "Micro_Precision": 0.603448275862069,
+      "Micro_Recall": 0.7943262411347518
+    },
+    "val_tier_summary": {
+      "Major (100-499)": {
+        "num_labels": 33,
+        "precision": 0.6503701366652064,
+        "recall": 0.8028048275041088,
+        "f1_score": 0.7149835904765448,
+        "zero_f1_count": 0
+      },
+      "Medium (30-99)": {
+        "num_labels": 51,
+        "precision": 0.5171671289750874,
+        "recall": 0.71588139529316,
+        "f1_score": 0.5879965681127426,
+        "zero_f1_count": 0
+      },
+      "Tail (<30)": {
+        "num_labels": 99,
+        "precision": 0.3884680134680135,
+        "recall": 0.5664983164983165,
+        "f1_score": 0.439143180052271,
+        "zero_f1_count": 28
+      }
+    },
+    "num_zero_f1_val": 28,
+    "test_metrics": {
+      "Macro_Precision": 0.5136257048089409,
+      "Macro_Recall": 0.6832170495767125,
+      "Macro_F1": 0.568779503865641,
+      "Micro_F1": 0.6884770680194637,
+      "Micro_Precision": 0.610764144011756,
+      "Micro_Recall": 0.7888493475682088
+    },
+    "test_tier_summary": {
+      "Major (100-499)": {
+        "num_labels": 33,
+        "precision": 0.6463162295214927,
+        "recall": 0.8112695330097477,
+        "f1_score": 0.716982919113183,
+        "zero_f1_count": 0
+      },
+      "Medium (30-99)": {
+        "num_labels": 51,
+        "precision": 0.490552830483802,
+        "recall": 0.6538334409541838,
+        "f1_score": 0.5489076257706345,
+        "zero_f1_count": 0
+      },
+      "Tail (<30)": {
+        "num_labels": 99,
+        "precision": 0.4694220902554236,
+        "recall": 0.6473544973544973,
+        "f1_score": 0.5182395140754337,
+        "zero_f1_count": 12
+      }
+    },
+    "num_zero_f1_test": 12
+  },
+  {
+    "config_id": "Cyber_RD",
+    "label": "Cyber RD (a=0.1)",
+    "group": "CyberEDA",
+    "eda_type": "cyber",
+    "alpha_sr": 0.0,
+    "alpha_ri": 0.0,
+    "alpha_rs": 0.0,
+    "alpha_rd": 0.1,
+    "n_augmented_added": 7882,
+    "elapsed_seconds": 300.8,
+    "val_metrics": {
+      "Macro_Precision": 0.47304826532242494,
+      "Macro_Recall": 0.6437436102498117,
+      "Macro_F1": 0.5297243536335241,
+      "Micro_F1": 0.6888934342401309,
+      "Micro_Precision": 0.6070656092285508,
+      "Micro_Recall": 0.7962174940898346
+    },
+    "val_tier_summary": {
+      "Major (100-499)": {
+        "num_labels": 33,
+        "precision": 0.6619788249024031,
+        "recall": 0.8207362713162714,
+        "f1_score": 0.7282952922469111,
+        "zero_f1_count": 0
+      },
+      "Medium (30-99)": {
+        "num_labels": 51,
+        "precision": 0.49214283190790203,
+        "recall": 0.6820152614270262,
+        "f1_score": 0.5617824168615118,
+        "zero_f1_count": 1
+      },
+      "Tail (<30)": {
+        "num_labels": 99,
+        "precision": 0.38713433031614847,
+        "recall": 0.553030303030303,
+        "f1_score": 0.43340766977130607,
+        "zero_f1_count": 31
+      }
+    },
+    "num_zero_f1_val": 32,
+    "test_metrics": {
+      "Macro_Precision": 0.4901413727876908,
+      "Macro_Recall": 0.6909703874343011,
+      "Macro_F1": 0.5572208041692177,
+      "Micro_F1": 0.6871583290355854,
+      "Micro_Precision": 0.6078467153284671,
+      "Micro_Recall": 0.7902728351126928
+    },
+    "test_tier_summary": {
+      "Major (100-499)": {
+        "num_labels": 33,
+        "precision": 0.6502478407430389,
+        "recall": 0.8076875089963607,
+        "f1_score": 0.7181026919838903,
+        "zero_f1_count": 0
+      },
+      "Medium (30-99)": {
+        "num_labels": 51,
+        "precision": 0.4899502819663216,
+        "recall": 0.6567774485576343,
+        "f1_score": 0.5511913034047117,
+        "zero_f1_count": 0
+      },
+      "Tail (<30)": {
+        "num_labels": 99,
+        "precision": 0.42472481882018426,
+        "recall": 0.6615800865800865,
+        "f1_score": 0.49516734430167453,
+        "zero_f1_count": 13
+      }
+    },
+    "num_zero_f1_test": 13
+  },
+  {
+    "config_id": "Cyber_Full",
+    "label": "Cyber Full",
+    "group": "CyberEDA",
+    "eda_type": "cyber",
+    "alpha_sr": 0.1,
+    "alpha_ri": 0.1,
+    "alpha_rs": 0.1,
+    "alpha_rd": 0.1,
+    "n_augmented_added": 7882,
+    "elapsed_seconds": 314.3,
+    "val_metrics": {
+      "Macro_Precision": 0.4955745165894228,
+      "Macro_Recall": 0.6729108278632852,
+      "Macro_F1": 0.5473824106117599,
+      "Micro_F1": 0.6902185011231367,
+      "Micro_Precision": 0.6074766355140186,
+      "Micro_Recall": 0.7990543735224587
+    },
+    "val_tier_summary": {
+      "Major (100-499)": {
+        "num_labels": 33,
+        "precision": 0.6473428211848385,
+        "recall": 0.8134651864324416,
+        "f1_score": 0.7165538804491187,
+        "zero_f1_count": 0
+      },
+      "Medium (30-99)": {
+        "num_labels": 51,
+        "precision": 0.5025241082767034,
+        "recall": 0.6792715998598353,
+        "f1_score": 0.5623108267384725,
+        "zero_f1_count": 0
+      },
+      "Tail (<30)": {
+        "num_labels": 99,
+        "precision": 0.4292488375821709,
+        "recall": 0.6119528619528619,
+        "f1_score": 0.4703376870043537,
+        "zero_f1_count": 24
+      }
+    },
+    "num_zero_f1_val": 24,
+    "test_metrics": {
+      "Macro_Precision": 0.4818832479152876,
+      "Macro_Recall": 0.6889921310613729,
+      "Macro_F1": 0.5499296525681311,
+      "Micro_F1": 0.6817022145116849,
+      "Micro_Precision": 0.5981375358166189,
+      "Micro_Recall": 0.7924080664294187
+    },
+    "test_tier_summary": {
+      "Major (100-499)": {
+        "num_labels": 33,
+        "precision": 0.6370826493453295,
+        "recall": 0.8060292416951659,
+        "f1_score": 0.7095612453834512,
+        "zero_f1_count": 0
+      },
+      "Medium (30-99)": {
+        "num_labels": 51,
+        "precision": 0.4856487328246587,
+        "recall": 0.6747609093119928,
+        "f1_score": 0.5551688028070455,
+        "zero_f1_count": 0
+      },
+      "Tail (<30)": {
+        "num_labels": 99,
+        "precision": 0.4156675195092413,
+        "recall": 0.6487854737854738,
+        "f1_score": 0.48199796743612505,
+        "zero_f1_count": 13
+      }
+    },
+    "num_zero_f1_test": 13
+  },
+  {
+    "config_id": "Generic_SR",
+    "label": "Generic SR (a=0.1)",
+    "group": "GenericEDA",
+    "eda_type": "generic",
+    "alpha_sr": 0.1,
+    "alpha_ri": 0.0,
+    "alpha_rs": 0.0,
+    "alpha_rd": 0.0,
+    "n_augmented_added": 7882,
+    "elapsed_seconds": 304.7,
+    "val_metrics": {
+      "Macro_Precision": 0.4826143058339362,
+      "Macro_Recall": 0.648176725924335,
+      "Macro_F1": 0.5364446883195255,
+      "Micro_F1": 0.6854707792207793,
+      "Micro_Precision": 0.6004265908282972,
+      "Micro_Recall": 0.798581560283688
+    },
+    "val_tier_summary": {
+      "Major (100-499)": {
+        "num_labels": 33,
+        "precision": 0.6364936409754502,
+        "recall": 0.8146889738448795,
+        "f1_score": 0.7118965928509638,
+        "zero_f1_count": 0
+      },
+      "Medium (30-99)": {
+        "num_labels": 51,
+        "precision": 0.4851817885737026,
+        "recall": 0.6736262648027354,
+        "f1_score": 0.5513463827639279,
+        "zero_f1_count": 0
+      },
+      "Tail (<30)": {
+        "num_labels": 99,
+        "precision": 0.4178210678210678,
+        "recall": 0.5664983164983165,
+        "f1_score": 0.45677039010372344,
+        "zero_f1_count": 30
+      }
+    },
+    "num_zero_f1_val": 30,
+    "test_metrics": {
+      "Macro_Precision": 0.5009898657019496,
+      "Macro_Recall": 0.6933946023100404,
+      "Macro_F1": 0.56654923106227,
+      "Micro_F1": 0.6796116504854369,
+      "Micro_Precision": 0.5969479353680431,
+      "Micro_Recall": 0.7888493475682088
+    },
+    "test_tier_summary": {
+      "Major (100-499)": {
+        "num_labels": 33,
+        "precision": 0.6263832157034176,
+        "recall": 0.8108579517459897,
+        "f1_score": 0.7052321084368369,
+        "zero_f1_count": 0
+      },
+      "Medium (30-99)": {
+        "num_labels": 51,
+        "precision": 0.4938380999575863,
+        "recall": 0.6433209251475505,
+        "f1_score": 0.5489125320789365,
+        "zero_f1_count": 0
+      },
+      "Tail (<30)": {
+        "num_labels": 99,
+        "precision": 0.45212607587830406,
+        "recall": 0.6717171717171717,
+        "f1_score": 0.5187260792506474,
+        "zero_f1_count": 11
+      }
+    },
+    "num_zero_f1_test": 11
+  },
+  {
+    "config_id": "Generic_RI",
+    "label": "Generic RI (a=0.1)",
+    "group": "GenericEDA",
+    "eda_type": "generic",
+    "alpha_sr": 0.0,
+    "alpha_ri": 0.1,
+    "alpha_rs": 0.0,
+    "alpha_rd": 0.0,
+    "n_augmented_added": 7882,
+    "elapsed_seconds": 304.8,
+    "val_metrics": {
+      "Macro_Precision": 0.4579174417463144,
+      "Macro_Recall": 0.6400066538019871,
+      "Macro_F1": 0.5180140499346937,
+      "Micro_F1": 0.6821138211382114,
+      "Micro_Precision": 0.5982174688057041,
+      "Micro_Recall": 0.7933806146572104
+    },
+    "val_tier_summary": {
+      "Major (100-499)": {
+        "num_labels": 33,
+        "precision": 0.6436015604838531,
+        "recall": 0.8084662547685292,
+        "f1_score": 0.7128928640525005,
+        "zero_f1_count": 0
+      },
+      "Medium (30-99)": {
+        "num_labels": 51,
+        "precision": 0.47325946757061305,
+        "recall": 0.6710573739985503,
+        "f1_score": 0.5451442336061539,
+        "zero_f1_count": 1
+      },
+      "Tail (<30)": {
+        "num_labels": 99,
+        "precision": 0.375,
+        "recall": 0.5547138047138047,
+        "f1_score": 0.42494492039946574,
+        "zero_f1_count": 31
+      }
+    },
+    "num_zero_f1_val": 32,
+    "test_metrics": {
+      "Macro_Precision": 0.4935312201272637,
+      "Macro_Recall": 0.6844614835122207,
+      "Macro_F1": 0.5568968222010086,
+      "Micro_F1": 0.6816418215233817,
+      "Micro_Precision": 0.5983151102348091,
+      "Micro_Recall": 0.7919335705812575
+    },
+    "test_tier_summary": {
+      "Major (100-499)": {
+        "num_labels": 33,
+        "precision": 0.6315334066763396,
+        "recall": 0.81555935524849,
+        "f1_score": 0.7099334018020549,
+        "zero_f1_count": 0
+      },
+      "Medium (30-99)": {
+        "num_labels": 51,
+        "precision": 0.48484822560847546,
+        "recall": 0.6568828751800889,
+        "f1_score": 0.5471668016988867,
+        "zero_f1_count": 0
+      },
+      "Tail (<30)": {
+        "num_labels": 99,
+        "precision": 0.44062033315598376,
+        "recall": 0.6462602212602212,
+        "f1_score": 0.4995948579554017,
+        "zero_f1_count": 13
+      }
+    },
+    "num_zero_f1_test": 13
+  },
+  {
+    "config_id": "Generic_RS",
+    "label": "Generic RS (a=0.1)",
+    "group": "GenericEDA",
+    "eda_type": "generic",
+    "alpha_sr": 0.0,
+    "alpha_ri": 0.0,
+    "alpha_rs": 0.1,
+    "alpha_rd": 0.0,
+    "n_augmented_added": 7882,
+    "elapsed_seconds": 304.2,
+    "val_metrics": {
+      "Macro_Precision": 0.4870439973885064,
+      "Macro_Recall": 0.6424918416555587,
+      "Macro_F1": 0.5352235317006786,
+      "Micro_F1": 0.6844137370453159,
+      "Micro_Precision": 0.6001425516749822,
+      "Micro_Recall": 0.7962174940898346
+    },
+    "val_tier_summary": {
+      "Major (100-499)": {
+        "num_labels": 33,
+        "precision": 0.6390874999295868,
+        "recall": 0.8175148861612409,
+        "f1_score": 0.7133520179709907,
+        "zero_f1_count": 0
+      },
+      "Medium (30-99)": {
+        "num_labels": 51,
+        "precision": 0.4866543193783222,
+        "recall": 0.682144652732888,
+        "f1_score": 0.5554995714317865,
+        "zero_f1_count": 0
+      },
+      "Tail (<30)": {
+        "num_labels": 99,
+        "precision": 0.4243025493025493,
+        "recall": 0.5513468013468013,
+        "f1_score": 0.45204862477589747,
+        "zero_f1_count": 30
+      }
+    },
+    "num_zero_f1_val": 30,
+    "test_metrics": {
+      "Macro_Precision": 0.491836663490625,
+      "Macro_Recall": 0.6970167589056746,
+      "Macro_F1": 0.5589950395546176,
+      "Micro_F1": 0.6798129701158772,
+      "Micro_Precision": 0.5947003378979192,
+      "Micro_Recall": 0.7933570581257414
+    },
+    "test_tier_summary": {
+      "Major (100-499)": {
+        "num_labels": 33,
+        "precision": 0.6311132565472645,
+        "recall": 0.813670103391337,
+        "f1_score": 0.7087747883326437,
+        "zero_f1_count": 0
+      },
+      "Medium (30-99)": {
+        "num_labels": 51,
+        "precision": 0.49213035500893504,
+        "recall": 0.6721762917738149,
+        "f1_score": 0.5579979445149684,
+        "zero_f1_count": 0
+      },
+      "Tail (<30)": {
+        "num_labels": 99,
+        "precision": 0.4341873845438908,
+        "recall": 0.6633357383357383,
+        "f1_score": 0.49881144176106174,
+        "zero_f1_count": 11
+      }
+    },
+    "num_zero_f1_test": 11
+  },
+  {
+    "config_id": "Generic_RD",
+    "label": "Generic RD (a=0.1)",
+    "group": "GenericEDA",
+    "eda_type": "generic",
+    "alpha_sr": 0.0,
+    "alpha_ri": 0.0,
+    "alpha_rs": 0.0,
+    "alpha_rd": 0.1,
+    "n_augmented_added": 7882,
+    "elapsed_seconds": 304.3,
+    "val_metrics": {
+      "Macro_Precision": 0.47166199331337866,
+      "Macro_Recall": 0.6325029962668011,
+      "Macro_F1": 0.5214096350442804,
+      "Micro_F1": 0.6806346623270952,
+      "Micro_Precision": 0.5972866833273831,
+      "Micro_Recall": 0.791016548463357
+    },
+    "val_tier_summary": {
+      "Major (100-499)": {
+        "num_labels": 33,
+        "precision": 0.6389219251541308,
+        "recall": 0.8033472637008372,
+        "f1_score": 0.707260488758988,
+        "zero_f1_count": 0
+      },
+      "Medium (30-99)": {
+        "num_labels": 51,
+        "precision": 0.5022295772682769,
+        "recall": 0.6682010799657858,
+        "f1_score": 0.5567517600277895,
+        "zero_f1_count": 1
+      },
+      "Tail (<30)": {
+        "num_labels": 99,
+        "precision": 0.3873190782281691,
+        "recall": 0.5437710437710437,
+        "f1_score": 0.42708469981197256,
+        "zero_f1_count": 31
+      }
+    },
+    "num_zero_f1_val": 32,
+    "test_metrics": {
+      "Macro_Precision": 0.48285804431849894,
+      "Macro_Recall": 0.6833821025558753,
+      "Macro_F1": 0.5461982117268327,
+      "Micro_F1": 0.6760849679845513,
+      "Micro_Precision": 0.5913940256045519,
+      "Micro_Recall": 0.7890865954922894
+    },
+    "test_tier_summary": {
+      "Major (100-499)": {
+        "num_labels": 33,
+        "precision": 0.6337378384327498,
+        "recall": 0.8101555520584472,
+        "f1_score": 0.7087311756026485,
+        "zero_f1_count": 0
+      },
+      "Medium (30-99)": {
+        "num_labels": 51,
+        "precision": 0.47345250450781906,
+        "recall": 0.6505836016981528,
+        "f1_score": 0.5373532570357679,
+        "zero_f1_count": 0
+      },
+      "Tail (<30)": {
+        "num_labels": 99,
+        "precision": 0.42488470465297556,
+        "recall": 0.6494468494468494,
+        "f1_score": 0.4844328839461409,
+        "zero_f1_count": 12
+      }
+    },
+    "num_zero_f1_test": 12
+  },
+  {
+    "config_id": "Generic_Full",
+    "label": "Generic Full",
+    "group": "GenericEDA",
+    "eda_type": "generic",
+    "alpha_sr": 0.1,
+    "alpha_ri": 0.1,
+    "alpha_rs": 0.1,
+    "alpha_rd": 0.1,
+    "n_augmented_added": 7882,
+    "elapsed_seconds": 304.5,
+    "val_metrics": {
+      "Macro_Precision": 0.4706713060256255,
+      "Macro_Recall": 0.6407272433438722,
+      "Macro_F1": 0.5234568943491003,
+      "Micro_F1": 0.6759483454398708,
+      "Micro_Precision": 0.5895811334037311,
+      "Micro_Recall": 0.7919621749408984
+    },
+    "val_tier_summary": {
+      "Major (100-499)": {
+        "num_labels": 33,
+        "precision": 0.6321243484314839,
+        "recall": 0.8158014616601026,
+        "f1_score": 0.7085743229258606,
+        "zero_f1_count": 0
+      },
+      "Medium (30-99)": {
+        "num_labels": 51,
+        "precision": 0.49681226162134307,
+        "recall": 0.6578704519880991,
+        "f1_score": 0.5448450594510813,
+        "zero_f1_count": 0
+      },
+      "Tail (<30)": {
+        "num_labels": 99,
+        "precision": 0.3910894660894661,
+        "recall": 0.5606060606060606,
+        "f1_score": 0.43703485067121434,
+        "zero_f1_count": 29
+      }
+    },
+    "num_zero_f1_val": 29,
+    "test_metrics": {
+      "Macro_Precision": 0.4853940307124888,
+      "Macro_Recall": 0.6847497146822585,
+      "Macro_F1": 0.5506397457472185,
+      "Micro_F1": 0.6766260162601626,
+      "Micro_Precision": 0.5918222222222222,
+      "Micro_Recall": 0.7897983392645315
+    },
+    "test_tier_summary": {
+      "Major (100-499)": {
+        "num_labels": 33,
+        "precision": 0.6279534469121221,
+        "recall": 0.8087139546718453,
+        "f1_score": 0.7047581438033543,
+        "zero_f1_count": 0
+      },
+      "Medium (30-99)": {
+        "num_labels": 51,
+        "precision": 0.49043001113582524,
+        "recall": 0.6593928878139403,
+        "f1_score": 0.5516294984571538,
+        "zero_f1_count": 0
+      },
+      "Tail (<30)": {
+        "num_labels": 99,
+        "precision": 0.4235276755330231,
+        "recall": 0.6475709475709476,
+        "f1_score": 0.48705036112787703,
+        "zero_f1_count": 13
+      }
+    },
+    "num_zero_f1_test": 13
+  }
+]

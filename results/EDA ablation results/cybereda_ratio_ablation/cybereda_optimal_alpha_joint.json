@@ -1,0 +1,15 @@
+{
+  "proxy_model": "nreimers/MiniLM-L6-H384-uncased",
+  "proxy_epochs": 3,
+  "proxy_max_length": 384,
+  "method": "Cyber EDA (STIX alias-based)",
+  "target_dataset": "joint",
+  "optimal_alpha": 0.1,
+  "optimal_config": "Config_5",
+  "val_macro_f1": 0.5476,
+  "test_macro_f1": 0.5479,
+  "delta_val_f1": 0.1766,
+  "delta_test_f1": 0.1566,
+  "baseline_val_f1": 0.371,
+  "baseline_test_f1": 0.3913
+}

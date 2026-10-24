@@ -1,0 +1,15 @@
+{
+  "proxy_model": "nreimers/MiniLM-L6-H384-uncased",
+  "proxy_epochs": 3,
+  "proxy_max_length": 384,
+  "method": "Generic WordNet EDA",
+  "target_dataset": "joint",
+  "optimal_alpha": 0.1,
+  "optimal_config": "Config_5",
+  "val_macro_f1": 0.5438,
+  "test_macro_f1": 0.5444,
+  "delta_val_f1": 0.1727,
+  "delta_test_f1": 0.1531,
+  "baseline_val_f1": 0.371,
+  "baseline_test_f1": 0.3913
+}

@@ -1,0 +1,23 @@
+{
+  "seed": 789,
+  "scenario": "B1",
+  "scenario_title": "Cyber EDA one-stage",
+  "dataset": "tram",
+  "global_threshold": 0.58,
+  "minority_threshold": 0.51,
+  "macro_f1": 0.8201106779938405,
+  "micro_f1": 0.8315693982461445,
+  "weighted_f1": 0.8313853617626462,
+  "minority_f2": 0.7258423837371206,
+  "minority_recall": 0.7291666666666666,
+  "zero_f1_count": 0,
+  "rare_f1": 0.7832451499118166,
+  "medium_f1": 0.8263203187765066,
+  "freq_f1": 0.8303831861790814,
+  "hit_at_3": 0.9557584269662921,
+  "hit_at_5": 0.9691011235955056,
+  "mrr": 0.9177730852899386,
+  "map": 0.9047500919582662,
+  "training_seconds": 263.1635220050812,
+  "peak_vram_mb": 4617.833984375
+}
